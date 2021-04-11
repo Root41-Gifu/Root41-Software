@@ -1,0 +1,74 @@
+{
+  "gitflow4code.features": [
+    {
+      "name": "feature/ta-makeKickerClass",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-ui-building",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-motor",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-line-base-building",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-led",
+      "base": "develop"
+    },
+    {
+      "name": "feature/motor",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-ball",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-ball",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-sqrt-ball",
+      "base": "feature/ta-ball"
+    },
+    {
+      "name": "feature/ta-util",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-ball002",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-bug",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ta-ball003",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ak-line004",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ball006",
+      "base": "develop"
+    },
+    {
+      "name": "feature/ak-line007",
+      "base": "develop"
+    }
+  ],
+  "files.associations": {
+    "*.ino": "cpp",
+    "*.pde": "cpp",
+    "cmath": "cpp",
+    "limits": "cpp"
+  }
+}
