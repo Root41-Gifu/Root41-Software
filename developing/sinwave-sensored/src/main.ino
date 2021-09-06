@@ -52,7 +52,7 @@ void setup() {
 
   digitalWrite(13, HIGH);
 
-  FlexiTimer2::set(1.0, 1.0 / (96 * (10 ^ 3)), measureAngularVelocity);
+  FlexiTimer2::set(1.0, 1.0 / (100 * (10 ^ 3)), measureAngularVelocity);
   FlexiTimer2::start();
 
   offset += 27;

@@ -16,7 +16,7 @@ void initialize(void) {
   TCCR4B = (TCCR4B & 0b11111000) | 0x01;
 
   ADCSRA = ADCSRA & 0xf8;
-  ADCSRA = ADCSRA | 0x04;
+  ADCSRA = ADCSRA | 0x05;
 
   for (int i = 0; i < 3; i++) {  // LOWにする
     digitalWrite(IN[i], LOW);
@@ -50,7 +50,7 @@ void calibration(void) {
       OCR3C = byte(constrain(surveyPwm[i] * 0.15, 0, 254));
       OCR3A = byte(constrain(surveyPwm[(i + 98) % 1024] * 0.15, 0, 254));
       OCR4B = byte(constrain(surveyPwm[(i + 49) % 1024] * 0.15, 0, 254));
-      // delayMicroseconds(700);
+      // delayMicroseconds(500);
 
       int temp = analogRead(A0);
 
@@ -61,17 +61,19 @@ void calibration(void) {
         offset2 = ((i - temp + 1024) % 1024);
       }
 
-      Serial.print(1500);
-      Serial.print("\t");
-      Serial.print(0);
-      Serial.print("\t");
-      Serial.print(i);
-      Serial.print("\t");
-      Serial.print(offset);
-      Serial.print("\t");
-      Serial.print(temp);
-      Serial.print("\t");
-      Serial.println(0);
+      delayMicroseconds(700);
+
+      // Serial.print(1500);
+      // Serial.print("\t");
+      // Serial.print(0);
+      // Serial.print("\t");
+      // Serial.print(i);
+      // Serial.print("\t");
+      // Serial.print(offset);
+      // Serial.print("\t");
+      // Serial.print(temp);
+      // Serial.print("\t");
+      // Serial.println(0);
     }
   }
 
