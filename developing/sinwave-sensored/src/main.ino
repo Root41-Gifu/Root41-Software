@@ -20,7 +20,7 @@ volatile int current;
 
 void measureAngularVelocity(void) {
   if (interval == 0) {
-    deg = (analogRead(A0) + offset + 23 + velocity / 7) % 1024;
+    deg = (analogRead(A0) + offset + 22 + velocity / 7) % 1024;
 
     if (abs(deg - _deg) <= 150 || abs(deg - _deg) >= 874) {
       drive = deg;
@@ -57,7 +57,7 @@ void setup() {
 
   digitalWrite(13, HIGH);
 
-  FlexiTimer2::set(1.0, 1.0 / (98 * (10 ^ 3)), measureAngularVelocity);
+  FlexiTimer2::set(1.0, 1.0 / (96 * (10 ^ 3)), measureAngularVelocity);
   FlexiTimer2::start();
 
   for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
