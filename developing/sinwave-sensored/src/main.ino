@@ -4,41 +4,46 @@
 volatile int IN[3] = {3, 5, 7};
 int SD[3] = {9, 6, 8};
 
-float power = 0.2;
+float power = 1;
 
-int offset = 0;
+volatile int offset = 0;
+volatile int deg;
+volatile int _deg;
+volatile int drive;
+volatile int _drive;
+volatile int velocity;
 
 volatile int surveyPwm[1024];
-
-volatile uint16_t _degPoint = 0;
-volatile uint16_t degNow = 0;
-volatile uint16_t degPoint = 0;
-volatile uint16_t interval = 0;
-volatile uint16_t angularVelocity = 0;
-volatile int value;
+volatile int interval = 0;
+volatile int interval2 = 0;
+volatile int current;
 
 void measureAngularVelocity(void) {
   if (interval == 0) {
-    degPoint = value;
-    angularVelocity = abs(_degPoint - degPoint);
-    if (angularVelocity >= 512) {
-      angularVelocity = 1023 - angularVelocity;
+    deg = (analogRead(A0) + offset + 24) % 1024;
+
+    if (abs(deg - _deg) <= 300 || abs(deg - _deg) >= 724) {
+      drive = deg;
+    } else {
+      drive = _deg;
     }
-    angularVelocity = abs(angularVelocity);
-    angularVelocity %= 1024;
-    _degPoint = degPoint;
+    _deg = deg;
+  }
+  if (interval2 == 0) {
+    velocity = abs(_drive - drive);
+    if (velocity >= 512) {
+      velocity = 1023 - velocity;
+    }
+    _drive = drive;
   }
 
-  degNow = round(angularVelocity * 0.43 + 35 + degPoint +
-                 interval * (angularVelocity >> 3)) %
-           1024;
-
-  OCR3C = byte(surveyPwm[degNow] * power);
-  OCR3A = byte(surveyPwm[(degNow + 98) % 1024] * power);
-  OCR4B = byte(surveyPwm[(degNow + 49) % 1024] * power);
+  current = (drive + ((interval * velocity) / 128)) % 1024;
 
   interval++;
   interval %= 8;
+
+  interval2++;
+  interval2 %= 128;
 }
 
 void setup() {
@@ -50,8 +55,8 @@ void setup() {
 
   digitalWrite(13, HIGH);
 
-  // FlexiTimer2::set(1.0, 1.0 / (8 * (10 ^ 3)), measureAngularVelocity);
-  // FlexiTimer2::start();
+  FlexiTimer2::set(1.0, 1.0 / (100 * (10 ^ 3)), measureAngularVelocity);
+  FlexiTimer2::start();
 
   for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
     digitalWrite(SD[i], HIGH);
@@ -60,24 +65,7 @@ void setup() {
 }
 
 void loop() {
-  for (int i = 0; i < 1024; i += 1) {
-    OCR3C = byte(constrain(surveyPwm[i] * power, 0, 254));
-    OCR3A = byte(constrain(surveyPwm[(i + 98) % 1024] * power, 0, 254));
-    OCR4B = byte(constrain(surveyPwm[(i + 49) % 1024] * power, 0, 254));
-    // delayMicroseconds(700);
-
-    int temp = (analogRead(A0) + offset) % 1024;
-
-    Serial.print(1500);
-    Serial.print("\t");
-    Serial.print(0);
-    Serial.print("\t");
-    Serial.print(i);
-    Serial.print("\t");
-    Serial.print(offset);
-    Serial.print("\t");
-    Serial.print(analogRead(A0));
-    Serial.print("\t");
-    Serial.println(temp);
-  }
+  OCR3C = byte(constrain(surveyPwm[current] * power, 0, 254));
+  OCR3A = byte(constrain(surveyPwm[(current + 98) % 1024] * power, 0, 254));
+  OCR4B = byte(constrain(surveyPwm[(current + 49) % 1024] * power, 0, 254));
 }
