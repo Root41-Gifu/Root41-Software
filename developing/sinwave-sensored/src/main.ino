@@ -4,7 +4,9 @@
 int IN[3] = {3, 5, 7};
 int SD[3] = {9, 6, 8};
 
-float power = 1;
+float power = 0.2;
+
+const int buzzer = 255;
 
 volatile int offset = 0;
 volatile int deg;
@@ -33,7 +35,7 @@ void measureAngularVelocity(void) {
     _drive = drive;
   }
 
-  current = drive + offset + int(velocity * 0.15) + interval * _deg;
+  current = drive + offset + int(velocity * 0.175) + interval * _deg;
 
   interval++;
   interval %= 12;
@@ -45,9 +47,19 @@ void measureAngularVelocity(void) {
 void setup() {
   // TIMSK0 = 0;
   initialize();
-
   calibration();
 
+  for (int i = 0; i < 10; i++) {
+    analogWrite(10, buzzer);
+    delay(50);
+    analogWrite(10, 0);
+    delay(50);
+  }
+  delay(50);
+
+  analogWrite(10, 70);
+  delay(1000);
+  digitalWrite(10, LOW);
   delay(1000);
 
   digitalWrite(13, HIGH);
@@ -64,9 +76,27 @@ void setup() {
 }
 
 void loop() {
+  unsigned long buzzerTimer = 0;
   while (1) {
-    OCR3C = byte(constrain(surveyPwm[current % 1024] * power, 0, 254));
-    OCR3A = byte(constrain(surveyPwm[(current + 98) % 1024] * power, 0, 254));
-    OCR4B = byte(constrain(surveyPwm[(current + 49) % 1024] * power, 0, 254));
+    for (int i = 0; i < 100; i++) {
+      OCR3C = byte(surveyPwm[current % 1024] * power);
+      OCR3A = byte(surveyPwm[(current + 98) % 1024] * power);
+      OCR4B = byte(surveyPwm[(current + 49) % 1024] * power);
+    }
+
+    signed char c;
+    if ((c = Serial.read()) != -1) {
+      power += 0.1;
+      if (power > 1.0) {
+        power = 0.1;
+      }
+      buzzerTimer = millis();
+    }
+
+    if (millis() - buzzerTimer <= 50) {
+      analogWrite(10, buzzer);
+    } else {
+      analogWrite(10, 0);
+    }
   }
 }
