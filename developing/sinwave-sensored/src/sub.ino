@@ -47,9 +47,9 @@ void calibration(void) {
 
   for (int j = 0; j < 3; j++) {
     for (int i = 0; i < 1024; i += 1) {
-      OCR3C = byte(constrain(surveyPwm[i] * power, 0, 254));
-      OCR3A = byte(constrain(surveyPwm[(i + 98) % 1024] * power, 0, 254));
-      OCR4B = byte(constrain(surveyPwm[(i + 49) % 1024] * power, 0, 254));
+      OCR3C = byte(constrain(surveyPwm[i] * 0.15, 0, 254));
+      OCR3A = byte(constrain(surveyPwm[(i + 98) % 1024] * 0.15, 0, 254));
+      OCR4B = byte(constrain(surveyPwm[(i + 49) % 1024] * 0.15, 0, 254));
       // delayMicroseconds(700);
 
       int temp = analogRead(A0);
