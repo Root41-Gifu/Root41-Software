@@ -33,7 +33,7 @@ void measureAngularVelocity(void) {
     _drive = drive;
   }
 
-  current = drive + offset + int(velocity * 0.14) + interval * _deg;
+  current = drive + offset + int(velocity * 0.15) + interval * _deg;
 
   interval++;
   interval %= 12;
@@ -52,7 +52,7 @@ void setup() {
 
   digitalWrite(13, HIGH);
 
-  FlexiTimer2::set(1.0, 1.0 / (97 * (10 ^ 3)), measureAngularVelocity);
+  FlexiTimer2::set(1.0, 1.0 / (96 * (10 ^ 3)), measureAngularVelocity);
   FlexiTimer2::start();
 
   offset += 27;
