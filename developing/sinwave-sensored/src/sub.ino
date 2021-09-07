@@ -27,7 +27,7 @@ void initialize(void) {
   delay(100);
 
   for (int i = 0; i < 5; i++) {
-    analogWrite(10, buzzer);
+    analogWrite(10, 255);
     delay(50);
     analogWrite(10, 0);
     delay(50);
@@ -41,7 +41,7 @@ void initialize(void) {
 
 void calibration(void) {
   for (int i = 0; i < 1024; i++) {
-    surveyPwm[i] = round(127 * sin(radians(map(i, 0, 1024, 0, 360 * 7))) + 127);
+    pwm[i] = round(127 * sin(radians(map(i, 0, 1024, 0, 360 * 7))) + 127);
   }
 
   for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
@@ -59,11 +59,11 @@ void calibration(void) {
   for (int j = 0; j < loopTime; j++) {
     long randomNumber = random(1023);
     for (int i = 0; i < 1024; i += 1) {
-      OCR3C = byte(constrain(surveyPwm[i] * calibrationPower, 0, 254));
+      OCR3C = byte(constrain(pwm[i] * calibrationPower, 0, 254));
       OCR3A = byte(
-          constrain(surveyPwm[(i + 98) % 1024] * calibrationPower, 0, 254));
+          constrain(pwm[(i + 98) % 1024] * calibrationPower, 0, 254));
       OCR4B = byte(
-          constrain(surveyPwm[(i + 49) % 1024] * calibrationPower, 0, 254));
+          constrain(pwm[(i + 49) % 1024] * calibrationPower, 0, 254));
 
       int temp = analogRead(A0);
 
@@ -72,7 +72,7 @@ void calibration(void) {
       }
 
       if (i >= 1000) {
-        analogWrite(10, buzzer);
+        analogWrite(10, 255);
       } else {
         analogWrite(10, 0);
       }

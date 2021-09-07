@@ -6,36 +6,33 @@ int SD[3] = {9, 6, 8};
 
 float power = 0.2;
 
-const int buzzer = 255;
-
 volatile int offset = 0;
+volatile int velocityUnit;
 volatile int deg;
-volatile int _deg;
-volatile int drive;
-volatile int _drive;
+volatile int oldDeg;
 volatile int velocity;
 
-int surveyPwm[1024];
+int pwm[1024];
 
 volatile uint8_t interval = 0;
 volatile uint8_t interval2 = 0;
-volatile int current;
+volatile int voltage;
 
 void measureAngularVelocity(void) {
   if (interval == 0) {
-    drive = analogRead(A0);
+    deg = analogRead(A0);
   }
 
   if (interval2 == 0) {
-    velocity = abs(_drive - drive);
+    velocity = abs(oldDeg - deg);
     if (velocity >= 512) {
       velocity = 1023 - velocity;
     }
-    _deg = velocity / 60;
-    _drive = drive;
+    velocityUnit = velocity / 60;
+    oldDeg = deg;
   }
 
-  current = drive + offset + int(velocity * 0.175) + interval * _deg;
+  voltage = deg + offset + int(velocity * 0.175) + interval * velocityUnit;
 
   interval++;
   interval %= 12;
@@ -50,7 +47,7 @@ void setup() {
   calibration();
 
   for (int i = 0; i < 10; i++) {
-    analogWrite(10, buzzer);
+    analogWrite(10, 255);
     delay(50);
     analogWrite(10, 0);
     delay(50);
@@ -76,12 +73,12 @@ void setup() {
 }
 
 void loop() {
-  unsigned long buzzerTimer = 0;
+  unsigned long 255Timer = 0;
   while (1) {
     for (int i = 0; i < 100; i++) {
-      OCR3C = byte(surveyPwm[current % 1024] * power);
-      OCR3A = byte(surveyPwm[(current + 98) % 1024] * power);
-      OCR4B = byte(surveyPwm[(current + 49) % 1024] * power);
+      OCR3C = byte(pwm[voltage % 1024] * power);
+      OCR3A = byte(pwm[(voltage + 98) % 1024] * power);
+      OCR4B = byte(pwm[(voltage + 49) % 1024] * power);
     }
 
     signed char c;
@@ -90,11 +87,11 @@ void loop() {
       if (power > 1.0) {
         power = 0.1;
       }
-      buzzerTimer = millis();
+      255Timer = millis();
     }
 
-    if (millis() - buzzerTimer <= 50) {
-      analogWrite(10, buzzer);
+    if (millis() - 255Timer <= 50) {
+      analogWrite(10, 255);
     } else {
       analogWrite(10, 0);
     }
