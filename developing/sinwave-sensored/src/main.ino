@@ -73,7 +73,7 @@ void setup() {
 }
 
 void loop() {
-  unsigned long 255Timer = 0;
+  static unsigned long buzzerTimer = 0;
   while (1) {
     for (int i = 0; i < 100; i++) {
       OCR3C = byte(pwm[voltage % 1024] * power);
@@ -87,10 +87,10 @@ void loop() {
       if (power > 1.0) {
         power = 0.1;
       }
-      255Timer = millis();
+      buzzerTimer = millis();
     }
 
-    if (millis() - 255Timer <= 50) {
+    if (millis() - buzzerTimer <= 50) {
       analogWrite(10, 255);
     } else {
       analogWrite(10, 0);
