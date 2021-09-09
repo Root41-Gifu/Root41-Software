@@ -41,7 +41,8 @@ void initialize(void) {
 
 void calibration(void) {
   for (int i = 0; i < 1024; i++) {
-    pwm[i] = round(127 * sin(radians(map(i, 0, 1024, 0, 360 * 7))) + 127);
+    // pwm[i] = round(127 * sin(radians(map(i, 0, 1024, 0, 360 * 7))) + 127);
+    pwm[i] = pwmRaw[round(map(i, 0, 1024, 0, 360 * 7) % 360)];
   }
 
   for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
@@ -51,7 +52,7 @@ void calibration(void) {
 
   randomSeed(analogRead(A1));
 
-  const int loopTime = 10;
+  const int loopTime = 3;
   const float calibrationPower = 0.2;
 
   int offsetRaw[loopTime];
@@ -60,10 +61,8 @@ void calibration(void) {
     long randomNumber = random(1023);
     for (int i = 0; i < 1024; i += 1) {
       OCR3C = byte(constrain(pwm[i] * calibrationPower, 0, 254));
-      OCR3A = byte(
-          constrain(pwm[(i + 98) % 1024] * calibrationPower, 0, 254));
-      OCR4B = byte(
-          constrain(pwm[(i + 49) % 1024] * calibrationPower, 0, 254));
+      OCR3A = byte(constrain(pwm[(i + 98) % 1024] * calibrationPower, 0, 254));
+      OCR4B = byte(constrain(pwm[(i + 49) % 1024] * calibrationPower, 0, 254));
 
       int temp = analogRead(A0);
 
@@ -77,9 +76,54 @@ void calibration(void) {
         analogWrite(10, 0);
       }
 
-      delayMicroseconds(300);
+      delayMicroseconds(150);
     }
   }
+
+  // for (int i = 0; i < 360; i++) {
+  //   pwmRaw[i] = sin(radians(i)) * 254;
+  // }
+
+  // while (true) {
+  //   for (int i = 0; i < 1024; i++) {
+  //     OCR3C = byte(constrain(pwm[i] * calibrationPower, 0, 254));
+  //     OCR3A = byte(constrain(pwm[(i + 49) % 1024] * calibrationPower, 0,
+  //     254)); OCR4B = byte(constrain(pwm[(i + 98) % 1024] * calibrationPower,
+  //     0, 254));
+
+  //     // OCR3C = byte(constrain(sin(radians(i)) * 254 * calibrationPower, 0,
+  //     // 254)); OCR3A = byte(
+  //     //     constrain(sin(radians(i + 120)) * 254 * calibrationPower, 0,
+  //     254));
+  //     // OCR4B = byte(
+  //     //     constrain(sin(radians(i + 240)) * 254 * calibrationPower, 0,
+  //     254));
+
+  //     delayMicroseconds(90);
+  //   }
+  // }
+
+  // while (true) {
+  //   for (int i = 0; i < 360; i++) {
+  //     OCR3C = byte(constrain(pwmRaw[i] * calibrationPower, 0, 254));
+  //     OCR3A =
+  //         byte(constrain(pwmRaw[(i + 120) % 360] * calibrationPower, 0,
+  //         254));
+  //     OCR4B =
+  //         byte(constrain(pwmRaw[(i + 240) % 360] * calibrationPower, 0,
+  //         254));
+
+  //     // OCR3C = byte(constrain(sin(radians(i)) * 254 * calibrationPower, 0,
+  //     // 254)); OCR3A = byte(
+  //     //     constrain(sin(radians(i + 120)) * 254 * calibrationPower, 0,
+  //     254));
+  //     // OCR4B = byte(
+  //     //     constrain(sin(radians(i + 240)) * 254 * calibrationPower, 0,
+  //     254));
+
+  //     delayMicroseconds(10);
+  //   }
+  // }
 
   offset = 0;
 

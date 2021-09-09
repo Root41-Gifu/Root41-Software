@@ -335,117 +335,130 @@ void loop(void) {
     }
   } else if (device.mode == 1) {  //駆動中
 
-    //処理
-    if (!line.flag) {
-      LED.gyroShow();
-      ball.read(ball.val);
-      ball.calc();
-      // LED.degShow(ball.deg);
-
-      // if (device.getTime() - ball.speedTimer <= 800 && ball.speedTimer != 0)
-      // {
-      //   ball.speed =
-      //       100 - (map(device.getTime() - ball.speedTimer, 0, 800, 10, 30));
-      // }
+    for (int i = 0; i < 3; i++) {
+      motor.val[i] = 255;
     }
+    motor.directDrive(motor.val);
 
-    line.read();
-    line.deg = line.calc();
-    line.process();
+    // //処理
+    // if (!line.flag) {
+    //   LED.gyroShow();
+    //   ball.read(ball.val);
+    //   ball.calc();
+    //   // LED.degShow(ball.deg);
 
-    position.get();
-    position.reflection();
-
-    //設定
-    motor.deg = ball.deg;
-    motor.speed = ball.speed;
-    bool stop = false;
-
-    if (line.flag) {
-      motor.deg = line.deg;
-      motor.speed = line.speed;
-      LED.changeAll(LED.WHITE);
-
-      if (motor.deg == 1000) {
-        stop = true;
-      }
-    }
-
-    //持ち上げ消灯
-    // if (gyro.isLift && !device.robot) {
-    //   digitalWrite(LINE_BRIGHT, LOW);
-    // } else {
-    digitalWrite(LINE_BRIGHT, HIGH);
+    //   // if (device.getTime() - ball.speedTimer <= 800 && ball.speedTimer !=
+    //   0)
+    //   // {
+    //   //   ball.speed =
+    //   //       100 - (map(device.getTime() - ball.speedTimer, 0, 800, 10,
+    //   30));
+    //   // }
     // }
 
-    //駆動
-    kicker.kick(kicker.val);
+    // line.read();
+    // line.deg = line.calc();
+    // line.process();
 
-    motor.timer = device.getTime();
+    // position.get();
+    // position.reflection();
 
-    for (motor.count = 0; motor.count < motor.time; motor.count++) {
-      line.read();
-      line.deg = line.calc();
-      line.process();
-      gyro.deg = gyro.read();
-      motor.drive(motor.deg, motor.speed, stop);
-      if (motor.count >= 1) {
-        digitalWrite(BALL_RESET, HIGH);
-      }
+    // //設定
+    // motor.deg = ball.deg;
+    // motor.speed = ball.speed;
+    // bool stop = false;
 
-      if (line.flag) {
-        break;
-      }
-    }
+    // if (line.flag) {
+    //   motor.deg = line.deg;
+    //   motor.speed = line.speed;
+    //   LED.changeAll(LED.WHITE);
+
+    //   if (motor.deg == 1000) {
+    //     stop = true;
+    //   }
+    // }
+
+    // //持ち上げ消灯
+    // // if (gyro.isLift && !device.robot) {
+    // //   digitalWrite(LINE_BRIGHT, LOW);
+    // // } else {
+    // digitalWrite(LINE_BRIGHT, HIGH);
+    // // }
+
+    // //駆動
+    // kicker.kick(kicker.val);
+
+    // motor.timer = device.getTime();
+
+    // for (motor.count = 0; motor.count < motor.time; motor.count++) {
+    //   line.read();
+    //   line.deg = line.calc();
+    //   line.process();
+    //   gyro.deg = gyro.read();
+    //   motor.drive(motor.deg, motor.speed, stop);
+    //   if (motor.count >= 1) {
+    //     digitalWrite(BALL_RESET, HIGH);
+    //   }
+
+    //   if (line.flag) {
+    //     break;
+    //   }
+    // }
 
   } else if (device.mode == 2) {  //駆動中
-    //処理
-    LED.gyroShow();
 
-    ball.read(ball.val);
-    // ball.readDistance();
-    ball.calc();
-    line.read();
-    line.linetrace();
-    position.reflection();
-
-    if (ball.top < 3 || ball.top > 13) {
-      keeper.speed = 85;
-    } else if (ball.top <= 5 || ball.top >= 11) {
-      keeper.speed = 95;
-    } else {
-      keeper.speed = 95;
+    for (int i = 0; i < 3; i++) {
+      motor.val[i] = 100;
     }
-    keeper.deg = line.deg;
-    gyro.deg = gyro.read();
-    //駆動
+    motor.directDrive(motor.val);
 
-    kicker.kick(kicker.val);
+    // //処理
+    // LED.gyroShow();
 
-    if (keeper.deg != 1000) {
-      if (gyro.deg <= 30 || gyro.deg >= 330) {
-        //動きのスムーズ
-        // motor.drive(line.deg, 70, false);
-        for (motor.count = 0; motor.count < motor.time; motor.count++) {
-          // line.read();
-          gyro.deg = gyro.read();
-          motor.drive(keeper.deg, keeper.speed, false);
-          if (motor.count >= 3) {
-            digitalWrite(BALL_RESET, HIGH);
-          }
-        }
-      } else {
-        motor.drive(0, 0, true);
-      }
-    } else {
-      motor.drive(0, 0, true);
-    }
+    // ball.read(ball.val);
+    // // ball.readDistance();
+    // ball.calc();
+    // line.read();
+    // line.linetrace();
+    // position.reflection();
+
+    // if (ball.top < 3 || ball.top > 13) {
+    //   keeper.speed = 85;
+    // } else if (ball.top <= 5 || ball.top >= 11) {
+    //   keeper.speed = 95;
+    // } else {
+    //   keeper.speed = 95;
+    // }
+    // keeper.deg = line.deg;
+    // gyro.deg = gyro.read();
+    // //駆動
+
+    // kicker.kick(kicker.val);
+
+    // if (keeper.deg != 1000) {
+    //   if (gyro.deg <= 30 || gyro.deg >= 330) {
+    //     //動きのスムーズ
+    //     // motor.drive(line.deg, 70, false);
+    //     for (motor.count = 0; motor.count < motor.time; motor.count++) {
+    //       // line.read();
+    //       gyro.deg = gyro.read();
+    //       motor.drive(keeper.deg, keeper.speed, false);
+    //       if (motor.count >= 3) {
+    //         digitalWrite(BALL_RESET, HIGH);
+    //       }
+    //     }
+    //   } else {
+    //     motor.drive(0, 0, true);
+    //   }
+    // } else {
+    //   motor.drive(0, 0, true);
+    // }
     // motor.drive(NULL, NULL);
   }
 
-  while (Wire.available()) {
-    Wire.read();
-  }
+  // while (Wire.available()) {
+  //   Wire.read();
+  // }
 
   // while (Wire.available()) {
   //   gyro.read();
