@@ -2,7 +2,7 @@ import sensor, image, time, math
 
 threshold_index = 0 # 0 for red, 1 for green, 2 for blue
 #u may wish to tune them...
-colorcode1 = [(10, 90, 15, 60, 25, 45)]
+colorcode1 = [(15, 84, 13, 68, -5, 46)]
 colorcode2 = [(0,0,0,0,0,0)]
 x_keypoint=0
 y_keypoint=0
@@ -111,30 +111,31 @@ while(True):
         ##交点計算
         ##円の公式:x^2+y^2=radius^2
         ##線の公式:y=m*x+k
-        r=camera.radius
+        r=int(camera.radius)
         if xc!=0:
             m=yc/xc
-        m=1
         a=1+math.pow(m,2)
         b=0
         c=-(math.pow(r,2))
         d=math.pow(b,2)-4*a*c
 
-        r=50
-        #print(a)
-        #print(b)
-        #print(c)
-        #print(d)
+
         if d>0:
-            x1 =(-b+math.sqrt(math.pow(b,2)-4*a*c)/2*a)
+            if xc>0:
+                x1 =((-b+math.sqrt(math.pow(b,2)-4*a*c))/(2*a))
+            else :
+                x1 =((-b-math.sqrt(math.pow(b,2)-4*a*c))/(2*a))
+            #x1=(math.sqrt(80000)/(2*2))
             y1=m*x1
             x1=int(x1)
             y1=int(y1)
-            ##x2 =(-b-math.sqrt(math.pow(b,2)-4*a*c)/2a)
-            ##x1=(-b+math.sqrt(math.pow(b,2)-4*a*c)/2a)
-            #img.draw_circle(x1-160,y1-120,5,color=(255,255,255),thickness=1,fill=False)
             print(x1)
             print(y1)
+            ##x2 =(-b-math.sqrt(math.pow(b,2)-4*a*c)/2a)
+            ##x1=(-b+math.sqrt(math.pow(b,2)-4*a*c)/2a)
+            img.draw_circle(x1+160,120-y1,5,color=(255,255,255),thickness=1,fill=False)
+            #print(x1)
+            #print(y1)
 
         line_tuple=[160,120,xc,yc]
         if myball.distance<=100:
