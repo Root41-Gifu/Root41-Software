@@ -1,9 +1,14 @@
 #include <Arduino.h>
 
+#define BALL_RST PD0
+
 void setup() {
-  // put your setup code here, to run once:
+  pinMode(BALL_RST,OUTPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  digitalWrite(BALL_RST,HIGH);
+  delay(2000);
+  digitalWrite(BALL_RST,LOW);
+  delay(2000);
 }
