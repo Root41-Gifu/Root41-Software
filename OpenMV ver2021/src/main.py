@@ -99,11 +99,10 @@ def crossCheckY(r,x,y):
     c=-(math.pow(r,2))
     d=math.pow(b,2)-4*a*c
     if d>0:
-        if myball.xc>0:
+        if x>0:
             x1 =((-b+math.sqrt(math.pow(b,2)-4*a*c))/(2*a))
         else :
             x1 =((-b-math.sqrt(math.pow(b,2)-4*a*c))/(2*a))
-            #x1=(math.sqrt(80000)/(2*2))
         y1=m*x1
         x1=int(x1)
         y1=int(y1)
@@ -160,7 +159,7 @@ while(True):
             myball.x_distance=myball.xc
             myball.y_distance=abs(myball.yc)
 
-        myball.distance=math.sqrt(myball.x_distance**2+myball.y_distance**2)
+        myball.distance=int(math.sqrt(myball.x_distance**2+myball.y_distance**2))
 
         ##交点計算
         myball.xcc=crossCheckX(camera.radius,myball.xc,myball.yc)
@@ -169,18 +168,17 @@ while(True):
         myball.ylc=crossCheckY(camera.radius,myball.xl,myball.yl)
         myball.xrc=crossCheckX(camera.radius,myball.xr,myball.yr)
         myball.yrc=crossCheckY(camera.radius,myball.xr,myball.yr)
-        #print(myball.)
-        #img.draw_circle(myball.xcc+160,120-myball.ycc,5,color=(255,255,255),thickness=1,fill=False)
-        img.draw_circle(myball.xl+160,120-myball.yl,5,color=(255,255,255),thickness=1,fill=False)
-        img.draw_circle(myball.xr+160,120-myball.yr,5,color=(255,255,255),thickness=1,fill=False)
+
+        #映像系
+        img.draw_circle(myball.xcc+160,120-myball.ycc,5,color=(255,255,255),thickness=1,fill=False)
+        img.draw_circle(myball.xlc+160,120-myball.ylc,5,color=(255,255,255),thickness=1,fill=False)
+        img.draw_circle(myball.xrc+160,120-myball.yrc,5,color=(255,255,255),thickness=1,fill=False)
         line_tuple=[160,120,myball.xc,myball.yc]
         #範囲規制（ゆるくしたいなら200でOk）
         if myball.distance<=200:
             img.draw_line ((160,120,blob.cx(),blob.cy()),  color=(255,0,0))
-            #img.draw_line ((160,120,myball.xlc+160,120-myball.ylc), color=(255,255,0))
-            #img.draw_line ((160,120,myball.xrc+160,120-myball.yrc),  color=(255,255,0))
-            #img.draw_line ((160,120,myball.xl+160,120-myball.yl), color=(255,255,0))
-            #img.draw_line ((160,120,myball.xr+160,120-myball.yr), color=(255,255,0))
+            img.draw_line ((160,120,myball.xlc+160,120-myball.ylc), color=(255,255,0))
+            img.draw_line ((160,120,myball.xrc+160,120-myball.yrc),  color=(255,255,0))
             img.draw_edges(blob.min_corners(), color=(255,0,0))
         #img.draw_line(blob.major_axis_line(), color=(0,255,0))
         #img.draw_line(blob.minor_axis_line(), color=(0,0,255))
@@ -191,7 +189,7 @@ while(True):
 
 
 
-    print(degree_box)
+
     #img.draw_circle（160,120,80,thickness = 1,color=(255,255,255),thickness = 1,fill=false）
     #print(clock.fps())
     #print(goal_position)
