@@ -1,37 +1,32 @@
 import sensor, image, time, math
 
-threshold_index = 0 # 0 for red, 1 for green, 2 for blue
-#u may wish to tune them...
+threshold_index = 0
+
 colorcode1 = [(25, 90, 26, 89, 18, 50)]
 colorcode2 = [(0,0,0,0,0,0)]
-x_keypoint=0
-y_keypoint=0
 
-x_detectWidth=0
-y_detectHeight=0
+x_detectWidth=150
+y_detectHeight=150
 
 defo_roi=[0,0,320,240]
-
-degree=math.degrees(math.atan2(x_keypoint,y_keypoint))
 
 class CameraSet:
     radius=100
 
 
 class GoalDetection:
-    exist=0 ##存在
-    area=0 ##面積
-    area_box=0 #わからん
+    exist=0 #存在
+    area=0 #面積
+    area_total=0 #面積合計
     degree=0 #角度
-    front_distance=0
-    behind_distance=0
-    x_distance=0
+    x_distance=0 #中央までの距離
     y_distance=0
-    l_distance=0
-    r_distance=0
-    innerp=0
-    object_cos=0
-    distance=0
+    distance=0 #総合的な距離
+    l_distance=0 #左角までの距離
+    r_distance=0 #右角までの距離
+    innerp=0 #内積
+    object_cos=0 #内積からのcos値
+    object_degree=0 #対象の角度（広さ的な意味の）
 
     #座標
     xc=0 ##対象の中心
@@ -49,8 +44,6 @@ class GoalDetection:
     def __init__(self):
         exist=0
         area=0
-    def calc(self):
-        degree=0
 
 camera=CameraSet()
 myball = GoalDetection()
@@ -62,16 +55,6 @@ sensor.skip_frames(time = 2000)
 sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
 clock = time.clock()
-
-# Only blobs that with more pixels than "pixel_threshold" and more area than "area_threshold" are
-# returned by "find_blobs" below. Change "pixels_threshold" and "area_threshold" if you change the
-# camera resolution. "merge=True" merges all overlapping blobs in the image.
-
-#def GoalDelection::__init__():
-    #exist=0
-    #area=0
-
-#def GoalDelection::existCheck():
 
 def crossCheckX(r,x,y):
     if x!=0:
@@ -116,9 +99,10 @@ def crossCheckY(r,x,y):
 while(True):
     clock.tick()
     img = sensor.snapshot()
+
+    #リセット
     myball.exist=0
     myball.area=0
-    deg_count=0
     degree=0
     degree_box=0
 
@@ -134,7 +118,8 @@ while(True):
         myball.xr=(blob.x()+blob.w())-160
         myball.yr=120-(blob.y()+blob.h())
 
-        myball.area_box=blob.w()*blob.h()
+        myball.area=blob.w()*blob.h()
+        myball.area_total+=myball.area
 
         #範囲外排除
         if  myball.xc<=x_detectWidth:
@@ -142,10 +127,7 @@ while(True):
                 myball.exist=1
 
         #角度（横軸は-160~160、縦軸は-120~120）
-        myball.degree_box=math.degrees(math.atan2(myball.xc,myball.yc))
-        #if myball.area_box>myball.area:
-            #myball.area=myball.area_box
-            #myball.degree=myball.degree_box
+        myball.degree=math.degrees(math.atan2(myball.xc,myball.yc))
 
         #物体の距離計算
         if myball.degree<=90:
@@ -178,32 +160,21 @@ while(True):
         img.draw_circle(myball.xlc+160,120-myball.ylc,5,color=(255,255,255),thickness=1,fill=False)
         img.draw_circle(myball.xrc+160,120-myball.yrc,5,color=(255,255,255),thickness=1,fill=False)
         line_tuple=[160,120,myball.xc,myball.yc]
+
         #範囲規制（ゆるくしたいなら200でOk）
         if myball.distance<=200:
             img.draw_line ((160,120,blob.cx(),blob.cy()),  color=(255,0,0))
             img.draw_line ((160,120,myball.xlc+160,120-myball.ylc), color=(255,255,0))
             img.draw_line ((160,120,myball.xrc+160,120-myball.yrc),  color=(255,255,0))
             img.draw_edges(blob.min_corners(), color=(255,0,0))
-        #img.draw_line(blob.major_axis_line(), color=(0,255,0))
-        #img.draw_line(blob.minor_axis_line(), color=(0,0,255))
-
-        # These values are stable all the time.
-        # Note - the blob rotation is unique to 0-180 only.
 
         #角度算出
         myball.l_distance=math.sqrt(math.pow(myball.xlc,2)+math.pow(myball.ylc,2))
         myball.r_distance=math.sqrt(math.pow(myball.xrc,2)+math.pow(myball.yrc,2))
         myball.innerp=myball.xlc*myball.xrc+myball.ylc*myball.yrc
         myball.object_cos=myball.innerp/(myball.r_distance*myball.l_distance)
-        print(math.degrees(math.acos(myball.object_cos)))
+        myball.object_degree=int(math.degrees(math.acos(myball.object_cos)))
+
         img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
-
-
-    #img.draw_circle（160,120,80,thickness = 1,color=(255,255,255),thickness = 1,fill=false）
-    #print(clock.fps())
-    #print(goal_position)
-    #img.draw_rectangle(blob.rect())
-    #img.draw_cross(blob.cx(), blob.cy())
-    #print(myball.degree)
-    #print(myball.exist)
-    #print(myball.distance)
+    print(myball.object_degree)
+    print(myball.exist)
