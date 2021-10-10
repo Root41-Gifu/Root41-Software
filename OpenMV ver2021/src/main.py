@@ -27,6 +27,10 @@ class GoalDetection:
     behind_distance=0
     x_distance=0
     y_distance=0
+    l_distance=0
+    r_distance=0
+    innerp=0
+    object_cos=0
     distance=0
 
     #座標
@@ -119,7 +123,7 @@ while(True):
     degree_box=0
 
     img.draw_circle(160,120,camera.radius,color=(255,255,255),thickness=1,fill=False)
-    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=20, y_stride=20,pixels_threshold=200, area_threshold=200, merge=True):
+    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=20, area_threshold=5, merge=True):
         myball.distance=0
         myball.exist=1
 
@@ -185,9 +189,14 @@ while(True):
 
         # These values are stable all the time.
         # Note - the blob rotation is unique to 0-180 only.
+
+        #角度算出
+        myball.l_distance=math.sqrt(math.pow(myball.xlc,2)+math.pow(myball.ylc,2))
+        myball.r_distance=math.sqrt(math.pow(myball.xrc,2)+math.pow(myball.yrc,2))
+        myball.innerp=myball.xlc*myball.xrc+myball.ylc*myball.yrc
+        myball.object_cos=myball.innerp/(myball.r_distance*myball.l_distance)
+        print(math.degrees(math.acos(myball.object_cos)))
         img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
-
-
 
 
     #img.draw_circle（160,120,80,thickness = 1,color=(255,255,255),thickness = 1,fill=false）
