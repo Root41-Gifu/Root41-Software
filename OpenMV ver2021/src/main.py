@@ -2,7 +2,7 @@ import sensor, image, time, math
 
 threshold_index = 0
 
-colorcode1 = [(25, 90, 26, 89, 18, 50)]
+colorcode1 = [(23, 49, -7, 13, -33, -11)]
 colorcode2 = [(0,0,0,0,0,0)]
 
 x_detectWidth=150
@@ -15,6 +15,7 @@ class CameraSet:
 
 
 class GoalDetection:
+    #ゴールの検知、角度、面積の算出をするクラス
     exist=0 #存在
     area=0 #面積
     area_total=0 #面積合計
@@ -46,8 +47,14 @@ class GoalDetection:
         exist=0
         area=0
 
+class GoalCalc:
+    #GoalDetectionでの検知をもとに処理を主にするクラス
+    degree=0
+
+#インスタンス生成
 camera=CameraSet()
-myball = GoalDetection()
+opponentsGoal = GoalDetection()
+
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
@@ -102,89 +109,90 @@ while(True):
     img = sensor.snapshot()
 
     #リセット
-    myball.exist=0
-    myball.area=0
-    myball.degree=0
-    myball.area_total=0
-    myball.object_degree_total=0
+    opponentsGoal.exist=0
+    opponentsGoal.area=0
+    opponentsGoal.degree=0
+    opponentsGoal.area_total=0
+    opponentsGoal.object_degree_total=0
 
     img.draw_circle(160,120,camera.radius,color=(255,255,255),thickness=1,fill=False)
-    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=20, area_threshold=5, merge=True):
-        myball.distance=0
-        myball.exist=1
+    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=20, area_threshold=20, merge=True):
+        opponentsGoal.distance=0
+        opponentsGoal.exist=1
 
-        myball.xc=blob.cx()-160
-        myball.yc=120-blob.cy()
-        myball.xl=blob.x()-160
-        myball.yl=120-blob.y()
-        myball.xr=(blob.x()+blob.w())-160
-        myball.yr=120-(blob.y()+blob.h())
+        opponentsGoal.xc=blob.cx()-160
+        opponentsGoal.yc=120-blob.cy()
+        opponentsGoal.xl=blob.x()-160
+        opponentsGoal.yl=120-blob.y()
+        opponentsGoal.xr=(blob.x()+blob.w())-160
+        opponentsGoal.yr=120-(blob.y()+blob.h())
 
-        myball.area=blob.w()*blob.h()
-        myball.area_total+=myball.area
+        opponentsGoal.area=blob.w()*blob.h()
+        opponentsGoal.area_total+=opponentsGoal.area
 
         #範囲外排除
-        if  myball.xc<=x_detectWidth:
-            if myball.yc<=y_detectHeight:
-                myball.exist=1
+        if  opponentsGoal.xc<=x_detectWidth:
+            if opponentsGoal.yc<=y_detectHeight:
+                opponentsGoal.exist=1
 
         #角度（横軸は-160~160、縦軸は-120~120）
-        myball.degree=math.degrees(math.atan2(myball.xc,myball.yc))
+        opponentsGoal.degree=math.degrees(math.atan2(opponentsGoal.xc,opponentsGoal.yc))
 
         #物体の距離計算
-        if myball.degree<=90:
-            if myball.degree>=-90:
-                if myball.degree>0:
-                    myball.x_distance=myball.xc
-                    myball.y_distance=myball.yc
+        if opponentsGoal.degree<=90:
+            if opponentsGoal.degree>=-90:
+                if opponentsGoal.degree>0:
+                    opponentsGoal.x_distance=opponentsGoal.xc
+                    opponentsGoal.y_distance=opponentsGoal.yc
                 else:
-                    myball.x_distance=abs(myball.xc)
-                    myball.y_distance=myball.yc
+                    opponentsGoal.x_distance=abs(opponentsGoal.xc)
+                    opponentsGoal.y_distance=opponentsGoal.yc
             else:
-                myball.x_distance=abs(myball.xc)
-                myball.y_distance=abs(myball.yc)
+                opponentsGoal.x_distance=abs(opponentsGoal.xc)
+                opponentsGoal.y_distance=abs(opponentsGoal.yc)
         else:
-            myball.x_distance=myball.xc
-            myball.y_distance=abs(myball.yc)
+            opponentsGoal.x_distance=opponentsGoal.xc
+            opponentsGoal.y_distance=abs(opponentsGoal.yc)
 
-        myball.distance=int(math.sqrt(myball.x_distance**2+myball.y_distance**2))
+        opponentsGoal.distance=int(math.sqrt(opponentsGoal.x_distance**2+opponentsGoal.y_distance**2))
 
         ##交点計算
-        myball.xcc=crossCheckX(camera.radius,myball.xc,myball.yc)
-        myball.ycc=crossCheckY(camera.radius,myball.xc,myball.yc)
-        myball.xlc=crossCheckX(camera.radius,myball.xl,myball.yl)
-        myball.ylc=crossCheckY(camera.radius,myball.xl,myball.yl)
-        myball.xrc=crossCheckX(camera.radius,myball.xr,myball.yr)
-        myball.yrc=crossCheckY(camera.radius,myball.xr,myball.yr)
+        opponentsGoal.xcc=crossCheckX(camera.radius,opponentsGoal.xc,opponentsGoal.yc)
+        opponentsGoal.ycc=crossCheckY(camera.radius,opponentsGoal.xc,opponentsGoal.yc)
+        opponentsGoal.xlc=crossCheckX(camera.radius,opponentsGoal.xl,opponentsGoal.yl)
+        opponentsGoal.ylc=crossCheckY(camera.radius,opponentsGoal.xl,opponentsGoal.yl)
+        opponentsGoal.xrc=crossCheckX(camera.radius,opponentsGoal.xr,opponentsGoal.yr)
+        opponentsGoal.yrc=crossCheckY(camera.radius,opponentsGoal.xr,opponentsGoal.yr)
 
         #角度算出
-        myball.l_distance=math.sqrt(math.pow(myball.xlc,2)+math.pow(myball.ylc,2))
-        myball.r_distance=math.sqrt(math.pow(myball.xrc,2)+math.pow(myball.yrc,2))
-        myball.innerp=myball.xlc*myball.xrc+myball.ylc*myball.yrc
-        myball.object_cos=myball.innerp/(myball.r_distance*myball.l_distance)
-        if abs(myball.object_cos)<=1:
-            myball.object_degree=int(math.degrees(math.acos(myball.object_cos)))
+        opponentsGoal.l_distance=math.sqrt(math.pow(opponentsGoal.xlc,2)+math.pow(opponentsGoal.ylc,2))
+        opponentsGoal.r_distance=math.sqrt(math.pow(opponentsGoal.xrc,2)+math.pow(opponentsGoal.yrc,2))
+        opponentsGoal.innerp=opponentsGoal.xlc*opponentsGoal.xrc+opponentsGoal.ylc*opponentsGoal.yrc
+        opponentsGoal.object_cos=opponentsGoal.innerp/(opponentsGoal.r_distance*opponentsGoal.l_distance)
+        if abs(opponentsGoal.object_cos)<=1:
+            opponentsGoal.object_degree=int(math.degrees(math.acos(opponentsGoal.object_cos)))
         else:
-            myball.object_degree=0
-        myball.object_degree_total+=myball.object_degree
+            opponentsGoal.object_degree=0
+        opponentsGoal.object_degree_total+=opponentsGoal.object_degree
 
         #映像系
-        img.draw_circle(myball.xcc+160,120-myball.ycc,5,color=(255,255,255),thickness=1,fill=False)
-        img.draw_circle(myball.xlc+160,120-myball.ylc,5,color=(255,255,255),thickness=1,fill=False)
-        img.draw_circle(myball.xrc+160,120-myball.yrc,5,color=(255,255,255),thickness=1,fill=False)
+        img.draw_circle(opponentsGoal.xcc+160,120-opponentsGoal.ycc,5,color=(255,255,255),thickness=1,fill=False)
+        img.draw_circle(opponentsGoal.xlc+160,120-opponentsGoal.ylc,5,color=(255,255,255),thickness=1,fill=False)
+        img.draw_circle(opponentsGoal.xrc+160,120-opponentsGoal.yrc,5,color=(255,255,255),thickness=1,fill=False)
+
+        #数値表示
         img.draw_string(150, 20, "gross area :", color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
-        img.draw_string(250, 20, str(myball.area_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
+        img.draw_string(250, 20, str(opponentsGoal.area_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
         img.draw_string(130, 35, "gross degree :", color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
-        img.draw_string(250, 35, str(myball.object_degree_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
-        line_tuple=[160,120,myball.xc,myball.yc]
+        img.draw_string(250, 35, str(opponentsGoal.object_degree_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
+        line_tuple=[160,120,opponentsGoal.xc,opponentsGoal.yc]
 
         #範囲規制（ゆるくしたいなら200でOk）
-        if myball.distance<=200:
+        if opponentsGoal.distance<=200:
             img.draw_line ((160,120,blob.cx(),blob.cy()),  color=(255,0,0))
-            img.draw_line ((160,120,myball.xlc+160,120-myball.ylc), color=(255,255,0))
-            img.draw_line ((160,120,myball.xrc+160,120-myball.yrc),  color=(255,255,0))
+            img.draw_line ((160,120,opponentsGoal.xlc+160,120-opponentsGoal.ylc), color=(255,255,0))
+            img.draw_line ((160,120,opponentsGoal.xrc+160,120-opponentsGoal.yrc),  color=(255,255,0))
             img.draw_edges(blob.min_corners(), color=(255,0,0))
 
         img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
-    print(myball.object_degree_total)
-    print(myball.exist)
+    print(opponentsGoal.distance)
