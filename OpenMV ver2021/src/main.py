@@ -27,6 +27,7 @@ class GoalDetection:
     innerp=0 #内積
     object_cos=0 #内積からのcos値
     object_degree=0 #対象の角度（広さ的な意味の）
+    object_degree_total=0 #角度の合計
 
     #座標
     xc=0 ##対象の中心
@@ -103,8 +104,9 @@ while(True):
     #リセット
     myball.exist=0
     myball.area=0
-    degree=0
-    degree_box=0
+    myball.degree=0
+    myball.area_total=0
+    myball.object_degree_total=0
 
     img.draw_circle(160,120,camera.radius,color=(255,255,255),thickness=1,fill=False)
     for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=20, area_threshold=5, merge=True):
@@ -155,10 +157,25 @@ while(True):
         myball.xrc=crossCheckX(camera.radius,myball.xr,myball.yr)
         myball.yrc=crossCheckY(camera.radius,myball.xr,myball.yr)
 
+        #角度算出
+        myball.l_distance=math.sqrt(math.pow(myball.xlc,2)+math.pow(myball.ylc,2))
+        myball.r_distance=math.sqrt(math.pow(myball.xrc,2)+math.pow(myball.yrc,2))
+        myball.innerp=myball.xlc*myball.xrc+myball.ylc*myball.yrc
+        myball.object_cos=myball.innerp/(myball.r_distance*myball.l_distance)
+        if abs(myball.object_cos)<=1:
+            myball.object_degree=int(math.degrees(math.acos(myball.object_cos)))
+        else:
+            myball.object_degree=0
+        myball.object_degree_total+=myball.object_degree
+
         #映像系
         img.draw_circle(myball.xcc+160,120-myball.ycc,5,color=(255,255,255),thickness=1,fill=False)
         img.draw_circle(myball.xlc+160,120-myball.ylc,5,color=(255,255,255),thickness=1,fill=False)
         img.draw_circle(myball.xrc+160,120-myball.yrc,5,color=(255,255,255),thickness=1,fill=False)
+        img.draw_string(150, 20, "gross area :", color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
+        img.draw_string(250, 20, str(myball.area_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
+        img.draw_string(130, 35, "gross degree :", color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
+        img.draw_string(250, 35, str(myball.object_degree_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
         line_tuple=[160,120,myball.xc,myball.yc]
 
         #範囲規制（ゆるくしたいなら200でOk）
@@ -168,13 +185,6 @@ while(True):
             img.draw_line ((160,120,myball.xrc+160,120-myball.yrc),  color=(255,255,0))
             img.draw_edges(blob.min_corners(), color=(255,0,0))
 
-        #角度算出
-        myball.l_distance=math.sqrt(math.pow(myball.xlc,2)+math.pow(myball.ylc,2))
-        myball.r_distance=math.sqrt(math.pow(myball.xrc,2)+math.pow(myball.yrc,2))
-        myball.innerp=myball.xlc*myball.xrc+myball.ylc*myball.yrc
-        myball.object_cos=myball.innerp/(myball.r_distance*myball.l_distance)
-        myball.object_degree=int(math.degrees(math.acos(myball.object_cos)))
-
         img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
-    print(myball.object_degree)
+    print(myball.object_degree_total)
     print(myball.exist)
