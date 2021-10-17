@@ -2,14 +2,13 @@ import sensor, image, time, math
 
 threshold_index = 0
 
-colorcode1 = [(16, 75, 29, 54, -3, 41)]
+colorcode1 = [(43, 62, 35, 58, -19, 3)]
 colorcode2 = [(0,0,0,0,0,0)]
 
 x_detectWidth=150
 y_detectHeight=150
 
 defo_roi=[0,0,320,240]
-start=time.time()
 
 class CameraSet:
     radius=100
