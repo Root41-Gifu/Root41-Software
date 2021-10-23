@@ -1,4 +1,18 @@
-import sensor, image, time, math
+import pyb, ustruct, sensor, image, time, math
+
+#SPIもろもろ
+text = "Hello World!\n"
+data = ustruct.pack("<bi%ds" % len(text), 85, len(text), text) # 85 is a sync char.
+spi = pyb.SPI(2, pyb.SPI.SLAVE, polarity=0, phase=0)
+
+def nss_callback(line):
+    global spi, data
+    try:
+        spi.send(data, timeout=1000)
+    except OSError as err:
+        pass
+
+pyb.ExtInt(pyb.Pin("P3"), pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, nss_callback)
 
 threshold_index = 0
 

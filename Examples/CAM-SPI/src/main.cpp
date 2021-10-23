@@ -23,6 +23,7 @@ void setup() {
 void loop() {
   int len = 0;
   char buff[CHAR_BUF] = {0};
+  char tame[]="ARUNGO";
   digitalWrite(SS_PIN_CAM, LOW);
   delay(1);
 
@@ -36,6 +37,10 @@ void loop() {
   }
 
   digitalWrite(SS_PIN_CAM, HIGH);
-  Serial.print(buff);
+  if(strcmp(buff,tame)==0){
+    Serial.println("ある");
+  }
+  int N = int(buff[0]-'0');
+  Serial.println(N);
   delay(1);
 }
