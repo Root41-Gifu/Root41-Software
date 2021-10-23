@@ -2,6 +2,7 @@
 #include <SPI.h>
 #define SS_PIN_CAM PB4
 #define SS_PIN_BALL PB5
+#define BALL_RESET PB0
 #define BAUD_RATE 9600
 #define CHAR_BUF 128
 
@@ -24,23 +25,31 @@ void loop() {
   int len = 0;
   char buff[CHAR_BUF] = {0};
   char tame[]="ARUNGO";
-  digitalWrite(SS_PIN_CAM, LOW);
+  // digitalWrite(SS_PIN_CAM, LOW);
+  // delay(1);
+
+  // if (SPI.transfer(1) == 85) {  // saw sync char?
+  //   SPI.transfer(&len, 4);      // get length
+  //   if (len) {
+  //     SPI.transfer(&buff, min(len, CHAR_BUF));
+  //     len -= min(len, CHAR_BUF);
+  //   }
+  //   while (len--) SPI.transfer(0);
+  // }
+
+  // digitalWrite(SS_PIN_CAM, HIGH);
+  // if(strcmp(buff,tame)==0){
+  //   Serial.println("ある");
+  // }
+  // int N = int(buff[0]-'0');
+  digitalWrite(SS_PIN_BALL,LOW);
+  digitalWrite(BALL_RESET,LOW);
   delay(1);
-
-  if (SPI.transfer(1) == 85) {  // saw sync char?
-    SPI.transfer(&len, 4);      // get length
-    if (len) {
-      SPI.transfer(&buff, min(len, CHAR_BUF));
-      len -= min(len, CHAR_BUF);
-    }
-    while (len--) SPI.transfer(0);
-  }
-
-  digitalWrite(SS_PIN_CAM, HIGH);
-  if(strcmp(buff,tame)==0){
-    Serial.println("ある");
-  }
-  int N = int(buff[0]-'0');
-  Serial.println(N);
+  byte value=0;
+  value=SPI.transfer(1);
+  digitalWrite(SS_PIN_BALL,HIGH);
+  digitalWrite(BALL_RESET,HIGH);
+  Serial.println(value);
+  // Serial.println(N);
   delay(1);
 }
