@@ -42,14 +42,18 @@ void loop() {
   //   Serial.println("ある");
   // }
   // int N = int(buff[0]-'0');
+  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(SS_PIN_CAM,HIGH);
   digitalWrite(SS_PIN_BALL,LOW);
   digitalWrite(BALL_RESET,LOW);
   delay(1);
-  byte value=0;
-  value=SPI.transfer(1);
+  byte value = 1;
+  byte bufff;
+  bufff=SPI.transfer(value);
+  SPI.endTransaction();
   digitalWrite(SS_PIN_BALL,HIGH);
   digitalWrite(BALL_RESET,HIGH);
-  Serial.println(value);
+  Serial.println(bufff);
   // Serial.println(N);
   delay(1);
 }
