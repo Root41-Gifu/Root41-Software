@@ -1,29 +1,29 @@
 import pyb, ustruct, sensor, image, time, math
 
 #SPIもろもろ
-text = "Hello World!\n"
+text = "SPI"
 data = ustruct.pack("<bi%ds" % len(text), 85, len(text), text) # 85 is a sync char.
-spi = pyb.SPI(2, pyb.SPI.SLAVE, polarity=0, phase=0)
+# data=0
+#spi = pyb.SPI(2, pyb.SPI.SLAVE, polarity=0, phase=0)
 
-def nss_callback(line):
-    global spi, data
-    try:
-        spi.send(data, timeout=1000)
-    except OSError as err:
-        pass
+#def nss_callback(line):
+    #global spi, data
+    #try:
+        #spi.send(data, timeout=1000)
+    #except OSError as err:
+        #pass
 
-pyb.ExtInt(pyb.Pin("P3"), pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, nss_callback)
+#pyb.ExtInt(pyb.Pin("P3"), pyb.ExtInt.IRQ_FALLING, pyb.Pin.PULL_UP, nss_callback)
 
 threshold_index = 0
 
-colorcode1 = [(16, 75, 29, 54, -3, 41)]
+colorcode1 = [(11, 40, 32, 58, 11, 51)]
 colorcode2 = [(0,0,0,0,0,0)]
 
 x_detectWidth=150
 y_detectHeight=150
 
 defo_roi=[0,0,320,240]
-start=time.time()
 
 class CameraSet:
     radius=100
@@ -224,3 +224,6 @@ while(True):
     img.draw_string(250, 35, str(opponentsGoal.object_degree_total), color = (255, 255, 255), scale = 2, mono_space = False,char_rotation = 0, char_hmirror = False, char_vflip = False,string_rotation = 0, string_hmirror = False, string_vflip = False)
     line_tuple=[160,120,opponentsGoal.xc,opponentsGoal.yc]
     print(opponentsGoal.distance)
+    text=str(opponentsGoal.amount)
+    data = ustruct.pack("<bi%ds" % len(text), 85, len(text), text) # 85 is a sync char.
+
