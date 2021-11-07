@@ -1,4 +1,9 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
+
+Adafruit_SSD1306 display(-1);
 
 int IN[3] = {3, 5, 7};
 int SD[3] = {9, 6, 8};
@@ -47,88 +52,119 @@ volatile float gain = 0.114;
 
 class _UI{
   public:
-    void refrection(int);
-    void check(void);
+    void refrection(void);
+    void check(int);
 
     int mode;
     bool active;
-
-  private:
     bool switchingFlag[4];
     bool touchFlag[4];
     bool longpressFlag[4];
     bool touch[4];
     int counter[4];
     unsigned long longpressTimer[4];
-};
 
-void measureAngularVelocity(void) {
-  deg = analogRead(A0);
+  private:
+    
+}UI;
 
-  if (interval == 0) {
-    velocity = abs(oldDeg - deg);
-    if (velocity >= 512) {
-      velocity = 1023 - velocity;
-    }
-    oldDeg = deg;
-  }
+// void measureAngularVelocity(void) {
+//   deg = analogRead(A0);
 
-  voltage = deg + offset + int(velocity * gain);  // + interval * velocityUnit;
+//   if (interval == 0) {
+//     velocity = abs(oldDeg - deg);
+//     if (velocity >= 512) {
+//       velocity = 1023 - velocity;
+//     }
+//     oldDeg = deg;
+//   }
 
-  interval++;
-  interval %= 32;
-}
+//   voltage = deg + offset + int(velocity * gain);  // + interval * velocityUnit;
+
+//   interval++;
+//   interval %= 32;
+// }
 
 void setup() {
-  initialize();
-  calibration();
 
-  for (int i = 0; i < 10; i++) {
-    analogWrite(10, 255);
-    delay(50);
-    analogWrite(10, 0);
-    delay(50);
-  }
-  delay(50);
+  pinMode(PA8,INPUT);
+  // initialize();
+  // calibration();
 
-  analogWrite(10, 70);
-  delay(1000);
-  digitalWrite(10, LOW);
-  delay(1000);
+  // for (int i = 0; i < 10; i++) {
+  //   analogWrite(10, 255);
+  //   delay(50);
+  //   analogWrite(10, 0);
+  //   delay(50);
+  // }
+  // delay(50);
 
-  digitalWrite(13, HIGH);
+  // analogWrite(10, 70);
+  // delay(1000);
+  // digitalWrite(10, LOW);
+  // delay(1000);
 
-  offset += 24;
+  // digitalWrite(13, HIGH);
 
-  for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
-    digitalWrite(SD[i], HIGH);
-    analogWrite(IN[i], 1);
-  }
-  FlexiTimer2::set(1.0, 1.0 / (45 * (10 ^ 3)), measureAngularVelocity);
-  FlexiTimer2::start();
+  // offset += 24;
 
-  TIMSK0 = 0;
+  // for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
+  //   digitalWrite(SD[i], HIGH);
+  //   analogWrite(IN[i], 1);
+  // }
+  // FlexiTimer2::set(1.0, 1.0 / (45 * (10 ^ 3)), measureAngularVelocity);
+  // FlexiTimer2::start();
+
+  // TIMSK0 = 0;
+
+  display.begin(SSD1306_SWITCHCAPVCC,0x3C);
 }
 
 void loop() {
-  while (1) {
-    for (int i = 0; i < 100; i++) {
-      OCR3C = pwm[voltage % 1024] * power;
-      OCR3A = pwm[(voltage + 98) % 1024] * power;
-      OCR4B = pwm[(voltage + 49) % 1024] * power;
-    }
+  // while (1) {
+  //   for (int i = 0; i < 100; i++) {
+  //     OCR3C = pwm[voltage % 1024] * power;
+  //     OCR3A = pwm[(voltage + 98) % 1024] * power;
+  //     OCR4B = pwm[(voltage + 49) % 1024] * power;
+  //   }
 
-    signed char c;
-    if ((c = Serial.read()) != -1) {
-      power += 0.1;
-      if (power > 1.0) {
-        power = 0.1;
-      }
-    }
-  }
+  //   signed char c;
+  //   if ((c = Serial.read()) != -1) {
+  //     power += 0.1;
+  //     if (power > 1.0) {
+  //       power = 0.1;
+  //     }
+  //   }
+  // }
 
+  UI.touch[0]=!digitalRead(PA8);
   for(int i=0; i<=3; i++){
     UI.check(i);
   }
   UI.refrection();
+
+  // 画面表示をクリア
+  display.clearDisplay();
+
+  if(UI.active){
+    display.fillRect(10,8,30,16,WHITE);
+  }else{
+    display.fillTriangle(10, 8, 10, 24, 30, 16, WHITE);
+  }
+
+  display.setTextSize(2);
+  // テキスト色を設定
+  display.setTextColor(WHITE);
+  // テキストの開始位置を設定
+  display.setCursor(50, 10);
+
+  // 1行目に"Hello"を表示
+  if(UI.active){
+    display.println("run");
+  }else{
+    display.println("stop");
+  }
+  // 描画バッファの内容を画面に表示
+  display.display();
+
 }

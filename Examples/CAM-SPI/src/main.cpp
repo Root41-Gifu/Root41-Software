@@ -19,12 +19,14 @@ void setup() {
   SPI.setDataMode(SPI_MODE0);
   delay(1000);  // Give the OpenMV Cam time to bootup.
   Serial.println("start");
+  pinMode(PA8,INPUT);
 }
 
 void loop() {
   int len = 0;
   char buff[CHAR_BUF] = {0};
   char tame[]="ARUNGO";
+  Serial.println(digitalRead(PA8));
   // digitalWrite(SS_PIN_CAM, LOW);
   // delay(1);
 

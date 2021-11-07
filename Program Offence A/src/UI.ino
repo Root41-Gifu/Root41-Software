@@ -1,17 +1,12 @@
 void _UI::check(int num){
-    if(!touchflag[num]){
-        if(counter[num]<30){
-            if(touch[num]){
-                counter[num]++;
-            }else{
-                counter[num]=0;
-            }
-        }else if(counter[num]==30){
+    if(!touchFlag[num]){
+        if(touch[num]){
             switchingFlag[num]=true;
             touchFlag[num]=true;
         }
     }else{
         if(!touch[num]){
+            counter[num]=0;
             touchFlag[num]=false;
             longpressFlag[num]=false;
         }
@@ -23,7 +18,8 @@ void _UI::check(int num){
 
 void _UI::refrection(void){
     if(switchingFlag[0]){
-        active=0;
+        // active=0;
+        active=!active;
     }
     if(switchingFlag[1]){
         mode--;
@@ -33,5 +29,8 @@ void _UI::refrection(void){
     }
     if(switchingFlag[3]){
         active=1;
+    }
+    for(int i=0; i<=3; i++){
+        switchingFlag[i]=false;
     }
 }
