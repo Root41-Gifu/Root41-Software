@@ -146,23 +146,30 @@ void loop() {
   // 画面表示をクリア
   display.clearDisplay();
 
-  if(UI.active){
-    display.fillRect(10,8,30,16,WHITE);
-  }else{
-    display.fillTriangle(10, 8, 10, 24, 30, 16, WHITE);
-  }
+  // if(UI.active){
+  //   display.fillRect(10,8,30,16,WHITE);
+  // }else{
+  //   display.fillTriangle(10, 8, 10, 24, 30, 16, WHITE);
+  // }
 
   display.setTextSize(2);
   // テキスト色を設定
   display.setTextColor(WHITE);
   // テキストの開始位置を設定
-  display.setCursor(50, 10);
+  display.setCursor(0, 0);
 
   // 1行目に"Hello"を表示
   if(UI.active){
-    display.println("run");
+    display.println("running");
   }else{
-    display.println("stop");
+    display.println("stopping");
+  }
+  display.drawLine(0,15,127,15,WHITE);
+
+  display.setCursor(0,18);
+  display.setTextSize(1);
+  if(UI.mode==0){
+    display.println("Starting...");
   }
   // 描画バッファの内容を画面に表示
   display.display();
