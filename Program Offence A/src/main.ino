@@ -1,11 +1,19 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
 
 #define PI 3.14159265359
+#define LED_COUNT 16
+#define LED_PIN_T PB6
+#define LED_PIN_F PB7
+#define LED_PIN_L PA15
+#define LED_PIN_B PC1
+#define LED_PIN_R PB1
 
 Adafruit_SSD1306 display(-1);
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN_T, NEO_GRB + NEO_KHZ800);
 
 int IN[3] = {3, 5, 7};
 int SD[3] = {9, 6, 8};
@@ -99,11 +107,13 @@ void setup() {
 
   pinMode(PA8,INPUT);
 
+  strip.begin();
+  strip.show();
+  strip.setBrightness(30);
   display.begin(SSD1306_SWITCHCAPVCC,0x3C);
 }
 
 void loop() {
-  emergency=true;
   UI.touch[0]=!digitalRead(PA8);
   for(int i=0; i<=3; i++){
     UI.check(i);

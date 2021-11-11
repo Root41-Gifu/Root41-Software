@@ -26,3 +26,7 @@ void _Ball::calcDistance(void){
         }
     }
 }
+
+void _Ball::calcDirection(void){
+    
+}

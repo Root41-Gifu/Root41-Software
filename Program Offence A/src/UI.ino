@@ -42,7 +42,8 @@ void _UI::refrection(void){
     }else{
         if(switchingFlag[0]){
             select=false;
-            active=!active;
+            active=!active;//test用
+            emergency=!emergency;
         }
         if(switchingFlag[1]){
             mode--;
@@ -119,6 +120,14 @@ void _UI::Errordisplay(int code){
             display.setCursor(0,17);
             display.print("CODE:");
             display.print(code);
+            for (int i = 0; i < 16; i++) {
+                if((millis()/300)%2>0){
+                    strip.setPixelColor(i, 255, 0, 0);
+                }else{
+                    strip.setPixelColor(i,255,255,0);
+                }
+                strip.show();
+            }
         }
         display.drawLine(0,15,127,15,WHITE);
     }
