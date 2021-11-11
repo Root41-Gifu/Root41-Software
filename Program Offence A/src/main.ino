@@ -3,6 +3,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
 
+#define PI 3.14159265359
+
 Adafruit_SSD1306 display(-1);
 
 int IN[3] = {3, 5, 7};
@@ -50,13 +52,20 @@ volatile int voltage;
 
 volatile float gain = 0.114;
 
+float Battery=11.1;
+bool emergency;
+
 class _UI{
   public:
     void refrection(void);
     void check(int);
+    void LCDdisplay(void);
+    void Errordisplay(int);
 
     int mode;
+    int submode;
     bool active;
+    bool select;
     bool switchingFlag[4];
     bool touchFlag[4];
     bool longpressFlag[4];
@@ -68,110 +77,41 @@ class _UI{
     
 }UI;
 
+class _Ball{
+  public:
+    _Ball();
+    void read();
+    void calcDistance();
+    void calcDirection();
+    void calc();
+    int val[16];
+    int dist[16];
+    float vectorX[16];
+    float vectorY[16];
+
+  private:
+}ball;
+
 // void measureAngularVelocity(void) {
 //   deg = analogRead(A0);
-
-//   if (interval == 0) {
-//     velocity = abs(oldDeg - deg);
-//     if (velocity >= 512) {
-//       velocity = 1023 - velocity;
-//     }
-//     oldDeg = deg;
-//   }
-
-//   voltage = deg + offset + int(velocity * gain);  // + interval * velocityUnit;
-
-//   interval++;
-//   interval %= 32;
-// }
 
 void setup() {
 
   pinMode(PA8,INPUT);
-  // initialize();
-  // calibration();
-
-  // for (int i = 0; i < 10; i++) {
-  //   analogWrite(10, 255);
-  //   delay(50);
-  //   analogWrite(10, 0);
-  //   delay(50);
-  // }
-  // delay(50);
-
-  // analogWrite(10, 70);
-  // delay(1000);
-  // digitalWrite(10, LOW);
-  // delay(1000);
-
-  // digitalWrite(13, HIGH);
-
-  // offset += 24;
-
-  // for (int i = 0; i < 3; i++) {  // SD端子をHIGHにする（通電させる）
-  //   digitalWrite(SD[i], HIGH);
-  //   analogWrite(IN[i], 1);
-  // }
-  // FlexiTimer2::set(1.0, 1.0 / (45 * (10 ^ 3)), measureAngularVelocity);
-  // FlexiTimer2::start();
-
-  // TIMSK0 = 0;
 
   display.begin(SSD1306_SWITCHCAPVCC,0x3C);
 }
 
 void loop() {
-  // while (1) {
-  //   for (int i = 0; i < 100; i++) {
-  //     OCR3C = pwm[voltage % 1024] * power;
-  //     OCR3A = pwm[(voltage + 98) % 1024] * power;
-  //     OCR4B = pwm[(voltage + 49) % 1024] * power;
-  //   }
-
-  //   signed char c;
-  //   if ((c = Serial.read()) != -1) {
-  //     power += 0.1;
-  //     if (power > 1.0) {
-  //       power = 0.1;
-  //     }
-  //   }
-  // }
-
+  emergency=true;
   UI.touch[0]=!digitalRead(PA8);
   for(int i=0; i<=3; i++){
     UI.check(i);
   }
   UI.refrection();
-
-  // 画面表示をクリア
-  display.clearDisplay();
-
-  // if(UI.active){
-  //   display.fillRect(10,8,30,16,WHITE);
-  // }else{
-  //   display.fillTriangle(10, 8, 10, 24, 30, 16, WHITE);
-  // }
-
-  display.setTextSize(2);
-  // テキスト色を設定
-  display.setTextColor(WHITE);
-  // テキストの開始位置を設定
-  display.setCursor(0, 0);
-
-  // 1行目に"Hello"を表示
-  if(UI.active){
-    display.println("running");
+  if(!emergency){
+    UI.LCDdisplay();
   }else{
-    display.println("stopping");
+    UI.Errordisplay(emergency);
   }
-  display.drawLine(0,15,127,15,WHITE);
-
-  display.setCursor(0,18);
-  display.setTextSize(1);
-  if(UI.mode==0){
-    display.println("Starting...");
-  }
-  // 描画バッファの内容を画面に表示
-  display.display();
-
 }

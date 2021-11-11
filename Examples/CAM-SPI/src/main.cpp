@@ -56,7 +56,6 @@ void loop() {
   // SPI.endTransaction();
   digitalWrite(SS_PIN_BALL,HIGH);
   digitalWrite(SS_PIN_CAM,HIGH);
-  digitalWrite(BALL_RESET,LOW);
   // Serial.println(bufff);
   // Serial.println(N);
   delay(1);
