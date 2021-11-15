@@ -43,7 +43,6 @@ void _UI::refrection(void){
         if(switchingFlag[0]){
             select=false;
             active=!active;//test用
-            emergency=!emergency;
         }
         if(switchingFlag[1]){
             mode--;
@@ -104,6 +103,7 @@ void _UI::LCDdisplay(void){
     display.print("Battery: ");
     display.print(String((float)Battery,1));
     display.println(" V");
+    display.println(ball.value[1]);
     display.drawLine(0,15,127,15,WHITE);
     // 描画バッファの内容を画面に表示
     display.display();
