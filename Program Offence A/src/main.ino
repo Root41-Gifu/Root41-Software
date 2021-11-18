@@ -6,6 +6,7 @@
 #include <SPI.h>
 
 #define PI 3.14159265359
+#define BALL_NUM 16
 #define LED_COUNT 16
 #define LED_PIN_T PB6
 #define LED_PIN_F PB7
@@ -90,12 +91,17 @@ class _Ball{
   public:
     _Ball();
     void read();
+    void average();
     void calcDistance();
     void calcDirection();
     void calc();
+    void LPF();
     unsigned long value[16];
+    float LPF_value[16];
+    float LastLPF[16];
     int dist[16];
     int max[3];
+    int max_average;
     int degree;
     int move_degree;
     
@@ -108,11 +114,15 @@ class _Ball{
 
     int move[3][16];
     int readp;
+    int averageTimer;
+    int averageCounter[16];
     
 }ball;
 
 // void measureAngularVelocity(void) {
 //   deg = analogRead(A0);
+
+SPISettings MAX6675Setting (4000000, MSBFIRST, SPI_MODE0);
 
 void setup() {
 
@@ -124,50 +134,61 @@ void setup() {
   strip.show();
   strip.setBrightness(30);
   display.begin(SSD1306_SWITCHCAPVCC,0x3C);
+  SPI.beginTransaction(MAX6675Setting);
   Serial.begin(9600);
-  SPI.begin();
 }
 
 void loop() {
-  UI.touch[0]=!digitalRead(PA8);
-  for(int i=0; i<=3; i++){
-    UI.check(i);
-  }
-  UI.refrection();
-  if(!emergency){
-    UI.LCDdisplay();
-  }else{
-    UI.Errordisplay(emergency);
-  }
+  // UI.touch[0]=!digitalRead(PA8);
+  // for(int i=0; i<=3; i++){
+  //   UI.check(i);
+  // }
+  // UI.refrection();
+  // if(!emergency){
+  //   UI.LCDdisplay();
+  // }else{
+  //   UI.Errordisplay(emergency);
+  // }
+  
 
   ball.read();
+  
   for(int i=0; i<16; i++){
-    if(ball.value[i]==20){
+    if(ball.value[i]==16){
       ball.value[i]=0;
       ball.dist[i]=0;
     }
   }
-  ball.max[0]=500;
-  ball.max[1]=500;
-  ball.max[2]=500;
+  for(int i=0; i<=3; i++){
+    ball.max[0]=0;
+  }
+  
+  ball.value[6]=0;
+  ball.value[7]=0;
+  ball.value[15]=0;
+  ball.LPF();
   for(int i=0; i<16; i++){
-    if(ball.value[i]!=0){
-      if(ball.max[0]==500){
-        ball.max[0]=i;
-      }else if(ball.max[1]==500){
-        ball.max[1]=i;
-      }else if(ball.max[2]==500){
-        ball.max[2]=i;
-      }else if(ball.value[i]<ball.value[ball.max[0]]){
-        ball.max[2]=ball.max[1];
-        ball.max[1]=ball.max[0];
-        ball.max[0]=i;
-      }else if(ball.value[i]<ball.value[ball.max[1]]){
-        ball.max[2]=ball.max[1];
-        ball.max[1]=i;
-      }else if(ball.value[i]<ball.max[2]){
-        ball.max[2]=i;
-      }
+    if(ball.LPF_value[ball.max[0]]<ball.LPF_value[i]){
+      ball.max[0]=i;
     }
   }
+  ball.average();
+
+  strip.clear();
+  strip.setPixelColor(ball.max_average, 255, 0, 0);
+  strip.show();
+  // Serial.print(ball.value[0]);
+  // Serial.print(" ");
+  // Serial.print(ball.value[2]);
+  // Serial.print(" ");
+  // Serial.print(ball.value[3]);
+  // Serial.print(" ");
+  // Serial.print(ball.value[4]);
+  // Serial.print(" ");
+  // Serial.print(ball.value[10]);
+  // Serial.print(" ");
+  Serial.print(ball.value[4]);
+  Serial.print(" ");
+  Serial.print(ball.LPF_value[4]);
+  Serial.println(" ");
 }
