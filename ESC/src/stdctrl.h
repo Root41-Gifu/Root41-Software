@@ -6,6 +6,13 @@ ADC_HandleTypeDef hadc;
 TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart2;
 
+int encoderRead(void) {
+  HAL_ADC_Start(&hadc);
+  HAL_ADC_PollForConversion(&hadc, 10);  // ADC変換終了を待機
+  HAL_ADC_Stop(&hadc);
+  return HAL_ADC_GetValue(&hadc);
+}
+
 void sekuta(int sek, int power) {
   if (sek == 0) {  // u-v
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);

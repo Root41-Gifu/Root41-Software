@@ -16,6 +16,13 @@ int main(void) {
   initialization();  // HALの初期化処理まとめたお☆
   buzzer001();       //起動音（3回短音）
 
+  sekuta(0, 80);
+  HAL_Delay(500);
+  int offset = encoderRead();
+  HAL_Delay(200);
+
+  buzzer002();
+
   HAL_Delay(500);  // 安全初期化処理
 
   int counter = 0;
@@ -25,14 +32,21 @@ int main(void) {
     counter += 5;
     counter %= 6;
 
-    HAL_ADC_Start(&hadc);
-    HAL_ADC_PollForConversion(&hadc, 10);  // ADC変換終了を待機
-    HAL_ADC_Stop(&hadc);
-    encVal = HAL_ADC_GetValue(&hadc);
+    //磁気エンコーダ角度取得
+    encVal = encoderRead();
+    encVal -= offset;
+    encVal += 4096 * 2 - 30;
+    encVal %= 4096;
+    encVal = 4095 - encVal;
 
-    HAL_Delay(10);
+    int drive = (int)((float)encVal / 97.5) % 6;
 
-    sekuta(counter, 20);
+    drive += 5;
+    drive %= 6;
+
+    sekuta(drive, 100);  //駆動
+
+    // HAL_Delay(1);  //処理待ち
   }
 }
 
