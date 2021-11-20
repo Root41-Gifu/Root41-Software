@@ -1,73 +1,20 @@
-/* USER CODE BEGIN Header */
-/**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
- *
- ******************************************************************************
- */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
-#include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-// #include <String.h>
-// #include <stdio.h>
-// #include <stdlib.h>
+#include "main.h"
 
 #define lowByte(w) ((uint8_t)((w)&0xff))
 #define highByte(w) ((uint8_t)((w) >> 8))
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc;
 
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart2;
 
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM2_Init(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
 void sekuta(int sek, int power) {
   if (sek == 0) {  // u-v
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
@@ -158,31 +105,47 @@ int main(void) {
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 
   int val = 0;
-  char valBuff[15];
 
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);   //! U
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);  //! V
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);   //! W
+  for (int j = 0; j < 3; j++) {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
+    for (int i = 0; i < 60; i++) {
+      HAL_Delay(1);
 
+      if (i % 2) {
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 40);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
+      } else {
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 40);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
+      }
+    }
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);   //! U
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);   //! W
+
+    HAL_Delay(60);
+  }
+
+  HAL_Delay(500);
+  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  int _val;
-  int aVal;
   while (1) {
     static int counter = 0;
 
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);  //! U
-    // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);    //! W
+    HAL_ADC_Start(&hadc);
+    HAL_ADC_PollForConversion(&hadc, 10);  // ADC変換終了を待機
+    HAL_ADC_Stop(&hadc);
+    val = HAL_ADC_GetValue(&hadc);
 
-    // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 100);
-    // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    counter += 1;
+    counter += 5;
     counter %= 6;
-    HAL_Delay(20);
+    HAL_Delay(1);
 
     sekuta(counter, 40);
   }
@@ -319,7 +282,7 @@ static void MX_TIM2_Init(void) {
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 2;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 255;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
