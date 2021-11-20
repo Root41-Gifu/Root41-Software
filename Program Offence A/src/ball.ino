@@ -67,26 +67,56 @@ void _Ball::calcDistance(void){
 }
 
 void _Ball::calcDirection(void){
-    vectortX+=vectorX[max[0]]+vectorX[max[1]]*0,3+vectorX[max[2]]*0.1;
-    vectortX+=vectorX[max[0]]+vectorX[max[1]]*0,3+vectorY[max[2]]*0.1;
+    vectortX=vectorX[max_average[0]]+vectorX[max_average[1]]*0.3+vectorX[max_average[2]]*0.1;
+    vectortY=vectorY[max_average[0]]+vectorY[max_average[1]]*0.3+vectorY[max_average[2]]*0.1;
 
     degree=atan2(vectortX,vectortY)*180/PI;
+    //右が（0~180）、左が(-180~0)
 }
 
 void _Ball::average(void){
     if(millis()-averageTimer>50){
-        max_average=0;
+        int lastmax_average[3];
+        lastmax_average[0]=max_average[0];
+        lastmax_average[1]=max_average[1];
+        lastmax_average[2]=max_average[2];
+        max_average[0]=0;
+        max_average[1]=1;
+        max_average[2]=2;
         for(int i=0; i<BALL_NUM; i++){
-            if(averageCounter[max_average]<averageCounter[i]){
-                max_average=i;
+            if(averageCounter[max_average[0]]<averageCounter[i]){
+                max_average[2]=max_average[1];
+                max_average[1]=max_average[0];
+                max_average[0]=i;
+            }else if(averageCounter[max_average[1]]<averageCounter[i]||max_average[1]==100){
+                max_average[2]=max_average[1];
+                max_average[1]=i;
+            }else if(averageCounter[max_average[2]]<averageCounter[i]||max_average[2]==100){
+                max_average[2]=i;
             }
         }
-        for(int i=0; i<BALL_NUM; i++){
+        
+        if(averageCounter[max_average[0]]<averageCounter[16]){
+            max_average[0]=100;//ない判定
+        }else if(averageCounter[max_average[0]]==0){
+            max_average[0]=lastmax_average[0];
+        }
+        for(int i=0; i<BALL_NUM+1; i++){
             averageCounter[i]=0;
         }
         averageTimer=millis();
-    }else if(millis()){
-        averageCounter[max[0]]++;
+    }else{
+        if(max[0]!=100){
+            averageCounter[max[0]]+=4;
+            if(max[1]!=100){
+                averageCounter[max[1]]+=2;
+                if(max[2]!=100){
+                    averageCounter[max[2]]+=1;
+                }
+            }
+        }else{
+            averageCounter[16]++;
+        }
     }
 }
 
@@ -108,11 +138,46 @@ void _Ball::LPF(void){
     float k;
     for(int i=0; i<16; i++){
         if(abs(value[i]-LPF_value[i])>30){
-            k=0.1;//
+            k=0.10;//
+            if(value[i]-LPF_value[i]<30){
+                k=0.15;
+            }
         }else{
-            k=0.05;
+            k=0.07;
         }
         LPF_value[i] += k * (value[i] - LastLPF[i]);
         LastLPF[i] = LPF_value[i];
     }
+}
+
+int _Ball::adjustValue(int number,int originalValue){
+    //0,100~
+    //1,110~
+    //2,120~
+    //3,125~ ときどき80~もある
+    //4,130~
+    //5,140
+    //8,110~
+    //9,110~
+    //10,110~ 真正面80~
+    //11,100~
+    //12.120~
+    //13.120~ 真正面0も
+    //14.120~
+    int adjustment;
+    switch (number){
+        case 0:
+            if(originalValue>100){
+                adjustment=originalValue+20;
+                break;
+            }
+        case 14:
+            if(originalValue>90){
+                adjustment=originalValue+35;
+            }
+        default:
+            adjustment=originalValue;
+            break;
+    }
+    return adjustment;
 }

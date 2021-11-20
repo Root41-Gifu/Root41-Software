@@ -71,6 +71,7 @@ class _UI{
     void check(int);
     void LCDdisplay(void);
     void Errordisplay(int);
+    void NeoPixeldisplay(int);
 
     int mode;
     int submode;
@@ -82,6 +83,7 @@ class _UI{
     bool touch[4];
     int counter[4];
     unsigned long longpressTimer[4];
+    unsigned long updateTimer;
 
   private:
     
@@ -95,13 +97,15 @@ class _Ball{
     void calcDistance();
     void calcDirection();
     void calc();
+    int adjustValue(int,int);
     void LPF();
     unsigned long value[16];
     float LPF_value[16];
     float LastLPF[16];
     int dist[16];
     int max[3];
-    int max_average;
+    int max_average[3];
+    int averageCounter[17];
     int degree;
     int move_degree;
     
@@ -110,12 +114,14 @@ class _Ball{
     float vectortX;
     float vectortY;
 
+    int testyou;
+
   private:
 
     int move[3][16];
     int readp;
     int averageTimer;
-    int averageCounter[16];
+    
     
 }ball;
 
@@ -123,6 +129,8 @@ class _Ball{
 //   deg = analogRead(A0);
 
 SPISettings MAX6675Setting (4000000, MSBFIRST, SPI_MODE0);
+
+int checkban;
 
 void setup() {
 
@@ -139,18 +147,6 @@ void setup() {
 }
 
 void loop() {
-  // UI.touch[0]=!digitalRead(PA8);
-  // for(int i=0; i<=3; i++){
-  //   UI.check(i);
-  // }
-  // UI.refrection();
-  // if(!emergency){
-  //   UI.LCDdisplay();
-  // }else{
-  //   UI.Errordisplay(emergency);
-  // }
-  
-
   ball.read();
   
   for(int i=0; i<16; i++){
@@ -166,17 +162,50 @@ void loop() {
   ball.value[6]=0;
   ball.value[7]=0;
   ball.value[15]=0;
+  for(int i=0; i<BALL_NUM; i++){
+    ball.value[i]=ball.adjustValue(i,ball.value[i]);
+  }
   ball.LPF();
+  ball.max[0]=100;
+  ball.max[1]=100;
+  ball.max[2]=100;
   for(int i=0; i<16; i++){
-    if(ball.LPF_value[ball.max[0]]<ball.LPF_value[i]){
+    if(ball.LPF_value[ball.max[0]]<ball.LPF_value[i]||ball.max[0]==100){
+      ball.max[2]=ball.max[1];
+      ball.max[1]=ball.max[0];
       ball.max[0]=i;
+    }else if(ball.LPF_value[ball.max[1]]<ball.LPF_value[i]||ball.max[1]==100){
+      ball.max[2]=ball.max[1];
+      ball.max[1]=i;
+    }else if(ball.LPF_value[ball.max[2]]<ball.LPF_value[i]||ball.max[2]==100){
+      ball.max[2]=i;
+    }
+  }
+  for(int i=0; i<3; i++){
+    if(ball.LPF_value[ball.max[i]]<20){
+      ball.max[i]=100;
     }
   }
   ball.average();
+  ball.calcDirection();
 
-  strip.clear();
-  strip.setPixelColor(ball.max_average, 255, 0, 0);
-  strip.show();
+
+  //UI
+  UI.touch[0]=!digitalRead(PA8);
+  for(int i=0; i<=3; i++){
+    UI.check(i);
+  }
+  UI.refrection();
+  if(!emergency){
+    if(millis()-UI.updateTimer>500){
+      UI.LCDdisplay();
+      UI.updateTimer=millis();
+    }
+    UI.NeoPixeldisplay(UI.mode);
+  }else{
+    UI.Errordisplay(emergency);
+  }
+  
   // Serial.print(ball.value[0]);
   // Serial.print(" ");
   // Serial.print(ball.value[2]);
@@ -187,8 +216,14 @@ void loop() {
   // Serial.print(" ");
   // Serial.print(ball.value[10]);
   // Serial.print(" ");
-  Serial.print(ball.value[4]);
+  Serial.print(checkban);
   Serial.print(" ");
-  Serial.print(ball.LPF_value[4]);
+  Serial.print(ball.max_average[0]);
+  Serial.print(" ");
+  Serial.print(ball.value[checkban]);
+  Serial.print(" ");
+  Serial.print(ball.LPF_value[checkban]);
+  Serial.print(" ");
+  Serial.print(ball.LPF_value[ball.max_average[0]]);
   Serial.println(" ");
 }

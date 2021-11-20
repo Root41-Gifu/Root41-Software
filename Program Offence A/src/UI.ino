@@ -43,6 +43,10 @@ void _UI::refrection(void){
         if(switchingFlag[0]){
             select=false;
             active=!active;//test用
+            checkban++;
+            if(checkban>15){
+                checkban=0;
+            }
         }
         if(switchingFlag[1]){
             mode--;
@@ -61,6 +65,30 @@ void _UI::refrection(void){
         mode=7;
     }else if(mode>7){
         mode=0;
+    }
+}
+
+void _UI::NeoPixeldisplay(int _mode){
+    if(_mode==0){
+        strip.clear();
+        if(ball.max_average[0]==100){
+          for(int i=0; i<BALL_NUM; i++){
+            strip.setPixelColor(i, 255, 0, 0);
+          }
+        }else{
+          int i=ball.max_average[0]-1;
+          int k=ball.max_average[0]+1;
+          if(i<0){
+            i=16+i;
+          }else if(i>15){
+            i=i-16;
+          }
+          strip.setPixelColor(ball.max_average[0], 255, 0, 0);
+          strip.setPixelColor(i, 255, 0, 0);
+          strip.setPixelColor(k, 255, 0, 0);
+          // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
+        }
+        strip.show();
     }
 }
 
@@ -103,14 +131,10 @@ void _UI::LCDdisplay(void){
     display.print("Battery: ");
     display.print(String((float)Battery,1));
     display.println(" V");
-    display.println(ball.max[0]);
+    display.println(ball.degree);
     display.drawLine(0,15,127,15,WHITE);
     // 描画バッファの内容を画面に表示
     display.display();
-    strip.clear();
-    strip.setPixelColor(ball.max[0], 255, 0, 0);
-    strip.setPixelColor(ball.max[1], 0, 255, 0);
-    strip.show();
 }
 
 void _UI::Errordisplay(int code){
