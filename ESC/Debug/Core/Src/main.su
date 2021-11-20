@@ -1,9 +1,0 @@
-main.c:11:7:sekuta	16	static
-main.c:63:7:HAL_DelayUS	24	static
-main.c:70:6:main	120	static
-main.c:133:7:SystemClock_Config	112	static
-main.c:178:14:MX_ADC_Init	16	static
-main.c:246:14:MX_TIM2_Init	48	static
-main.c:307:14:MX_USART2_UART_Init	8	static
-main.c:338:14:MX_GPIO_Init	48	static
-main.c:381:7:Error_Handler	8	static,ignoring_inline_asm
