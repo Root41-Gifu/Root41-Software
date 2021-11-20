@@ -1,13 +1,8 @@
 
 #include "main.h"
 
-#define lowByte(w) ((uint8_t)((w)&0xff))
-#define highByte(w) ((uint8_t)((w) >> 8))
-ADC_HandleTypeDef hadc;
-
-TIM_HandleTypeDef htim2;
-
-UART_HandleTypeDef huart2;
+#include "stdctrl.h"
+#include "stdui.h"
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -15,154 +10,51 @@ static void MX_USART2_UART_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM2_Init(void);
 
-void sekuta(int sek, int power) {
-  if (sek == 0) {  // u-v
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
+void initialization(void);
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-  } else if (sek == 1) {                                   // w-v
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, power);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);  //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);    //! W
-  } else if (sek == 2) {                                   // w-u
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, power);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);     //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);     //! W
-  } else if (sek == 3) {                                    // v-u
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-  } else if (sek == 4) {                                   // v-w
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);  //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);    //! W
-  } else if (sek == 5) {                                   // u-w
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);     //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);     //! W
-  }
-}
-/* USER CODE END 0 */
-
-/**
- * @brief  The application entry point.
- * @retval int
- */
 int main(void) {
-  /* USER CODE BEGIN 1 */
-  __IO uint32_t ad;
-  /* USER CODE END 1 */
+  initialization();  // HALの初期化処理まとめたお☆
+  buzzer001();       //起動音（3回短音）
 
-  /* MCU Configuration--------------------------------------------------------*/
+  HAL_Delay(500);  // 安全初期化処理
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
-   */
-  HAL_Init();
+  int counter = 0;
+  int encVal;  //磁気エンコーダー角度格納用
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_ADC_Init();
-  MX_TIM2_Init();
-  /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-
-  int val = 0;
-
-  for (int j = 0; j < 3; j++) {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-    for (int i = 0; i < 60; i++) {
-      HAL_Delay(1);
-
-      if (i % 2) {
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 40);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-      } else {
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 40);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-      }
-    }
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);   //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);   //! W
-
-    HAL_Delay(60);
-  }
-
-  HAL_Delay(500);
-  
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1) {
-    static int counter = 0;
+    counter += 5;
+    counter %= 6;
 
     HAL_ADC_Start(&hadc);
     HAL_ADC_PollForConversion(&hadc, 10);  // ADC変換終了を待機
     HAL_ADC_Stop(&hadc);
-    val = HAL_ADC_GetValue(&hadc);
+    encVal = HAL_ADC_GetValue(&hadc);
 
-    counter += 5;
-    counter %= 6;
-    HAL_Delay(1);
+    HAL_Delay(10);
 
-    sekuta(counter, 40);
+    sekuta(counter, 20);
   }
-  /* USER CODE END 3 */
 }
 
-/**
- * @brief System Clock Configuration
- * @retval None
- */
+//初期化処理
+void initialization(void) {
+  HAL_Init();
+  SystemClock_Config();
+  MX_GPIO_Init();
+  MX_USART2_UART_Init();
+  MX_ADC_Init();
+  MX_TIM2_Init();
+
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+}
+
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Configure the main internal regulator output voltage
-   */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
