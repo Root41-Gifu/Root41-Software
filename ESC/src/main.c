@@ -23,74 +23,36 @@ int main(void) {
 
   while (!(data >= 1500 && data <= 1600)) {
     tempcount++;
-    sekuta(tempcount % 6, 30);
-    HAL_Delay(10);
+    sekuta(tempcount % 6, 50);
+    HAL_Delay(5);
 
     data = encoderRead();
   }
 
-  while (HAL_GetTick() <= 8000) {
+  while (HAL_GetTick() <= 6000) {
     /* code */
   }
 
   sekuta(1, 30);
-  HAL_Delay(300);
-  sekuta(0, 30);
-  HAL_Delay(500);
   HAL_Delay(100);
-
-  sekuta(5, 30);
-  HAL_Delay(300);
   sekuta(0, 30);
-  HAL_Delay(500);
-  HAL_Delay(100);
-
-  sekuta(1, 30);
   HAL_Delay(300);
-  sekuta(0, 30);
-  HAL_Delay(500);
   offsetRaw[0] = encoderRead();
-  HAL_Delay(100);
-
   sekuta(5, 30);
-  HAL_Delay(300);
+  HAL_Delay(100);
   sekuta(0, 30);
-  HAL_Delay(500);
+  HAL_Delay(300);
   offsetRaw[1] = encoderRead();
-  HAL_Delay(100);
-
   sekuta(1, 30);
-  HAL_Delay(300);
+  HAL_Delay(100);
   sekuta(0, 30);
-  HAL_Delay(500);
+  HAL_Delay(300);
   offsetRaw[2] = encoderRead();
-  HAL_Delay(100);
-
   sekuta(5, 30);
-  HAL_Delay(300);
-  sekuta(0, 30);
-  HAL_Delay(500);
-  offsetRaw[3] = encoderRead();
   HAL_Delay(100);
-  // for (int j = 0; j < 7 * 4; j++) {
-  //   for (int i = 0; i < 6; i++) {
-  //     sekuta(i, 30);
-  //     HAL_Delay(30);
-
-  //     if (j == 7 && i == 0) {
-  //       offsetRaw[0] = encoderRead();
-  //     }
-
-  //     if (j == 14 && i == 0) {
-  //       offsetRaw[1] = encoderRead();
-  //     }
-
-  //     if (j == 21 && i == 0) {
-  //       offsetRaw[2] = encoderRead();
-  //     }
-  //   }
-  // }
-
+  sekuta(0, 30);
+  HAL_Delay(300);
+  offsetRaw[3] = encoderRead();
   offset = (offsetRaw[0] + offsetRaw[1] + offsetRaw[2] + offsetRaw[3]) / 4;
 
   release();
@@ -112,15 +74,24 @@ int main(void) {
       encVal = encVal % 4096;
       encVal = 4095 - encVal;
 
-      encVal += 4096 * 2;
-      encVal -= 123;
-      encVal %= 4096;
-      // encVal %= 4096;
-
-      int drive = (int)((float)encVal / 97.5) % 6;
-
-      drive += 5;
-      drive %= 6;
+      int drive = 0;
+      if (((HAL_GetTick() + 0) / 500) % 2) {
+        encVal += 4096 * 2;
+        encVal += 43;
+        encVal %= 4096;
+        // encVal %= 4096;
+        drive = (int)((float)encVal / 97.5) % 6;
+        drive += 1;
+        drive %= 6;
+      } else {
+        encVal += 4096 * 2;
+        encVal -= 123;
+        encVal %= 4096;
+        // encVal %= 4096;
+        drive = (int)((float)encVal / 97.5) % 6;
+        drive += 5;
+        drive %= 6;
+      }
 
       sekuta(drive, 60);  //駆動
     } else {
