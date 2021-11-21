@@ -75,7 +75,7 @@ void _Ball::calcDirection(void){
 }
 
 void _Ball::average(void){
-    if(millis()-averageTimer>40){
+    if(millis()-averageTimer>50){
         int lastmax_average[3];
         lastmax_average[0]=max_average[0];
         lastmax_average[1]=max_average[1];
@@ -136,14 +136,15 @@ void _Ball::calc(void){
 
 void _Ball::LPF(void){
     float k;
+    //LPF値はほんとに頑張って調整しな。
     for(int i=0; i<16; i++){
         if(abs(value[i]-LPF_value[i])>30){
-            k=0.10;//
-            if(value[i]-LPF_value[i]<30){
-                k=0.15;
+            k=0.07;//0.1
+            if(value[i]-LPF_value[i]<-30){
+                k=0.15;//0.15
             }
         }else{
-            k=0.07;
+            k=0.03;//0.07
         }
         LPF_value[i] += k * (value[i] - LastLPF[i]);
         LastLPF[i] = LPF_value[i];

@@ -73,17 +73,20 @@ class _UI{
     void Errordisplay(int);
     void NeoPixeldisplay(int);
 
-    int mode;
-    int submode;
-    bool active;
+    int mode;//メインモード
+    int submode;//サブモード、キャリブレーションとかの時に帰る
+    bool active;//動作中
     bool select;
+    //スイッチ全般
     bool switchingFlag[4];
     bool touchFlag[4];
     bool longpressFlag[4];
     bool touch[4];
     int counter[4];
-    unsigned long longpressTimer[4];
-    unsigned long updateTimer;
+    unsigned long longpressTimer[4];//長押しタイマー
+    unsigned long updateTimer;//UI表示スパン
+
+    int switchScope;//テスト用の変数、ボタンで切り替えれます。
 
   private:
     
@@ -99,22 +102,20 @@ class _Ball{
     void calc();
     int adjustValue(int,int);
     void LPF();
-    unsigned long value[16];
-    float LPF_value[16];
-    float LastLPF[16];
-    int dist[16];
-    int max[3];
-    int max_average[3];
+    unsigned long value[16];//読み込み値
+    float LPF_value[16];//LPF補正値
+    float LastLPF[16];//前回のLPF補正値
+    int dist[16];//距離
+    int max[3];//最大値（のポート番号）
+    int max_average[3];//最大値の平均
     int averageCounter[17];
-    int degree;
-    int move_degree;
+    int degree;//ボールの角度
+    int move_degree;//進行角度
     
-    float vectorX[16];
+    float vectorX[16];//ベクトル（ボール位置の定数）
     float vectorY[16];
-    float vectortX;
+    float vectortX;//変数（算出用）
     float vectortY;
-
-    int testyou;
 
   private:
 
@@ -129,8 +130,6 @@ class _Ball{
 //   deg = analogRead(A0);
 
 SPISettings MAX6675Setting (4000000, MSBFIRST, SPI_MODE0);
-
-int checkban;
 
 void setup() {
 
@@ -147,8 +146,8 @@ void setup() {
 }
 
 void loop() {
-  ball.read();
-  
+  //ボール処理
+  ball.read();//SPI読み込み
   for(int i=0; i<16; i++){
     if(ball.value[i]==16){
       ball.value[i]=0;
@@ -158,13 +157,14 @@ void loop() {
   for(int i=0; i<=3; i++){
     ball.max[0]=0;
   }
-  
+  //6,7はanalogpinでした..．
   ball.value[6]=0;
   ball.value[7]=0;
-  for(int i=0; i<BALL_NUM; i++){
-    ball.value[i]=ball.adjustValue(i,ball.value[i]);
-  }
-  ball.LPF();
+  // for(int i=0; i<BALL_NUM; i++){
+  //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。    
+  // }
+  ball.LPF();//LPFかける。魔法のフィルタ
+  //MAX値求める、max[0]は一番反応いいやつ。
   ball.max[0]=100;
   ball.max[1]=100;
   ball.max[2]=100;
@@ -185,43 +185,32 @@ void loop() {
       ball.max[i]=100;
     }
   }
-  ball.average();
-  ball.calcDirection();
+  ball.average();//平均とる。この関数イランかも知らん
+  ball.calcDirection();//ボールの方向算出
 
 
   //UI
-  UI.touch[0]=!digitalRead(PA8);
+  UI.touch[0]=!digitalRead(PA8);//センサー検知
   for(int i=0; i<=3; i++){
-    UI.check(i);
+    UI.check(i);//検知の確認
   }
-  UI.refrection();
+  UI.refrection();//スイッチの反映
   if(!emergency){
     if(millis()-UI.updateTimer>500){
-      UI.LCDdisplay();
+      UI.LCDdisplay();//LCD表示（重いので500msで回す）
       UI.updateTimer=millis();
     }
-    UI.NeoPixeldisplay(UI.mode);
+    UI.NeoPixeldisplay(UI.mode);//NeoPixel表示
   }else{
-    UI.Errordisplay(emergency);
+    UI.Errordisplay(emergency);//Error表示用、点滅するンゴ。
   }
-  
-  // Serial.print(ball.value[0]);
-  // Serial.print(" ");
-  // Serial.print(ball.value[2]);
-  // Serial.print(" ");
-  // Serial.print(ball.value[3]);
-  // Serial.print(" ");
-  // Serial.print(ball.value[4]);
-  // Serial.print(" ");
-  // Serial.print(ball.value[10]);
-  // Serial.print(" ");
-  Serial.print(checkban);
+  Serial.print(UI.switchScope);
   Serial.print(" ");
   Serial.print(ball.max_average[0]);
   Serial.print(" ");
-  Serial.print(ball.value[checkban]);
+  Serial.print(ball.value[UI.switchScope]);
   Serial.print(" ");
-  Serial.print(ball.LPF_value[checkban]);
+  Serial.print(ball.LPF_value[UI.switchScope]);
   Serial.print(" ");
   Serial.print(ball.LPF_value[ball.max_average[0]]);
   Serial.println(" ");
