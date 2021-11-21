@@ -80,8 +80,8 @@ void _UI::NeoPixeldisplay(int _mode){
           int k=ball.max_average[0]+1;
           if(i<0){
             i=16+i;
-          }else if(i>15){
-            i=i-16;
+          }else if(k>15){
+            k=0;
           }
           strip.setPixelColor(ball.max_average[0], 255, 0, 0);
           strip.setPixelColor(i, 255, 0, 0);

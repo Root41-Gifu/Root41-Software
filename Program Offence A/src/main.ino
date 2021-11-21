@@ -161,7 +161,6 @@ void loop() {
   
   ball.value[6]=0;
   ball.value[7]=0;
-  ball.value[15]=0;
   for(int i=0; i<BALL_NUM; i++){
     ball.value[i]=ball.adjustValue(i,ball.value[i]);
   }

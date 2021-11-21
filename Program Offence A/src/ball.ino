@@ -22,7 +22,7 @@ void _Ball::read(void){
     unsigned long starTime=micros();
     digitalWrite(PB5, LOW);
     // SPI.transfer(-);
-    for(int i=0; i<32; i++){
+    for(int i=0; i<33; i++){
       data = SPI.transfer(0);
       delayMicroseconds(10);
       if(data<16){
@@ -75,16 +75,16 @@ void _Ball::calcDirection(void){
 }
 
 void _Ball::average(void){
-    if(millis()-averageTimer>50){
+    if(millis()-averageTimer>40){
         int lastmax_average[3];
         lastmax_average[0]=max_average[0];
         lastmax_average[1]=max_average[1];
         lastmax_average[2]=max_average[2];
-        max_average[0]=0;
-        max_average[1]=1;
-        max_average[2]=2;
+        max_average[0]=100;
+        max_average[1]=100;
+        max_average[2]=100;
         for(int i=0; i<BALL_NUM; i++){
-            if(averageCounter[max_average[0]]<averageCounter[i]){
+            if(averageCounter[max_average[0]]<averageCounter[i]||max_average[0]==100){
                 max_average[2]=max_average[1];
                 max_average[1]=max_average[0];
                 max_average[0]=i;
@@ -168,7 +168,28 @@ int _Ball::adjustValue(int number,int originalValue){
     switch (number){
         case 0:
             if(originalValue>100){
+                adjustment=originalValue+10;
+                break;
+            }
+        case 8: 
+            if(originalValue>80){
                 adjustment=originalValue+20;
+                break;
+            }
+        case 11:
+            if(originalValue<110&&originalValue>60){
+                adjustment=originalValue-20;
+                if(value[8]>120){
+                    adjustment-=15;
+                }
+                break;
+            }
+        case 12:
+            if(originalValue<110&&originalValue>60){
+                adjustment=originalValue-20;
+                if(value[8]>120){
+                    adjustment-=15;
+                }
                 break;
             }
         case 14:
