@@ -15,10 +15,85 @@ void initialization(void);
 int main(void) {
   initialization();  // HALの初期化処理まとめたお☆
   buzzer001();       //起動音（3回短音）
+  int offset = 0;
+  int offsetRaw[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  sekuta(0, 80);
+  int data = 0;
+  int tempcount = 0;
+
+  while (!(data >= 1500 && data <= 1600)) {
+    tempcount++;
+    sekuta(tempcount % 6, 30);
+    HAL_Delay(10);
+
+    data = encoderRead();
+  }
+
+  while (HAL_GetTick() <= 8000) {
+    /* code */
+  }
+
+  sekuta(1, 30);
+  HAL_Delay(300);
+  sekuta(0, 30);
   HAL_Delay(500);
-  int offset = encoderRead();
+  HAL_Delay(100);
+
+  sekuta(5, 30);
+  HAL_Delay(300);
+  sekuta(0, 30);
+  HAL_Delay(500);
+  HAL_Delay(100);
+
+  sekuta(1, 30);
+  HAL_Delay(300);
+  sekuta(0, 30);
+  HAL_Delay(500);
+  offsetRaw[0] = encoderRead();
+  HAL_Delay(100);
+
+  sekuta(5, 30);
+  HAL_Delay(300);
+  sekuta(0, 30);
+  HAL_Delay(500);
+  offsetRaw[1] = encoderRead();
+  HAL_Delay(100);
+
+  sekuta(1, 30);
+  HAL_Delay(300);
+  sekuta(0, 30);
+  HAL_Delay(500);
+  offsetRaw[2] = encoderRead();
+  HAL_Delay(100);
+
+  sekuta(5, 30);
+  HAL_Delay(300);
+  sekuta(0, 30);
+  HAL_Delay(500);
+  offsetRaw[3] = encoderRead();
+  HAL_Delay(100);
+  // for (int j = 0; j < 7 * 4; j++) {
+  //   for (int i = 0; i < 6; i++) {
+  //     sekuta(i, 30);
+  //     HAL_Delay(30);
+
+  //     if (j == 7 && i == 0) {
+  //       offsetRaw[0] = encoderRead();
+  //     }
+
+  //     if (j == 14 && i == 0) {
+  //       offsetRaw[1] = encoderRead();
+  //     }
+
+  //     if (j == 21 && i == 0) {
+  //       offsetRaw[2] = encoderRead();
+  //     }
+  //   }
+  // }
+
+  offset = (offsetRaw[0] + offsetRaw[1] + offsetRaw[2] + offsetRaw[3]) / 4;
+
+  release();
   HAL_Delay(200);
 
   buzzer002();
@@ -26,25 +101,50 @@ int main(void) {
   HAL_Delay(500);  // 安全初期化処理
 
   int counter = 0;
-  int encVal;  //磁気エンコーダー角度格納用
+  long encVal;  //磁気エンコーダー角度格納用
 
   while (1) {
-    counter += 5;
-    counter %= 6;
+    if (1) {  //矩形波
+      //磁気エンコーダ角度取得
+      encVal = encoderRead();
+      encVal -= offset;
+      encVal += 4096 * 2;
+      encVal = encVal % 4096;
+      encVal = 4095 - encVal;
 
-    //磁気エンコーダ角度取得
-    encVal = encoderRead();
-    encVal -= offset;
-    encVal += 4096 * 2 - 30;
-    encVal %= 4096;
-    encVal = 4095 - encVal;
+      encVal += 4096 * 2;
+      encVal -= 123;
+      encVal %= 4096;
+      // encVal %= 4096;
 
-    int drive = (int)((float)encVal / 97.5) % 6;
+      int drive = (int)((float)encVal / 97.5) % 6;
 
-    drive += 5;
-    drive %= 6;
+      drive += 5;
+      drive %= 6;
 
-    sekuta(drive, 100);  //駆動
+      sekuta(drive, 60);  //駆動
+    } else {
+      encVal = encoderRead();
+      encVal += 4096;
+      encVal %= 4096;
+      encVal = encVal >> 2;
+      encVal %= 146;
+      encVal = 145 - encVal;
+
+      encVal += 18;
+      // encVal += 20;
+      encVal += 23;
+      encVal += 146 * 2;
+      encVal %= 146;
+
+      float speed = 0.9;
+
+      // encVal = counterMan;
+
+      driveDirect(encVal, speed);
+    }
+
+    // driveDirect(20, 0.3);
 
     // HAL_Delay(1);  //処理待ち
   }
@@ -308,7 +408,8 @@ static void MX_GPIO_Init(void) {
  */
 void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+  /* User can add his own implementation to report the HAL error return state
+   */
   __disable_irq();
   while (1) {
   }
@@ -323,16 +424,18 @@ void Error_Handler(void) {
  * @param  line: assert_param error line source number
  * @retval None
  */
-void assert_failed(uint8_t *file, uint32_t line) {
+void assert_failed(uint8_t* file, uint32_t line) {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line
      number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line)
+   */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF
+ * FILE****/
 
 // #include "main.h"
 // ADC_HandleTypeDef hadc;
@@ -646,15 +749,18 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //   sConfigOC.Pulse = 0;
 //   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 //   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) !=
+//   HAL_OK)
 //   {
 //     Error_Handler();
 //   }
-//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) !=
+//   HAL_OK)
 //   {
 //     Error_Handler();
 //   }
-//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) !=
+//   HAL_OK)
 //   {
 //     Error_Handler();
 //   }
@@ -745,7 +851,8 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //  */
 // void Error_Handler(void) {
 //   /* USER CODE BEGIN Error_Handler_Debug */
-//   /* User can add his own implementation to report the HAL error return state
+//   /* User can add his own implementation to report the HAL error return
+//   state
 //   */
 //   __disable_irq();
 //   while (1) {
@@ -765,7 +872,8 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //   /* USER CODE BEGIN 6 */
 //   /* User can add his own implementation to report the file name and line
 //      number,
-//      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line)
+//      ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
+//      line)
 //      */
 //   /* USER CODE END 6 */
 // }
