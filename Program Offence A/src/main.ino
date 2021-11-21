@@ -126,6 +126,21 @@ class _Ball{
     
 }ball;
 
+class _Line{
+  public:
+    _Line();
+    
+
+  private:
+}line;
+
+class _Camera{
+  public:
+    _Camera();
+
+  private:
+}camera;
+
 // void measureAngularVelocity(void) {
 //   deg = analogRead(A0);
 
