@@ -1,3 +1,9 @@
+_UI::_UI(){
+    mode=0;
+    submode=0;
+    emergency=false;
+}
+
 void _UI::check(int num){
     if(!touchFlag[num]){
         if(touch[num]){

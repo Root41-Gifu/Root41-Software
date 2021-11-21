@@ -49,20 +49,21 @@ void _Ball::read(void){
 }
 
 void _Ball::calcDistance(void){
-    for(int i=0; i<=15; i++){
-        if(value[i]<0){
-            //近距離
-            dist[i]=map(value[i],0,0,0,0);
-        }else if(value[i]<0){
-            //中距離
-            dist[i]=map(value[i],0,0,0,0);
-        }else if(value[i]<0){
-            //遠距離
-            dist[i]=map(value[i],0,0,0,0);
-        }else if(value[i]<0){
-            //範囲外のものを削除
-            dist[i]=0;
-        }
+    for(int i=0; i<BALL_NUM; i++){
+        dist[i]=1;
+    //     if(value[i]<0){
+    //         //近距離
+    //         dist[i]=map(value[i],0,0,0,0);
+    //     }else if(value[i]<0){
+    //         //中距離
+    //         dist[i]=map(value[i],0,0,0,0);
+    //     }else if(value[i]<0){
+    //         //遠距離
+    //         dist[i]=map(value[i],0,0,0,0);
+    //     }else if(value[i]<0){
+    //         //範囲外のものを削除
+    //         dist[i]=0;
+    //     }
     }
 }
 
@@ -122,21 +123,19 @@ void _Ball::average(void){
 
 void _Ball::calc(void){
     //簡単な方向、距離の分割プログラム
-    if(dist[max[0]]<0){
-        //1分割目
-        move_degree=move[0][max[0]];
-    }else if(dist[max[0]]<0){
-        //2分割目
-        move_degree=move[1][max[0]];
-    }else if(dist[max[0]]<0){
-        //3分割目
-        move_degree=move[2][max[0]];
-    }
+    int _degree;
+    int move_16[3][16]={
+        {0,22,45,68,90,112,135,157,180,202,225,247,270,292,315,337},
+        {0,22,45,68,90,112,135,157,180,202,225,247,270,292,315,337},
+        {0,22,45,68,90,112,135,157,180,202,225,247,270,292,315,337}
+    };
+    _degree=move_16[dist[max[0]]][max[0]];
+    move_degree=_degree;
 }
 
 void _Ball::LPF(void){
     float k;
-    //LPF値はほんとに頑張って調整しな。
+    //LPF調整ファイト
     for(int i=0; i<16; i++){
         if(abs(value[i]-LPF_value[i])>30){
             k=0.07;//0.1

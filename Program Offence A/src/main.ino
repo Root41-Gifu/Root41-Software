@@ -7,6 +7,7 @@
 
 #define PI 3.14159265359
 #define BALL_NUM 16
+#define LINE_NUM 40
 #define LED_COUNT 16
 #define LED_PIN_T PB6
 #define LED_PIN_F PB7
@@ -63,10 +64,11 @@ volatile int voltage;
 volatile float gain = 0.114;
 
 float Battery=11.1;
-bool emergency;
+bool emergency;//緊急用のフラグ（やばいとき上げて）
 
 class _UI{
   public:
+    _UI(void);
     void refrection(void);
     void check(int);
     void LCDdisplay(void);
@@ -94,14 +96,14 @@ class _UI{
 
 class _Ball{
   public:
-    _Ball();
-    void read();
-    void average();
-    void calcDistance();
-    void calcDirection();
-    void calc();
+    _Ball(void);
+    void read(void);
+    void average(void);
+    void calcDistance(void);
+    void calcDirection(void);
+    void calc(void);
     int adjustValue(int,int);
-    void LPF();
+    void LPF(void);
     unsigned long value[16];//読み込み値
     float LPF_value[16];//LPF補正値
     float LastLPF[16];//前回のLPF補正値
@@ -128,7 +130,13 @@ class _Ball{
 
 class _Line{
   public:
-    _Line();
+    _Line(void);
+    void read(void);
+    // void brightnessAdjust(void);
+    void calc(void);
+
+    bool flag;
+    bool value[40];
     
 
   private:
@@ -136,7 +144,7 @@ class _Line{
 
 class _Camera{
   public:
-    _Camera();
+    // _Camera(void);
 
   private:
 }camera;
@@ -157,6 +165,7 @@ void setup() {
   strip.setBrightness(30);
   display.begin(SSD1306_SWITCHCAPVCC,0x3C);
   SPI.beginTransaction(MAX6675Setting);
+  Wire.begin();
   Serial.begin(9600);
 }
 
@@ -202,6 +211,10 @@ void loop() {
   }
   ball.average();//平均とる。この関数イランかも知らん
   ball.calcDirection();//ボールの方向算出
+  // ball.calc();//動作角度算出
+
+  //line
+  line.read();
 
 
   //UI
@@ -219,6 +232,8 @@ void loop() {
   }else{
     UI.Errordisplay(emergency);//Error表示用、点滅するンゴ。
   }
+  Serial.print(line.value[0]);
+  Serial.print(line.value[1]);
   Serial.print(UI.switchScope);
   Serial.print(" ");
   Serial.print(ball.max_average[0]);
