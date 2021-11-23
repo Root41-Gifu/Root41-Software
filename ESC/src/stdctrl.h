@@ -111,3 +111,29 @@ int offsetSet(int data) {
   temp = data - temp;
   return temp;
 }
+
+int calibration(void) {
+  int offsetRaw[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  sekuta(1, 30);
+  HAL_Delay(100);
+  sekuta(0, 30);
+  HAL_Delay(300);
+  offsetRaw[0] = encoderRead();
+  sekuta(5, 30);
+  HAL_Delay(100);
+  sekuta(0, 30);
+  HAL_Delay(300);
+  offsetRaw[1] = encoderRead();
+  sekuta(1, 30);
+  HAL_Delay(100);
+  sekuta(0, 30);
+  HAL_Delay(300);
+  offsetRaw[2] = encoderRead();
+  sekuta(5, 30);
+  HAL_Delay(100);
+  sekuta(0, 30);
+  HAL_Delay(300);
+  offsetRaw[3] = encoderRead();
+
+  return (offsetRaw[0] + offsetRaw[1] + offsetRaw[2] + offsetRaw[3]) / 4;
+}

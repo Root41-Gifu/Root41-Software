@@ -14,9 +14,12 @@ void initialization(void);
 
 int main(void) {
   initialization();  // HALの初期化処理まとめたお☆
-  buzzer001();       //起動音（3回短音）
+
+  int id = 3;
+  HAL_Delay(120);
+  buzzer001(id + 1);  //起動音（3回短音）//120
+  HAL_Delay(240);
   int offset = 0;
-  int offsetRaw[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   int data = 0;
   int tempcount = 0;
@@ -29,31 +32,11 @@ int main(void) {
     data = encoderRead();
   }
 
-  while (HAL_GetTick() <= 6000) {
+  while (HAL_GetTick() <= 3000) {  //時間合わせ
     /* code */
   }
 
-  sekuta(1, 30);
-  HAL_Delay(100);
-  sekuta(0, 30);
-  HAL_Delay(300);
-  offsetRaw[0] = encoderRead();
-  sekuta(5, 30);
-  HAL_Delay(100);
-  sekuta(0, 30);
-  HAL_Delay(300);
-  offsetRaw[1] = encoderRead();
-  sekuta(1, 30);
-  HAL_Delay(100);
-  sekuta(0, 30);
-  HAL_Delay(300);
-  offsetRaw[2] = encoderRead();
-  sekuta(5, 30);
-  HAL_Delay(100);
-  sekuta(0, 30);
-  HAL_Delay(300);
-  offsetRaw[3] = encoderRead();
-  offset = (offsetRaw[0] + offsetRaw[1] + offsetRaw[2] + offsetRaw[3]) / 4;
+  offset = calibration();
 
   release();
   HAL_Delay(200);
@@ -75,7 +58,8 @@ int main(void) {
       encVal = 4095 - encVal;
 
       int drive = 0;
-      if (((HAL_GetTick() + 0) / 500) % 2) {
+      // if (((HAL_GetTick() + 0) / 500) % 2) {
+      if (0) {
         encVal += 4096 * 2;
         encVal += 43;
         encVal %= 4096;

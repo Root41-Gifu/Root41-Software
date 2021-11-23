@@ -1,11 +1,11 @@
-void buzzer001(void) {
+void buzzer001(int a) {
   HAL_SYSTICK_Config(SystemCoreClock / (10000U / uwTickFreq));
-  for (int j = 0; j < 3; j++) {
+  for (int j = 0; j < 1; j++) {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-    for (int i = 0; i < 300; i++) {
-      HAL_Delay(2);
+    for (int i = 0; i < (600 / a); i++) {
+      HAL_Delay(a);
 
       if (i % 2) {
         __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 80);
