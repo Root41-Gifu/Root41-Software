@@ -72,7 +72,7 @@ int main(void) {
 
   uint8_t buffer[10];
 
-  int id = 0;
+  int id = 3;
 
   int startFlag = 0;
 
@@ -105,27 +105,28 @@ int main(void) {
   }
 
   int tone[4] = {2, 3, 4, 1};
+  int offsetValue[4] = {1564, 1832, 1690, 1319};
   HAL_Delay(id * 120);
   buzzer001(tone[id]);  //起動音（3回短音）//120
   HAL_Delay(360 - (id * 120));
-  int offset = 0;
+  int offset = offsetValue[id];
 
   int data = 0;
   int tempcount = 0;
 
-  while (!(data >= 1500 && data <= 1600)) {
-    tempcount++;
-    sekuta(tempcount % 6, 50);
-    HAL_Delay(5);
+  // while (!(data >= 1500 && data <= 1600)) {
+  //   tempcount++;
+  //   sekuta(tempcount % 6, 50);
+  //   HAL_Delay(5);
 
-    data = encoderRead();
-  }
+  //   data = encoderRead();
+  // }
 
-  while (HAL_GetTick() <= 3000) {  //時間合わせ
-    /* code */
-  }
+  // while (HAL_GetTick() <= 3000) {  //時間合わせ
+  //   /* code */
+  // }
 
-  offset = calibration();
+  // offset = calibration();
 
   release();
   HAL_Delay(200);
@@ -151,7 +152,7 @@ int main(void) {
 
     char serialData = 0;
     serialData = buffer[0];
-    if ((serialData & 0B10000000) == 0B00000000) {
+    if ((serialData & 0B10000000) == 0B10000000) {
       if ((serialData & 0B01000000) == 0B00000000) {  //正転
         turn = 0;
       } else {
