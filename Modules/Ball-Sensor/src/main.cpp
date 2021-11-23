@@ -16,8 +16,9 @@ void setup() {
  
 // SPI割り込み処理
 ISR(SPI_STC_vect)
-{
+{ 
   ch = SPDR;    //SPIの受信バッファから取得
+  delay(1);
   SPDR = ch;  //送信バッファに書き込む
 }
  
