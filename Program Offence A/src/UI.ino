@@ -108,6 +108,47 @@ void _UI::refrection(void) {
     } else if (submode > 1) {
       submode = 0;
     }
+  } else if (mode == 6) {
+    if (switchingFlag[0]) {
+      select = false;
+      active = false;
+      submode = 0;
+    }
+    if (!active) {
+      if (switchingFlag[1]) {
+        if (select) {
+          submode--;
+        } else {
+          mode--;
+        }
+      }
+      if (switchingFlag[2]) {
+        // if(select){
+        //     submode++;
+        // }else{
+        //     mode++;
+        // }
+      }
+    } else {
+      if (switchingFlag[1]) {
+        MotorPower += 5;
+        if (MotorPower > 100) {
+          MotorPower = 0;
+        }
+      }
+    }
+    if (switchingFlag[3]) {
+      if (!select) {
+        select = true;
+      } else {
+        active = true;
+      }
+    }
+    if (submode < 0) {
+      submode = 1;
+    } else if (submode > 1) {
+      submode = 0;
+    }
   } else {
     if (switchingFlag[0]) {
       select = false;
@@ -187,19 +228,21 @@ void _UI::NeoPixeldisplay(int _mode) {
       // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
     }
   }
-  if (mode == 5&&active) {
-    unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
-    for (int i = 0; i < LED_FRONT; i++) {
-      front.setPixelColor(i, lineNeoPixelColor);
-    }
-    for (int i = 0; i < LED_REAR; i++) {
-      rear.setPixelColor(i, lineNeoPixelColor);
-    }
-    for (int i = 0; i < LED_LEFT; i++) {
-      left.setPixelColor(i, lineNeoPixelColor);
-    }
-    for (int i = 0; i < LED_RIGHT; i++) {
-      right.setPixelColor(i, lineNeoPixelColor);
+  if (mode == 5 || mode == 1) {
+    if (active) {
+      unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
+      for (int i = 0; i < LED_FRONT; i++) {
+        front.setPixelColor(i, lineNeoPixelColor);
+      }
+      for (int i = 0; i < LED_REAR; i++) {
+        rear.setPixelColor(i, lineNeoPixelColor);
+      }
+      for (int i = 0; i < LED_LEFT; i++) {
+        left.setPixelColor(i, lineNeoPixelColor);
+      }
+      for (int i = 0; i < LED_RIGHT; i++) {
+        right.setPixelColor(i, lineNeoPixelColor);
+      }
     }
   }
   strip.show();
@@ -251,7 +294,7 @@ void _UI::LCDdisplay(void) {
       if (submode == 0) {
         display.println("Front");
       } else if (submode == 1) {
-        display.println("Calib~");
+        display.println("Calb");
       }
     }
     display.setCursor(0, 17);
@@ -279,7 +322,16 @@ void _UI::LCDdisplay(void) {
       if (submode == 0) {
         display.println("Test");
       } else if (submode == 1) {
-        display.println("Power");
+        if (active) {
+          if ((millis() / LCD_INTERVAL) % 2 == 0) {
+            display.print("P>");
+          } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
+            display.print("P ");
+          }
+          display.print(MotorPower);
+        } else {
+          display.println("Power");
+        }
       }
     }
     display.setCursor(0, 17);
@@ -292,7 +344,7 @@ void _UI::LCDdisplay(void) {
   display.print("Battery: ");
   display.print(Battery);
   display.println(" V");
-  display.println(ball.degree);
+  display.println(line.Move_degree);
   display.drawLine(0, 15, 127, 15, WHITE);
   // 描画バッファの内容を画面に表示
   display.display();
