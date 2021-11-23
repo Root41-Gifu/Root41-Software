@@ -67,12 +67,16 @@ static void MX_TIM2_Init(void);
  * @brief  The application entry point.
  * @retval int
  */
+
+// int _velocity;
+// int velocity;
+
 int main(void) {
   initialization();  // HALの初期化処理まとめたお☆
 
   uint8_t buffer[10];
 
-  int id = 3;
+  int id = 1;
 
   int startFlag = 0;
 
@@ -135,7 +139,7 @@ int main(void) {
 
   HAL_Delay(500);  // 安全初期化処理
 
-  int counter = 0;
+  // int counter = 0;
   long encVal;  //磁気エンコーダー角度格納用
 
   int speed = 0;
@@ -143,6 +147,7 @@ int main(void) {
   int drive = 0;
   int turn = 0;
   int brakeMode = 0;  // 0: ブレーキなし 1:ダイナミック 2:やばいやつ
+  // int _drive;
 
   while (1) {
     HAL_UART_Receive_IT(&huart2, buffer, 1);
@@ -165,7 +170,7 @@ int main(void) {
         brakeMode = 2;
       } else {
         brakeMode = 0;
-        speed *= 2;
+        speed = (float)speed * 2.5;
       }
     }
     // speed = buffer[0];
@@ -186,15 +191,14 @@ int main(void) {
           drive = 0;
           if (turn) {
             encVal += 4096 * 2;
-            encVal += 43;
+            encVal += 40;
             encVal %= 4096;
-            // encVal %= 4096;
             drive = (int)((float)encVal / 97.5) % 6;
             drive += 1;
             drive %= 6;
           } else {
             encVal += 4096 * 2;
-            encVal -= 123;
+            encVal -= 83;
             encVal %= 4096;
             // encVal %= 4096;
             drive = (int)((float)encVal / 97.5) % 6;
@@ -203,6 +207,15 @@ int main(void) {
           }
 
           sekuta(drive, speed);  //駆動
+
+          // if (_drive == drive) {
+          //   _velocity++;
+          // } else {
+          //   velocity = _velocity;
+          //   _velocity = 0;
+          // }
+
+          // _drive = drive;
         }
       } else if (brakeMode == 1) {
         flag = 0;
