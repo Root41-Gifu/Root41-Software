@@ -46,6 +46,23 @@ volatile int voltage;
 
 volatile float gain = 0.114;
 
+class _UI{
+  public:
+    void refrection(int);
+    void check(void);
+
+    int mode;
+    bool active;
+
+  private:
+    bool switchingFlag[4];
+    bool touchFlag[4];
+    bool longpressFlag[4];
+    bool touch[4];
+    int counter[4];
+    unsigned long longpressTimer[4];
+};
+
 void measureAngularVelocity(void) {
   deg = analogRead(A0);
 
@@ -110,4 +127,9 @@ void loop() {
       }
     }
   }
+
+  for(int i=0; i<=3; i++){
+    UI.check(i);
+  }
+  UI.refrection();
 }
