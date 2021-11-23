@@ -252,6 +252,14 @@ void _UI::NeoPixeldisplay(int _mode) {
   right.show();
 }
 
+void _UI::StripFulldisplay(unsigned long color){
+  strip.clear();
+  for(int i=0; i<16; i++){
+    strip.setPixelColor(i,color);
+  }
+  strip.show();
+}
+
 void _UI::LCDdisplay(void) {
   display.clearDisplay();
   display.setTextSize(2);

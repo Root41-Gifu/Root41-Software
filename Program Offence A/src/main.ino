@@ -102,6 +102,7 @@ class _UI {
   void LCDdisplay(void);
   void Errordisplay(int);
   void NeoPixeldisplay(int);
+  void StripFulldisplay(long);
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
