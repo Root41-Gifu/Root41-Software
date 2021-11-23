@@ -1,7 +1,7 @@
 _Ball::_Ball(){
-    for(int i=0; i<=15; i++){
-        vectorX[i]=sin(i*22.5*PI/180);
-        vectorY[i]=cos(i*22.5*PI/180);
+    for(int i=0; i<BALL_NUM; i++){
+        vectorX[i]=sin(radians(i*22.5));
+        vectorY[i]=cos(radians(i*22.5));
     }
 }
 
@@ -71,7 +71,7 @@ void _Ball::calcDirection(void){
     vectortX=vectorX[max_average[0]]+vectorX[max_average[1]]*0.3+vectorX[max_average[2]]*0.1;
     vectortY=vectorY[max_average[0]]+vectorY[max_average[1]]*0.3+vectorY[max_average[2]]*0.1;
 
-    degree=atan2(vectortX,vectortY)*180/PI;
+    degree=degrees(atan2(vectortX,vectortY));
     //右が（0~180）、左が(-180~0)
 }
 
