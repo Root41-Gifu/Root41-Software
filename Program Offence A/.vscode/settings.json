@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.ino": "cpp",
+        "*.pde": "cpp",
         "system_error": "cpp",
         "array": "cpp",
         "string": "cpp",
@@ -13,6 +14,10 @@
         "type_traits": "cpp",
         "utility": "cpp",
         "random": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "deque": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "initializer_list": "cpp"
     }
 }
