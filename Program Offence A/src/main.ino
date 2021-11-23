@@ -41,7 +41,7 @@
 #define NEOPIXEL_BRIGHTNESS 30
 
 Adafruit_SSD1306 display(-1);
-Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
 Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ800);
@@ -95,6 +95,8 @@ volatile uint8_t interval = 0;
 volatile float gain = 0.114;
 
 float Battery;
+int MotorPower = 100;
+int degree;
 bool emergency;  //緊急用のフラグ（やばいとき上げて）
 
 class _UI {
@@ -107,10 +109,11 @@ class _UI {
   void LCDdisplay(void);
   void Errordisplay(int);
   void NeoPixeldisplay(int);
+  void StripFulldisplay(unsigned long);
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int subsubmode;
+  int setting;
 
   bool active;  //動作中
   bool select;
@@ -214,6 +217,36 @@ class _Line {
   float _vectorY[47];
 } line;
 
+class _Motor {
+ public:
+  _Motor(void);
+  void drive(int, int, bool);
+  void begin(void);
+  void directDrive(int* p);
+
+  int val[4];
+  int calcVal[4][360];
+  int deg;
+  int speed;
+  int count;
+  int time = 5;
+  int referenceAngle = 0;
+
+  unsigned long timer;
+
+  int direction = 0;
+
+ private:
+  float Kp;
+  float Ki;
+  float Kd;
+
+  int integral = 0;
+  int gyroOld;
+} motor;
+
+int gyrodeg;
+
 class _Camera {
  public:
   // _Camera(void);
@@ -240,15 +273,15 @@ class _gyro {
   int offsetVal;
 } gyro;
 
-class _motor {
- public:
-  void begin(void);
-  void directDrive(int *v);
+// class _motor {
+//  public:
+//   void begin(void);
+//   void directDrive(int *v);
 
-  int v[4] = {0, 0, 0, 0};
+//   int v[4] = {0, 0, 0, 0};
 
- private:
-} motor;
+//  private:
+// } motor;
 
 // void measureAngularVelocity(void) {
 //   deg = analogRead(A0);
@@ -289,6 +322,7 @@ void loop() {
   ball.value[6] = 0;
   ball.value[7] = 0;
   // for(int i=0; i<BALL_NUM; i++){
+
   //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。
   // }
   ball.LPF();  // LPFかける。魔法のフィルタ
@@ -321,6 +355,12 @@ void loop() {
 
   // line---------------------------------------------
   line.read();
+  line.arrange();
+  if (line.flag) {
+    line.calc();
+  } else {
+    line.Move_degree = 1000;
+  }
 
   // UI---------------------------------------------
   UI.read();
@@ -344,19 +384,60 @@ void loop() {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
+  // gyro
+  //ジャイロの読みこみ等
+
   // Motor---------------------------------------------
   if (!emergency) {
+    //進行角度の選定
     if (line.flag) {
+      degree = line.Move_degree;
     } else {
+      degree = ball.Move_degree;
     }
+    if (UI.mode == 0) {
+      //セットアップ
+      //モーターのセットアップがあったらここで（終わったらmode=1にして）
+      // UI.mode=1;
+    } else if (UI.mode == 1 || UI.mode == 2) {
+      //モードオフェンス、ディフェンスの時
+      if (UI.active) {
+        //モーター駆動（角度はdegree,パワーはMotorPower）
+
+      } else {
+        //モーターが停止する
+      }
+    }
+  } else {
+    //緊急事態時の行動
+  }
+
+  if (Battery < 11.0 || Battery > 12.6) {
+    emergency = true;
   }
 
   // Serial---------------------------------------------
-  // for (int i = 0; i < 16; i++) {
-  //   Serial.print(line.value[i]);
-  // }
-  // Serial.println(" ");
+  Serial.print(motorPS(5));
+  Serial.print(" ");
 
-  // gyro.deg = gyro.read();
-  // Serial.println(gyro.deg);
+  Serial.println(" ");
+
+
+  // motor.directDrive();
+}
+
+int motorPS(int value) {
+  // XY------
+  byte sendValue;
+  bool rotation;
+  if (value > 0) {
+    rotation = true;
+  } else if (value < 0) {
+    rotation = false;
+  }
+  byte absValue = abs(value);
+  if (value <= 61) {
+    sendValue = (rotation << 6) | (absValue);
+  }
+  return sendValue;
 }
