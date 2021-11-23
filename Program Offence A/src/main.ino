@@ -102,7 +102,7 @@ class _UI {
   void LCDdisplay(void);
   void Errordisplay(int);
   void NeoPixeldisplay(int);
-  void StripFulldisplay(long);
+  void StripFulldisplay(unsigned long);
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
@@ -210,6 +210,34 @@ class _Line {
   float _vectorY[47];
 } line;
 
+class _Motor {
+ public:
+  _Motor(void);
+  void drive(int, int, bool);
+
+  int val[4];
+  int calcVal[4][360];
+  int deg;
+  int speed;
+  int count;
+  int time = 5;
+  int referenceAngle = 0;
+
+  unsigned long timer;
+
+  int direction = 0;
+
+ private:
+  float Kp;
+  float Ki;
+  float Kd;
+
+  int integral = 0;
+  int gyroOld;
+} motor;
+
+int gyrodeg;
+
 class _Camera {
  public:
   // _Camera(void);
@@ -315,7 +343,7 @@ void loop() {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
-  //gyro
+  // gyro
   //ジャイロの読みこみ等
 
   // Motor---------------------------------------------
@@ -326,11 +354,11 @@ void loop() {
     } else {
       degree = ball.Move_degree;
     }
-    if(UI.mode==0){
+    if (UI.mode == 0) {
       //セットアップ
       //モーターのセットアップがあったらここで（終わったらmode=1にして）
       // UI.mode=1;
-    }else if (UI.mode == 1 || UI.mode == 2) {
+    } else if (UI.mode == 1 || UI.mode == 2) {
       //モードオフェンス、ディフェンスの時
       if (UI.active) {
         //モーター駆動（角度はdegree,パワーはMotorPower）
@@ -343,8 +371,8 @@ void loop() {
     //緊急事態時の行動
   }
 
-  if(Battery>11.1){
-    emergency=true;
+  if (Battery > 11.1) {
+    emergency = true;
   }
 
   // Serial---------------------------------------------

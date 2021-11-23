@@ -190,25 +190,25 @@ void _UI::NeoPixeldisplay(int _mode) {
   left.clear();
   right.clear();
   strip.clear();
-  if (_mode == 0) {
-    if (ball.max_average[0] == 100) {
-      for (int i = 0; i < BALL_NUM; i++) {
-        strip.setPixelColor(i, 255, 0, 0);
-      }
-    } else {
-      int i = ball.max_average[0] - 1;
-      int k = ball.max_average[0] + 1;
-      if (i < 0) {
-        i = 16 + i;
-      } else if (k > 15) {
-        k = 0;
-      }
-      strip.setPixelColor(ball.max_average[0], 255, 0, 0);
-      strip.setPixelColor(i, 255, 0, 0);
-      strip.setPixelColor(k, 255, 0, 0);
-      // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
-    }
-  }
+  // if (_mode == 0) {
+  //   if (ball.max_average[0] == 100) {
+  //     for (int i = 0; i < BALL_NUM; i++) {
+  //       strip.setPixelColor(i, 255, 0, 0);
+  //     }
+  //   } else {
+  //     int i = ball.max_average[0] - 1;
+  //     int k = ball.max_average[0] + 1;
+  //     if (i < 0) {
+  //       i = 16 + i;
+  //     } else if (k > 15) {
+  //       k = 0;
+  //     }
+  //     strip.setPixelColor(ball.max_average[0], 255, 0, 0);
+  //     strip.setPixelColor(i, 255, 0, 0);
+  //     strip.setPixelColor(k, 255, 0, 0);
+  //     // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
+  //   }
+  // }
   if (_mode == 0) {
     if (ball.max[0] == 100) {
       for (int i = 0; i < BALL_NUM; i++) {
