@@ -88,7 +88,8 @@ volatile uint8_t interval = 0;
 volatile float gain = 0.114;
 
 float Battery;
-int MotorPower=100;
+int MotorPower = 100;
+int degree;
 bool emergency;  //緊急用のフラグ（やばいとき上げて）
 
 class _UI {
@@ -174,7 +175,7 @@ class _Line {
   bool check[47];  //加算されたか
   bool checkBlock[4];
   int Block;
-  int order[47];   //反応した順番
+  int order[47];  //反応した順番
   int orderBlock[4];
 
   //カウンター
@@ -190,10 +191,10 @@ class _Line {
   unsigned long detectTimer[47];
 
   //----十字ラインセンサー
-  int Front;    //フロント縁部分の反応数 ~7
-  int Rear;     //リア縁 ~5
-  int Left;     //左 ~3
-  int Right;    //右 ~3
+  int Front;  //フロント縁部分の反応数 ~7
+  int Rear;   //リア縁 ~5
+  int Left;   //左 ~3
+  int Right;  //右 ~3
   // int RearInside;   //リア内部 ~3
   // int LeftInside;   //左 ~3
   // int RightInside;  //右 ~3
@@ -234,10 +235,9 @@ void setup() {
 }
 
 void loop() {
+  Battery = analogRead(voltage) * 0.01612;
 
-  Battery=analogRead(voltage)*0.01612;
-
-  //Ball---------------------------------------------
+  // Ball---------------------------------------------
   ball.read();  // SPI読み込み
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
@@ -252,7 +252,7 @@ void loop() {
   ball.value[6] = 0;
   ball.value[7] = 0;
   // for(int i=0; i<BALL_NUM; i++){
-        
+
   //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。
   // }
   ball.LPF();  // LPFかける。魔法のフィルタ
@@ -283,13 +283,13 @@ void loop() {
   ball.calcDirection();  //ボールの方向算出
   // ball.calc();//動作角度算出
 
-  //line---------------------------------------------
+  // line---------------------------------------------
   line.read();
   line.arrange();
-  if(line.flag){
+  if (line.flag) {
     line.calc();
-  }else{
-    line.Move_degree=1000;
+  } else {
+    line.Move_degree = 1000;
   }
 
   // UI---------------------------------------------
@@ -314,32 +314,57 @@ void loop() {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
-  //Motor---------------------------------------------
-  if(!emergency){
-    if(line.flag){
-    }else{
+  //gyro
+  //ジャイロの読みこみ等
+
+  // Motor---------------------------------------------
+  if (!emergency) {
+    //進行角度の選定
+    if (line.flag) {
+      degree = line.Move_degree;
+    } else {
+      degree = ball.Move_degree;
     }
+    if(UI.mode==0){
+      //セットアップ
+      //モーターのセットアップがあったらここで（終わったらmode=1にして）
+      // UI.mode=1;
+    }else if (UI.mode == 1 || UI.mode == 2) {
+      //モードオフェンス、ディフェンスの時
+      if (UI.active) {
+        //モーター駆動（角度はdegree,パワーはMotorPower）
+
+      } else {
+        //モーターが停止する
+      }
+    }
+  } else {
+    //緊急事態時の行動
   }
 
-  //Serial---------------------------------------------
+  if(Battery>11.1){
+    emergency=true;
+  }
+
+  // Serial---------------------------------------------
   Serial.print(motorPS(5));
   Serial.print(" ");
 
   Serial.println(" ");
 }
 
-int motorPS(int value){
-  //XY------
+int motorPS(int value) {
+  // XY------
   byte sendValue;
   bool rotation;
-  if(value>0){
-    rotation=true;
-  }else if(value<0){
-    rotation=false;
+  if (value > 0) {
+    rotation = true;
+  } else if (value < 0) {
+    rotation = false;
   }
-  byte absValue=abs(value);
-  if(value<=61){
-    sendValue=(rotation<<6)|(absValue);
+  byte absValue = abs(value);
+  if (value <= 61) {
+    sendValue = (rotation << 6) | (absValue);
   }
   return sendValue;
 }
