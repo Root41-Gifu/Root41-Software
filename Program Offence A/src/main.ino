@@ -142,7 +142,7 @@ class _Ball {
   int max_average[3];       //最大値の平均
   int averageCounter[17];
   int degree;       //ボールの角度
-  int move_degree;  //進行角度
+  int Move_degree;  //進行角度
 
   float vectorX[16];  //ベクトル（ボール位置の定数）
   float vectorY[16];
@@ -165,11 +165,16 @@ class _Line {
   // void brightnessAdjust(void);
   void calc(void);
 
+  int Move_degree;
+
   bool flag;       //ラインセンサーの動きをするか
   bool touch;      //ラインに触れているか
   bool value[47];  //反応値
   bool check[47];  //加算されたか
+  bool checkBlock[4];
+  int Block;
   int order[47];   //反応した順番
+  int orderBlock[4];
 
   //カウンター
   int whited;   //反応した数
@@ -230,7 +235,7 @@ void loop() {
 
   Battery=analogRead(voltage)*0.01612;
 
-  //ボール処理
+  //Ball---------------------------------------------
   ball.read();  // SPI読み込み
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
@@ -275,10 +280,10 @@ void loop() {
   ball.calcDirection();  //ボールの方向算出
   // ball.calc();//動作角度算出
 
-  // line
+  //line---------------------------------------------
   line.read();
 
-  // UI
+  // UI---------------------------------------------
   UI.read();
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
 
@@ -300,14 +305,14 @@ void loop() {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
-  //モーター制御
+  //Motor---------------------------------------------
   if(!emergency){
     if(line.flag){
     }else{
     }
   }
 
-  //シリアルプリント
+  //Serial---------------------------------------------
   for (int i = 0; i < 16; i++) {
     Serial.print(line.value[i]);
   }
