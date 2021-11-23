@@ -8,11 +8,11 @@
 #define voltage PC0
 
 #define BALL_NUM 16
-#define LINE_NUM 
+#define LINE_NUM 41
 #define LINE_FRONTNUM 10
 #define LINE_REARNUM 9
-#define LINE_LEFTNUM 
-#define LINE_RIGHTNUM 0
+#define LINE_LEFTNUM 14
+#define LINE_RIGHTNUM 8
 #define LED_STRIP 16
 #define LED_FRONT 13
 #define LED_REAR 14
@@ -88,6 +88,7 @@ volatile uint8_t interval = 0;
 volatile float gain = 0.114;
 
 float Battery;
+int MotorPower=100;
 bool emergency;  //緊急用のフラグ（やばいとき上げて）
 
 class _UI {
@@ -103,7 +104,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int subsubmode;
+  int setting;
 
   bool active;  //動作中
   bool select;
@@ -214,12 +215,13 @@ class _Camera {
  private:
 } camera;
 
-// void measureAngularVelocity(void) {
-//   deg = analogRead(A0);
+int motorPS(int);
 
 SPISettings MAX6675Setting(4000000, MSBFIRST, SPI_MODE0);
 
 void setup() {
+  delay(1000);
+
   pinMode(PB10, OUTPUT);
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
@@ -250,6 +252,7 @@ void loop() {
   ball.value[6] = 0;
   ball.value[7] = 0;
   // for(int i=0; i<BALL_NUM; i++){
+        
   //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。
   // }
   ball.LPF();  // LPFかける。魔法のフィルタ
@@ -282,6 +285,12 @@ void loop() {
 
   //line---------------------------------------------
   line.read();
+  line.arrange();
+  if(line.flag){
+    line.calc();
+  }else{
+    line.Move_degree=1000;
+  }
 
   // UI---------------------------------------------
   UI.read();
@@ -313,8 +322,24 @@ void loop() {
   }
 
   //Serial---------------------------------------------
-  for (int i = 0; i < 16; i++) {
-    Serial.print(line.value[i]);
-  }
+  Serial.print(motorPS(5));
+  Serial.print(" ");
+
   Serial.println(" ");
+}
+
+int motorPS(int value){
+  //XY------
+  byte sendValue;
+  bool rotation;
+  if(value>0){
+    rotation=true;
+  }else if(value<0){
+    rotation=false;
+  }
+  byte absValue=abs(value);
+  if(value<=61){
+    sendValue=(rotation<<6)|(absValue);
+  }
+  return sendValue;
 }
