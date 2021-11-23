@@ -1,71 +1,66 @@
 
+
 #include "main.h"
 
-#define lowByte(w) ((uint8_t)((w)&0xff))
-#define highByte(w) ((uint8_t)((w) >> 8))
+#include "stdctrl.h"
+#include "stdui.h"
+
+void initialization(void);
+#define USART_RX_BUFFSIZE 10
+
+static UART_HandleTypeDef *pHuart;
+static uint8_t RxBuff[USART_RX_BUFFSIZE];
+static uint32_t rd_ptr;
+
+int gUartReceived = 0;
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
+/* USER CODE BEGIN PFP */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) { gUartReceived = 1; }
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc;
 
 TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart2;
 
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC_Init(void);
 static void MX_TIM2_Init(void);
+/* USER CODE BEGIN PFP */
 
-void sekuta(int sek, int power) {
-  if (sek == 0) {  // u-v
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
+/* USER CODE END PFP */
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-  } else if (sek == 1) {                                   // w-v
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, power);
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);  //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);    //! W
-  } else if (sek == 2) {                                   // w-u
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, power);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);     //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);     //! W
-  } else if (sek == 3) {                                    // v-u
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-  } else if (sek == 4) {                                   // v-w
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);  //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);    //! W
-  } else if (sek == 5) {                                   // u-w
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);     //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);     //! W
-  }
-}
 /* USER CODE END 0 */
 
 /**
@@ -73,81 +68,198 @@ void sekuta(int sek, int power) {
  * @retval int
  */
 int main(void) {
-  /* USER CODE BEGIN 1 */
-  __IO uint32_t ad;
-  /* USER CODE END 1 */
+  initialization();  // HALの初期化処理まとめたお☆
 
-  /* MCU Configuration--------------------------------------------------------*/
+  uint8_t buffer[10];
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
-   */
-  HAL_Init();
+  int id = 3;
 
-  /* USER CODE BEGIN Init */
+  int startFlag = 0;
 
-  /* USER CODE END Init */
+  while (startFlag == 0) {
+    HAL_UART_Receive_IT(&huart2, buffer, 1);
+    HAL_UART_Transmit_IT(&huart2, buffer, 1);
+    gUartReceived = 0;
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    if (buffer[0] == 0B11111111) {
+      startFlag = 1;
+    }
+  }
+  while (startFlag == 1) {
+    HAL_UART_Receive_IT(&huart2, buffer, 1);
+    HAL_UART_Transmit_IT(&huart2, buffer, 1);
+    gUartReceived = 0;
 
-  /* USER CODE BEGIN SysInit */
+    if (buffer[0] == 0B00000000) {
+      startFlag = 2;
+    }
+  }
+  while (startFlag == 2) {
+    HAL_UART_Receive_IT(&huart2, buffer, 1);
+    HAL_UART_Transmit_IT(&huart2, buffer, 1);
+    gUartReceived = 0;
 
-  /* USER CODE END SysInit */
+    if (buffer[0] == 0B10000000) {
+      startFlag = 3;
+    }
+  }
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_ADC_Init();
-  MX_TIM2_Init();
-  /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  int tone[4] = {2, 3, 4, 1};
+  int offsetValue[4] = {1564, 1832, 1690, 1319};
+  HAL_Delay(id * 120);
+  buzzer001(tone[id]);  //起動音（3回短音）//120
+  HAL_Delay(360 - (id * 120));
+  int offset = offsetValue[id];
 
-  int val = 0;
+  int data = 0;
+  int tempcount = 0;
 
-  for (int j = 0; j < 3; j++) {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-    for (int i = 0; i < 60; i++) {
-      HAL_Delay(1);
+  // while (!(data >= 1500 && data <= 1600)) {
+  //   tempcount++;
+  //   sekuta(tempcount % 6, 50);
+  //   HAL_Delay(5);
 
-      if (i % 2) {
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 40);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
+  //   data = encoderRead();
+  // }
+
+  // while (HAL_GetTick() <= 3000) {  //時間合わせ
+  //   /* code */
+  // }
+
+  // offset = calibration();
+
+  release();
+  HAL_Delay(200);
+
+  buzzer002();
+
+  HAL_Delay(500);  // 安全初期化処理
+
+  int counter = 0;
+  long encVal;  //磁気エンコーダー角度格納用
+
+  int speed = 0;
+  int flag = 0;
+  int drive = 0;
+  int turn = 0;
+  int brakeMode = 0;  // 0: ブレーキなし 1:ダイナミック 2:やばいやつ
+
+  while (1) {
+    HAL_UART_Receive_IT(&huart2, buffer, 1);
+    HAL_UART_Transmit_IT(&huart2, buffer, 1);
+
+    gUartReceived = 0;
+
+    char serialData = 0;
+    serialData = buffer[0];
+    if ((serialData & 0B10000000) == 0B10000000) {
+      if ((serialData & 0B01000000) == 0B00000000) {  //正転
+        turn = 0;
       } else {
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 40);
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
+        turn = 1;  //逆転
+      }
+      speed = serialData & 0B00111111;
+      if (speed == 62) {
+        brakeMode = 1;
+      } else if (speed == 63) {
+        brakeMode = 2;
+      } else {
+        brakeMode = 0;
+        speed *= 2;
+      }
+    }
+    // speed = buffer[0];
+    for (int i = 0; i < 50; i++) {
+      if (brakeMode == 0) {
+        if (speed == 0) {
+          flag = 0;
+          release();
+        } else {
+          flag = 1;
+          //磁気エンコーダ角度取得
+          encVal = encoderRead();
+          encVal -= offset;
+          encVal += 4096 * 2;
+          encVal = encVal % 4096;
+          encVal = 4095 - encVal;
+
+          drive = 0;
+          if (turn) {
+            encVal += 4096 * 2;
+            encVal += 43;
+            encVal %= 4096;
+            // encVal %= 4096;
+            drive = (int)((float)encVal / 97.5) % 6;
+            drive += 1;
+            drive %= 6;
+          } else {
+            encVal += 4096 * 2;
+            encVal -= 123;
+            encVal %= 4096;
+            // encVal %= 4096;
+            drive = (int)((float)encVal / 97.5) % 6;
+            drive += 5;
+            drive %= 6;
+          }
+
+          sekuta(drive, speed);  //駆動
+        }
+      } else if (brakeMode == 1) {
+        flag = 0;
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 0);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);   //! U
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);  //! V
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);   //! W
+      } else if (brakeMode == 2) {
+        if (flag == 0) {
+          encVal = encoderRead();
+          encVal -= offset;
+          encVal += 4096 * 2;
+          encVal = encVal % 4096;
+          encVal = 4095 - encVal;
+
+          drive = 0;
+          encVal += 4096 * 2;
+          encVal += 43;
+          encVal %= 4096;
+          drive = (int)((float)encVal / 97.5) % 6;
+          drive %= 6;
+
+          flag = 1;
+        }
+
+        sekuta(drive, 120);
       }
     }
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);   //! U
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);   //! W
+    // if (1) {  //矩形波
 
-    HAL_Delay(60);
-  }
+    // } else {
+    //   encVal = encoderRead();
+    //   encVal += 4096;
+    //   encVal %= 4096;
+    //   encVal = encVal >> 2;
+    //   encVal %= 146;
+    //   encVal = 145 - encVal;
 
-  HAL_Delay(500);
-  
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1) {
-    static int counter = 0;
+    //   encVal += 18;
+    //   // encVal += 20;
+    //   encVal += 23;
+    //   encVal += 146 * 2;
+    //   encVal %= 146;
 
-    HAL_ADC_Start(&hadc);
-    HAL_ADC_PollForConversion(&hadc, 10);  // ADC変換終了を待機
-    HAL_ADC_Stop(&hadc);
-    val = HAL_ADC_GetValue(&hadc);
+    //   float speed = 0.9;
 
-    counter += 5;
-    counter %= 6;
-    HAL_Delay(1);
+    //   // encVal = counterMan;
 
-    sekuta(counter, 40);
+    //   driveDirect(encVal, speed);
+    // }
+
+    // driveDirect(20, 0.3);
+
+    // HAL_Delay(1);  //処理待ち
   }
   /* USER CODE END 3 */
 }
@@ -236,26 +348,8 @@ static void MX_ADC_Init(void) {
   }
   /** Configure for the selected ADC regular channel to be converted.
    */
-  // sConfig.Channel = ADC_CHANNEL_0;
-  // sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-  // if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-  //   Error_Handler();
-  // }
-  // /** Configure for the selected ADC regular channel to be converted.
-  //  */
-  // sConfig.Channel = ADC_CHANNEL_1;
-  // if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-  //   Error_Handler();
-  // }
-  // /** Configure for the selected ADC regular channel to be converted.
-  //  */
-  // sConfig.Channel = ADC_CHANNEL_4;
-  // if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-  //   Error_Handler();
-  // }
-  /** Configure for the selected ADC regular channel to be converted.
-   */
   sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
     Error_Handler();
   }
@@ -282,7 +376,7 @@ static void MX_TIM2_Init(void) {
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 2;
+  htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 255;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -402,7 +496,8 @@ static void MX_GPIO_Init(void) {
  */
 void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+  /* User can add his own implementation to report the HAL error return state
+   */
   __disable_irq();
   while (1) {
   }
@@ -421,16 +516,28 @@ void assert_failed(uint8_t *file, uint32_t line) {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line
      number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line)
+     */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF
+ * FILE****/
 
 // #include "main.h"
-// ADC_HandleTypeDef hadc;
-// TIM_HandleTypeDef htim2;
+
+// #define USART_RX_BUFFSIZE 10
+
+// static UART_HandleTypeDef* pHuart;
+// static uint8_t RxBuff[USART_RX_BUFFSIZE];
+// static uint32_t rd_ptr;
+
+// int gUartReceived = 0;
+
+// #include "stdctrl.h"
+// #include "stdui.h"
+
 // UART_HandleTypeDef huart2;
 
 // void SystemClock_Config(void);
@@ -438,164 +545,128 @@ void assert_failed(uint8_t *file, uint32_t line) {
 // static void MX_USART2_UART_Init(void);
 // static void MX_ADC_Init(void);
 // static void MX_TIM2_Init(void);
-// void sekuta(int sek, int power) {
-//   if (sek == 0) {  // u-v
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
 
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-//   } else if (sek == 1) {                                   // w-v
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, power);
-
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);  //! U
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);    //! W
-//   } else if (sek == 2) {                                   // w-u
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, power);
-
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);     //! U
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);     //! W
-//   } else if (sek == 3) {                                    // v-u
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, power);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);    //! U
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //! W
-//   } else if (sek == 4) {                                   // v-w
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, power);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);  //! U
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);   //! V
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);    //! W
-//   } else if (sek == 5) {                                   // u-w
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, power);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 1);
-//     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1);
-
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);     //! U
-//     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);  //! V
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);     //! W
-//   }
-// }
-
-// void HAL_DelayUS(uint32_t Delay) {
-//   long neko = 0;
-//   while (neko <= 1000) {
-//     neko++;
-//   }
-// }
+// void initialization(void);
 
 // int main(void) {
-//   HAL_Init();
+//   initialization();  // HALの初期化処理まとめたお☆
 
-//   /* USER CODE BEGIN Init */
+//   uint8_t buffer[10];
 
-//   /* USER CODE END Init */
+//   int id = 3;
+//   HAL_Delay(120);
+//   buzzer001(id + 1);  //起動音（3回短音）//120
+//   HAL_Delay(240);
+//   int offset = 0;
 
-//   /* Configure the system clock */
-//   SystemClock_Config();
+//   int data = 0;
+//   int tempcount = 0;
 
-//   /* USER CODE BEGIN SysInit */
+//   // while (!(data >= 1500 && data <= 1600)) {
+//   //   tempcount++;
+//   //   sekuta(tempcount % 6, 50);
+//   //   HAL_Delay(5);
 
-//   /* USER CODE END SysInit */
+//   //   data = encoderRead();
+//   // }
 
-//   /* Initialize all configured peripherals */
-//   MX_GPIO_Init();
-//   MX_USART2_UART_Init();
-//   MX_ADC_Init();
-//   MX_TIM2_Init();
-//   /* USER CODE BEGIN 2 */
-//   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-//   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-//   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-//   HAL_TIM_Base_Start_IT(&htim2);
+//   // while (HAL_GetTick() <= 3000) {  //時間合わせ
+//   //   /* code */
+//   // }
 
-//   int pwm[] = {
-//       127, 129, 131, 134, 136, 138, 140, 142, 145, 147, 149, 151, 153, 155,
-//       157, 160, 162, 164, 166, 168, 170, 172, 174, 176, 178, 180, 182, 184,
-//       186, 188, 190, 192, 194, 196, 197, 199, 201, 203, 205, 206, 208, 210,
-//       211, 213, 215, 216, 218, 219, 221, 222, 224, 225, 226, 228, 229, 230,
-//       231, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245,
-//       245, 246, 247, 247, 248, 249, 249, 250, 250, 251, 251, 251, 252, 252,
-//       252, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 253, 252, 252,
-//       252, 251, 251, 251, 250, 250, 249, 249, 248, 247, 247, 246, 245, 245,
-//       244, 243, 242, 241, 240, 239, 238, 237, 236, 235, 234, 233, 231, 230,
-//       229, 228, 226, 225, 224, 222, 221, 219, 218, 216, 215, 213, 211, 210,
-//       208, 206, 205, 203, 201, 199, 197, 196, 194, 192, 190, 188, 186, 184,
-//       182, 180, 178, 176, 174, 172, 170, 168, 166, 164, 162, 160, 157, 155,
-//       153, 151, 149, 147, 145, 142, 140, 138, 136, 134, 131, 129, 127, 125,
-//       123, 120, 118, 116, 114, 112, 109, 107, 105, 103, 101, 99,  97,  94,
-//       92,  90,  88,  86,  84,  82,  80,  78,  76,  74,  72,  70,  68,  66,
-//       64,  62,  60,  58,  57,  55,  53,  51,  49,  48,  46,  44,  43,  41,
-//       39,  38,  36,  35,  33,  32,  30,  29,  28,  26,  25,  24,  23,  21,
-//       20,  19,  18,  17,  16,  15,  14,  13,  12,  11,  10,  9,   9,   8,
-//       7,   7,   6,   5,   5,   4,   4,   3,   3,   3,   2,   2,   2,   1,
-//       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   3,
-//       3,   3,   4,   4,   5,   5,   6,   7,   7,   8,   9,   9,   10,  11,
-//       12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  23,  24,  25,  26,
-//       28,  29,  30,  32,  33,  35,  36,  38,  39,  41,  43,  44,  46,  48,
-//       49,  51,  53,  55,  57,  58,  60,  62,  64,  66,  68,  70,  72,  74,
-//       76,  78,  80,  82,  84,  86,  88,  90,  92,  94,  97,  99,  101, 103,
-//       105, 107, 109, 112, 114, 116, 118, 120, 123, 125};
+//   // offset = calibration();
 
-//   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);   //! U
-//   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);  //! V
-//   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);   //! W
+//   // release();
+//   // HAL_Delay(200);
 
-//   int neko = 0;
-//   int val;  // AD変換後の数値を入れる
-//   char sval[100];
+//   // buzzer002();
+
+//   // HAL_Delay(500);  // 安全初期化処理
+
+//   int counter = 0;
+//   long encVal;  //磁気エンコーダー角度格納用
+
 //   while (1) {
-//     // neko++;
-//     // neko %= 360;
+//     HAL_UART_Receive_IT(&huart2, buffer, 1);
+//     HAL_UART_Transmit_IT(&huart2, buffer, 1);
 
-//     // double power = 0.05;  // 0.6ぐらいまでが望ましい
+//     gUartReceived = 0;
 
-//     // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, pwm[neko] * power);
-//     // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4,
-//     //                       pwm[(neko + 120) % 360] * power);
-//     // __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,
-//     //                       pwm[(neko + 240) % 360] * power);
+//     // if (1) {  //矩形波
+//     //   //磁気エンコーダ角度取得
+//     //   encVal = encoderRead();
+//     //   encVal -= offset;
+//     //   encVal += 4096 * 2;
+//     //   encVal = encVal % 4096;
+//     //   encVal = 4095 - encVal;
 
-//     // HAL_Delay(1);
+//     //   int drive = 0;
+//     //   // if (((HAL_GetTick() + 0) / 500) % 2) {
+//     //   if (0) {
+//     //     encVal += 4096 * 2;
+//     //     encVal += 43;
+//     //     encVal %= 4096;
+//     //     // encVal %= 4096;
+//     //     drive = (int)((float)encVal / 97.5) % 6;
+//     //     drive += 1;
+//     //     drive %= 6;
+//     //   } else {
+//     //     encVal += 4096 * 2;
+//     //     encVal -= 123;
+//     //     encVal %= 4096;
+//     //     // encVal %= 4096;
+//     //     drive = (int)((float)encVal / 97.5) % 6;
+//     //     drive += 5;
+//     //     drive %= 6;
+//     //   }
 
-//     // HAL_UART_Transmit(&huart2, "UART Timeout.\r\n", 15, 10);
-//     HAL_ADC_Start(&hadc);
-//     HAL_ADC_PollForConversion(&hadc, 100);  // ADC変換終了を待機
-//     HAL_ADC_Stop(&hadc);
-//     val = HAL_ADC_GetValue(&hadc);
-//     // UART送信
-//     sprintf(sval, "%d\r\n", val);
-//     HAL_UART_Transmit(&huart2, sval, strlen(sval) + 1, 0xFFFF);
-//     //待機(100[ms])
-//     HAL_Delay(100);
+//     //   sekuta(drive, 60);  //駆動
+//     // } else {
+//     //   encVal = encoderRead();
+//     //   encVal += 4096;
+//     //   encVal %= 4096;
+//     //   encVal = encVal >> 2;
+//     //   encVal %= 146;
+//     //   encVal = 145 - encVal;
+
+//     //   encVal += 18;
+//     //   // encVal += 20;
+//     //   encVal += 23;
+//     //   encVal += 146 * 2;
+//     //   encVal %= 146;
+
+//     //   float speed = 0.9;
+
+//     //   // encVal = counterMan;
+
+//     //   driveDirect(encVal, speed);
+//     // }
+
+//     // driveDirect(20, 0.3);
+
+//     // HAL_Delay(1);  //処理待ち
 //   }
-//   /* USER CODE END 3 */
 // }
 
-// /**
-//  * @brief System Clock Configuration
-//  * @retval None
-//  */
+// //初期化処理
+void initialization(void) {
+  HAL_Init();
+  SystemClock_Config();
+  MX_GPIO_Init();
+  MX_ADC_Init();
+  MX_TIM2_Init();
+  MX_USART2_UART_Init();
+
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+}
+
 // void SystemClock_Config(void) {
 //   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 //   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 //   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-//   /** Configure the main internal regulator output voltage
-//    */
 //   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 //   /** Initializes the RCC Oscillators according to the specified parameters
 //    * in the RCC_OscInitTypeDef structure.
@@ -669,23 +740,23 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //   }
 //   /** Configure for the selected ADC regular channel to be converted.
 //    */
-//   sConfig.Channel = ADC_CHANNEL_0;
-//   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-//   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-//     Error_Handler();
-//   }
-//   /** Configure for the selected ADC regular channel to be converted.
-//    */
-//   sConfig.Channel = ADC_CHANNEL_1;
-//   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-//     Error_Handler();
-//   }
-//   /** Configure for the selected ADC regular channel to be converted.
-//    */
-//   sConfig.Channel = ADC_CHANNEL_4;
-//   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-//     Error_Handler();
-//   }
+//   // sConfig.Channel = ADC_CHANNEL_0;
+//   // sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+//   // if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+//   //   Error_Handler();
+//   // }
+//   // /** Configure for the selected ADC regular channel to be converted.
+//   //  */
+//   // sConfig.Channel = ADC_CHANNEL_1;
+//   // if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+//   //   Error_Handler();
+//   // }
+//   // /** Configure for the selected ADC regular channel to be converted.
+//   //  */
+//   // sConfig.Channel = ADC_CHANNEL_4;
+//   // if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+//   //   Error_Handler();
+//   // }
 //   /** Configure for the selected ADC regular channel to be converted.
 //    */
 //   sConfig.Channel = ADC_CHANNEL_7;
@@ -715,7 +786,7 @@ void assert_failed(uint8_t *file, uint32_t line) {
 
 //   /* USER CODE END TIM2_Init 1 */
 //   htim2.Instance = TIM2;
-//   htim2.Init.Prescaler = 0;
+//   htim2.Init.Prescaler = 2;
 //   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
 //   htim2.Init.Period = 255;
 //   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -740,15 +811,18 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //   sConfigOC.Pulse = 0;
 //   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 //   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) !=
+//   HAL_OK)
 //   {
 //     Error_Handler();
 //   }
-//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) !=
+//   HAL_OK)
 //   {
 //     Error_Handler();
 //   }
-//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+//   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) !=
+//   HAL_OK)
 //   {
 //     Error_Handler();
 //   }
@@ -839,8 +913,9 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //  */
 // void Error_Handler(void) {
 //   /* USER CODE BEGIN Error_Handler_Debug */
-//   /* User can add his own implementation to report the HAL error return state
-//   */
+//   /* User can add his own implementation to report the HAL error return
+//   state
+//    */
 //   __disable_irq();
 //   while (1) {
 //   }
@@ -855,12 +930,13 @@ void assert_failed(uint8_t *file, uint32_t line) {
 //  * @param  line: assert_param error line source number
 //  * @retval None
 //  */
-// void assert_failed(uint8_t *file, uint32_t line) {
+// void assert_failed(uint8_t* file, uint32_t line) {
 //   /* USER CODE BEGIN 6 */
 //   /* User can add his own implementation to report the file name and line
 //      number,
-//      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line)
-//      */
+//      ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
+//      line)
+//    */
 //   /* USER CODE END 6 */
 // }
 // #endif /* USE_FULL_ASSERT */
