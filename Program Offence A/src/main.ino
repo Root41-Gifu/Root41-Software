@@ -1,18 +1,22 @@
+
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
+#include <EEPROM.h>
+#include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
 #include <Wire.h>
 
 #define voltage PC0
 
 #define BALL_NUM 16
-#define LINE_NUM 
+#define LINE_NUM 41
 #define LINE_FRONTNUM 10
 #define LINE_REARNUM 9
-#define LINE_LEFTNUM 
-#define LINE_RIGHTNUM 0
+#define LINE_LEFTNUM 14
+#define LINE_RIGHTNUM 8
 #define LED_STRIP 16
 #define LED_FRONT 13
 #define LED_REAR 14
@@ -42,6 +46,9 @@ Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ800);
+
+HardwareSerial Serial4(A1, A0);
+HardwareSerial Serial1(PA10, PA9);
 
 int IN[3] = {3, 5, 7};
 int SD[3] = {9, 6, 8};
@@ -173,7 +180,7 @@ class _Line {
   bool check[47];  //加算されたか
   bool checkBlock[4];
   int Block;
-  int order[47];   //反応した順番
+  int order[47];  //反応した順番
   int orderBlock[4];
 
   //カウンター
@@ -189,10 +196,10 @@ class _Line {
   unsigned long detectTimer[47];
 
   //----十字ラインセンサー
-  int Front;    //フロント縁部分の反応数 ~7
-  int Rear;     //リア縁 ~5
-  int Left;     //左 ~3
-  int Right;    //右 ~3
+  int Front;  //フロント縁部分の反応数 ~7
+  int Rear;   //リア縁 ~5
+  int Left;   //左 ~3
+  int Right;  //右 ~3
   // int RearInside;   //リア内部 ~3
   // int LeftInside;   //左 ~3
   // int RightInside;  //右 ~3
@@ -214,12 +221,42 @@ class _Camera {
  private:
 } camera;
 
+class _gyro {
+ public:
+  void setting(void);
+  void calibrationEEPROM(void);
+  void offsetRead(void);
+  int read(void);
+  int differentialRead(void);
+
+  int deg;
+  int eeprom[6];
+
+  bool isLift = false;
+
+ private:
+  // none
+  int differentialDeg = 0;
+  int offsetVal;
+} gyro;
+
+class _motor {
+ public:
+  void begin(void);
+  void directDrive(int *v);
+
+  int v[4] = {0, 0, 0, 0};
+
+ private:
+} motor;
+
 // void measureAngularVelocity(void) {
 //   deg = analogRead(A0);
 
 SPISettings MAX6675Setting(4000000, MSBFIRST, SPI_MODE0);
 
 void setup() {
+  delay(1000);
   pinMode(PB10, OUTPUT);
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
@@ -229,13 +266,15 @@ void setup() {
   SPI.beginTransaction(MAX6675Setting);
   Wire.begin();
   Serial.begin(9600);
+
+  gyro.setting();
+  motor.begin();
 }
 
 void loop() {
+  Battery = analogRead(voltage) * 0.01612;
 
-  Battery=analogRead(voltage)*0.01612;
-
-  //Ball---------------------------------------------
+  // Ball---------------------------------------------
   ball.read();  // SPI読み込み
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
@@ -280,7 +319,7 @@ void loop() {
   ball.calcDirection();  //ボールの方向算出
   // ball.calc();//動作角度算出
 
-  //line---------------------------------------------
+  // line---------------------------------------------
   line.read();
 
   // UI---------------------------------------------
@@ -305,16 +344,19 @@ void loop() {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
-  //Motor---------------------------------------------
-  if(!emergency){
-    if(line.flag){
-    }else{
+  // Motor---------------------------------------------
+  if (!emergency) {
+    if (line.flag) {
+    } else {
     }
   }
 
-  //Serial---------------------------------------------
-  for (int i = 0; i < 16; i++) {
-    Serial.print(line.value[i]);
-  }
-  Serial.println(" ");
+  // Serial---------------------------------------------
+  // for (int i = 0; i < 16; i++) {
+  //   Serial.print(line.value[i]);
+  // }
+  // Serial.println(" ");
+
+  // gyro.deg = gyro.read();
+  // Serial.println(gyro.deg);
 }

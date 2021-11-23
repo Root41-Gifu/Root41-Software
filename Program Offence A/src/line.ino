@@ -125,7 +125,7 @@ void _Line::arrange(void) {
           Rear++;
         } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
           Left++;
-        } else if (i < LINE_FRONTNUM + LINE_RAERNUM + LINE_LEFTNUM +
+        } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM +
                            LINE_RIGHTNUM) {
           Right++;
         }

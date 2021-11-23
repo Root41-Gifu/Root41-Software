@@ -130,7 +130,7 @@ void _Ball::calc(void){
         {0,22,45,68,90,112,135,157,180,202,225,247,270,292,315,337}
     };
     _degree=move_16[dist[max[0]]][max[0]];
-    move_degree=_degree;
+    Move_degree=_degree;
 }
 
 void _Ball::LPF(void){
