@@ -48,6 +48,10 @@ int SD[3] = {9, 6, 8};
 
 float power = 0.2;
 
+const int Line_Where[41] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 volatile int offset = 0;
 volatile int velocityUnit;
 volatile int deg;
@@ -196,9 +200,13 @@ class _Line {
   int Rear;   //リア縁 ~5
   int Left;   //左 ~3
   int Right;  //右 ~3
-  // int RearInside;   //リア内部 ~3
-  // int LeftInside;   //左 ~3
-  // int RightInside;  //右 ~3
+  int FrontEdge;
+  int RearEdge;
+  int LeftEdge;
+  int RightEdge;
+  int RearInside;   //リア内部 ~3
+  int LeftInside;   //左 ~3
+  int RightInside;  //右 ~3
 
   //その他
   int mode;

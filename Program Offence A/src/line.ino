@@ -121,6 +121,23 @@ void _Line::arrange(void) {
         flag = true;
       }
       touch = true;
+      if(Line_Where[i]==0){
+        FrontEdge++;
+      }else if(Line_Where[i]==1){
+        FrontInside++;
+      }else if(Line_Where[i]==2){
+        RearEdge++;
+      }else if(Line_Where[i]==3){
+        ReadInside++;
+      }else if(Line_Where[i]==4){
+        LeftEdge++
+      }else if(Line_Where[i]==5){
+        LeftInside++;
+      }else if(Line_Where[i]==6){
+        RightEdge++;
+      }else if(Line_Where[i]==7){
+        RightInside++;
+      }
     }
   }
   if (!touch) {
