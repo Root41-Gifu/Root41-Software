@@ -172,10 +172,10 @@ void _UI::refrection(void) {
   for (int i = 0; i <= 3; i++) {
     switchingFlag[i] = false;
   }
-  if (mode < 0) {
+  if (mode < 1) {
     mode = 7;
   } else if (mode > 7) {
-    mode = 0;
+    mode = 1;
   }
   if (switchScope > 15) {
     switchScope = 0;

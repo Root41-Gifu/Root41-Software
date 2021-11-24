@@ -160,9 +160,13 @@ class _Line {
   int Rear;   //リア縁 ~5
   int Left;   //左 ~3
   int Right;  //右 ~3
-  // int RearInside;   //リア内部 ~3
-  // int LeftInside;   //左 ~3
-  // int RightInside;  //右 ~3
+  int FrontEdge;
+  int RearEdge;
+  int LeftEdge;
+  int RightEdge;
+  int RearInside;   //リア内部 ~3
+  int LeftInside;   //左 ~3
+  int RightInside;  //右 ~3
 
   //その他
   int mode;
@@ -184,8 +188,10 @@ class _Motor {
   void normalBrake(void);
 
   void ultraBrake(void);
+  void motorCalc(int, int, bool, int);
 
   int val[4];
+  float sinVal[4][360];
   int calcVal[4][360];
   int deg;
   int speed;
