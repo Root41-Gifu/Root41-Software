@@ -151,7 +151,7 @@ int main(void) {
 
   while (1) {
     HAL_UART_Receive_IT(&huart2, buffer, 1);
-    HAL_UART_Transmit_IT(&huart2, buffer, 1);
+    // HAL_UART_Transmit_IT(&huart2, buffer, 1);
 
     gUartReceived = 0;
 
@@ -174,7 +174,7 @@ int main(void) {
       }
     }
     // speed = buffer[0];
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 1; i++) {
       if (brakeMode == 0) {
         if (speed == 0) {
           flag = 0;
@@ -243,7 +243,7 @@ int main(void) {
           flag = 1;
         }
 
-        sekuta(drive, 120);
+        sekuta(drive, 70);
       }
     }
 

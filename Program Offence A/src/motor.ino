@@ -28,8 +28,59 @@ _Motor::_Motor(void) {
   }
 }
 
-void _Motor::directDrive(int* p){
+void _Motor::directDrive(int* p) {
+  int data[4] = {0, 0, 0, 0};
+  for (int i = 0; i < 4; i++) {
+    if (i == 1 || i == 3) {
+      data[i] += 0B10000000;
+    }
 
+    if (*(p + i) < 0) {
+      data[i] += 0B00000000;
+      data[i] += constrain(abs(*(p + i)), 0, 60);
+    } else {
+      data[i] += 0B01000000;
+      data[i] += constrain(abs(*(p + i)), 0, 60);
+    }
+  }
+
+  Serial4.write(data[0]);
+  // delay(1);
+  Serial4.write(data[1]);
+  // delay(1);
+
+  gyro.deg = gyro.read();
+
+  Serial1.write(data[2]);
+  Serial1.write(data[3]);
+}
+
+void _Motor::release(void) {
+  delay(1);
+  Serial4.write(0B00000000);
+  Serial1.write(0B00000000);
+  delay(1);
+  Serial4.write(0B10000000);
+  Serial1.write(0B10000000);
+}
+
+void _Motor::normalBrake(void) {
+  Serial4.write((0B00000000 + 62));
+  // delay(1);
+  Serial4.write((0B10000000 + 62));
+  gyro.deg = gyro.read();
+  Serial1.write((0B00000000 + 62));
+  // delay(1);
+  Serial1.write((0B10000000 + 62));
+}
+
+void _Motor::ultraBrake(void) {
+  Serial4.write((0B00000000 + 63));
+
+  Serial1.write((0B00000000 + 63));
+  gyro.deg = gyro.read();
+  Serial4.write((0B10000000 + 63));
+  Serial1.write((0B10000000 + 63));
 }
 
 void _Motor::begin(void) {

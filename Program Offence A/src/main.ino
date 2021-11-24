@@ -223,6 +223,10 @@ class _Motor {
   void drive(int, int, bool);
   void begin(void);
   void directDrive(int* p);
+  void release(void);
+  void normalBrake(void);
+
+  void ultraBrake(void);
 
   int val[4];
   int calcVal[4][360];
@@ -235,6 +239,12 @@ class _Motor {
   unsigned long timer;
 
   int direction = 0;
+  unsigned long lowBatteryCount = 0;
+
+  unsigned long ultraBrakeLimit = 0;
+  unsigned long ultraBrakeTimer = 0;
+
+  int ultraBrakeFlag = 0;
 
  private:
   float Kp;
@@ -403,27 +413,58 @@ void loop() {
       //モードオフェンス、ディフェンスの時
       if (UI.active) {
         //モーター駆動（角度はdegree,パワーはMotorPower）
+        for (int j = 0; j < 100; j++) {
+          /* code */
+          if (gyro.deg <= 10 || gyro.deg >= 350) {
+            if (millis() - motor.ultraBrakeLimit <= 400) {
+              if (millis() - motor.ultraBrakeLimit <= 200) {
+                motor.ultraBrake();
+              } else {
+                motor.normalBrake();
+              }
+            } else {
+              motor.normalBrake();
+            }
+          } else if (gyro.deg < 180) {
+            for (int i = 0; i < 4; i++) {
+              motor.val[i] = -1 * map(gyro.deg, 0, 180, 0, 10);
+            }
+
+            motor.directDrive(motor.val);
+          } else {
+            for (int i = 0; i < 4; i++) {
+              motor.val[i] = map(gyro.deg, 180, 360, 10, 0);
+            }
+
+            motor.directDrive(motor.val);
+          }
+        }
 
       } else {
         //モーターが停止する
+        motor.release();
       }
     }
   } else {
     //緊急事態時の行動
+    motor.release();
   }
 
-  if (Battery < 11.0 || Battery > 12.6) {
+  if (Battery < 10.9 || Battery > 12.6) {
+  } else {
+    motor.lowBatteryCount = millis();
+  }
+
+  if (millis() - motor.lowBatteryCount >= 1000) {
     emergency = true;
   }
 
-  // Serial---------------------------------------------
-  Serial.print(motorPS(5));
-  Serial.print(" ");
+  // // Serial---------------------------------------------
+  // Serial.print(motorPS(5));
+  // Serial.print(" ");
 
-  Serial.println(" ");
-
-
-  // motor.directDrive();
+  // Serial.println(" ");
+  Serial.println(gyro.deg);
 }
 
 int motorPS(int value) {
