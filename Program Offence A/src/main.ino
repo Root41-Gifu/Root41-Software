@@ -222,8 +222,10 @@ class _Motor {
  public:
   _Motor(void);
   void drive(int, int, bool);
+  void motorCalc(int,int,bool,int);
 
   int val[4];
+  float sinVal[4][360];
   int calcVal[4][360];
   int deg;
   int speed;
