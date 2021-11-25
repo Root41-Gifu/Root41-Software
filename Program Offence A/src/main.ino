@@ -37,7 +37,7 @@
 #define LINE_LEFTADDRESS 0x10
 #define LINE_RIGHTADDRESS 0x40
 
-#define LINE_BRIGHTNESS 180
+#define LINE_BRIGHTNESS 30//50
 #define NEOPIXEL_BRIGHTNESS 30
 
 Adafruit_SSD1306 display(-1);
@@ -134,6 +134,8 @@ class _Line {
 
   int Move_degree;
 
+  int Line_Where[LINE_NUM];
+
   bool flag;       //ラインセンサーの動きをするか
   bool touch;      //ラインに触れているか
   bool value[47];  //反応値
@@ -164,6 +166,7 @@ class _Line {
   int RearEdge;
   int LeftEdge;
   int RightEdge;
+  int FrontInside;
   int RearInside;   //リア内部 ~3
   int LeftInside;   //左 ~3
   int RightInside;  //右 ~3
@@ -262,6 +265,9 @@ void setup() {
 
   gyro.setting();
   motor.begin();
+
+  unsigned long lineNeoPixelNot=strip.Color(0,0,0);
+  UI.StripFulldisplay(lineNeoPixelNot);
 }
 
 void loop() {
@@ -409,7 +415,7 @@ void loop() {
     emergency = true;
   }
 
-  Serial.println(gyro.deg);
+  Serial.println(UI.switchScope);
 }
 
 // int motorPS(int value) {

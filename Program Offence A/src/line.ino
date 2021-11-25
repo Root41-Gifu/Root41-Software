@@ -6,6 +6,30 @@ _Line::_Line() {
     _vectorX[i] = sin(radians(i * 18));
     _vectorY[i] = cos(radians(i * 18));
   }
+  for(int i=0; i<=7; i++){
+    Line_Where[i]=0;
+  }
+  for(int i=8; i<=9; i++){
+    Line_Where[i]=1;
+  }
+  for(int i=10; i<=15; i++){
+    Line_Where[i]=2;
+  }
+  for(int i=16; i<=18; i++){
+    Line_Where[i]=3;
+  }
+  for(int i=19; i<=22; i++){
+    Line_Where[i]=5;
+  }
+  for(int i=23; i<=26; i++){
+    Line_Where[i]=4;
+  }
+  for(int i=27; i<=31; i++){
+    Line_Where[i]=5;
+  }
+  for(int i=32; i<=40; i++){
+    Line_Where[i]=6;
+  }
 }
 
 void _Line::read(void) {
@@ -90,88 +114,88 @@ void _Line::read(void) {
 }
 
 void _Line::arrange(void) {
-  // touch = false;
-  // whiting = 0;
-  // Front = 0;
-  // Rear = 0;
-  // Left = 0;
-  // Right = 0;
-  // for (int i = 0; i < LINE_NUM; i++) {
-  //   if (!value[i]) {  //数値逆転
-  //     if (!check[i]) {
-  //       order[whited] = i;
-  //       whited++;
-  //       check[i] = true;
-  //       // if (i >= 20) {
-  //       if (i < LINE_FRONTNUM) {
-  //         Front++;
-  //       } else if (i < LINE_FRONTNUM + LINE_REARNUM) {
-  //         Rear++;
-  //       } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
-  //         Left++;
-  //       } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM +
-  //                          LINE_RIGHTNUM) {
-  //         Right++;
-  //       }
-  //       // }
-  //     }
-  //     if (!flag) {
-  //       //   stopTimer = device.getTime();
-  //       mode = 1;
-  //       flag = true;
-  //     }
-  //     touch = true;
-  //     if(Line_Where[i]==0){
-  //       FrontEdge++;
-  //     }else if(Line_Where[i]==1){
-  //       FrontInside++;
-  //     }else if(Line_Where[i]==2){
-  //       RearEdge++;
-  //     }else if(Line_Where[i]==3){
-  //       ReadInside++;
-  //     }else if(Line_Where[i]==4){
-  //       LeftEdge++
-  //     }else if(Line_Where[i]==5){
-  //       LeftInside++;
-  //     }else if(Line_Where[i]==6){
-  //       RightEdge++;
-  //     }else if(Line_Where[i]==7){
-  //       RightInside++;
-  //     }
-  //   }
-  // }
-  // if (!touch) {
-  //   flag = false;
-  // }
-  // if (!flag) {
-  //   for (int i = 0; i < 4; i++) {
-  //     orderBlock[i] = 100;
-  //     checkBlock[i] = 0;
-  //   }
-  //   for (int i = 0; i < LINE_NUM; i++) {
-  //     order[i] = 100;
-  //     check[i] = 0;
-  //   }
-  //   Block = 0;
-  // } else {
-  //   if (Front > 0 && !checkBlock[0]) {
-  //     orderBlock[Block] = 0;
-  //     checkBlock[0] = true;
-  //     Block++;
-  //   } else if (Rear > 0 && !checkBlock[1]) {
-  //     orderBlock[Block] = 1;
-  //     checkBlock[1] = true;
-  //     Block++;
-  //   } else if (Left > 0 && !checkBlock[2]) {
-  //     orderBlock[Block] = 2;
-  //     checkBlock[2] = true;
-  //     Block++;
-  //   } else if (Right > 0 && !checkBlock[3]) {
-  //     orderBlock[Block] = 3;
-  //     checkBlock[3] = true;
-  //     Block++;
-  //   }
-  // }
+  touch = false;
+  whiting = 0;
+  Front = 0;
+  Rear = 0;
+  Left = 0;
+  Right = 0;
+  for (int i = 0; i < LINE_NUM; i++) {
+    if (!value[i]) {  //数値逆転
+      if (!check[i]) {
+        order[whited] = i;
+        whited++;
+        check[i] = true;
+        // if (i >= 20) {
+        if (i < LINE_FRONTNUM) {
+          Front++;
+        } else if (i < LINE_FRONTNUM + LINE_REARNUM) {
+          Rear++;
+        } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
+          Left++;
+        } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM +
+                           LINE_RIGHTNUM) {
+          Right++;
+        }
+        // }
+      }
+      if (!flag) {
+        //   stopTimer = device.getTime();
+        mode = 1;
+        flag = true;
+      }
+      touch = true;
+      if(Line_Where[i]==0){
+        FrontEdge++;
+      }else if(Line_Where[i]==1){
+        // FrontInside++;
+      }else if(Line_Where[i]==2){
+        RearEdge++;
+      }else if(Line_Where[i]==3){
+        RearInside++;
+      }else if(Line_Where[i]==4){
+        LeftEdge++;
+      }else if(Line_Where[i]==5){
+        LeftInside++;
+      }else if(Line_Where[i]==6){
+        RightEdge++;
+      }else if(Line_Where[i]==7){
+        RightInside++;
+      }
+    }
+  }
+  if (!touch) {
+    flag = false;
+  }
+  if (!flag) {
+    for (int i = 0; i < 4; i++) {
+      orderBlock[i] = 100;
+      checkBlock[i] = 0;
+    }
+    for (int i = 0; i < LINE_NUM; i++) {
+      order[i] = 100;
+      check[i] = 0;
+    }
+    Block = 0;
+  } else {
+    if (Front > 0 && !checkBlock[0]) {
+      orderBlock[Block] = 0;
+      checkBlock[0] = true;
+      Block++;
+    } else if (Rear > 0 && !checkBlock[1]) {
+      orderBlock[Block] = 1;
+      checkBlock[1] = true;
+      Block++;
+    } else if (Left > 0 && !checkBlock[2]) {
+      orderBlock[Block] = 2;
+      checkBlock[2] = true;
+      Block++;
+    } else if (Right > 0 && !checkBlock[3]) {
+      orderBlock[Block] = 3;
+      checkBlock[3] = true;
+      Block++;
+    }
+  }
 }
 
 void _Line::calcDirection(void) {

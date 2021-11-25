@@ -157,7 +157,6 @@ void _UI::refrection(void) {
     if (!active) {
       if (switchingFlag[1]) {
         mode--;
-        switchScope--;
       }
       if (switchingFlag[2]) {
         // mode++;
@@ -169,6 +168,9 @@ void _UI::refrection(void) {
       active = true;
     }
   }
+  if(switchingFlag[1]){
+    switchScope++;
+  }
   for (int i = 0; i <= 3; i++) {
     switchingFlag[i] = false;
   }
@@ -177,10 +179,10 @@ void _UI::refrection(void) {
   } else if (mode > 7) {
     mode = 1;
   }
-  if (switchScope > 15) {
+  if (switchScope > LINE_NUM) {
     switchScope = 0;
   } else if (switchScope < 0) {
-    switchScope = 0;
+    switchScope = LINE_NUM - 1;
   }
 }
 
@@ -212,7 +214,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   if (_mode == 0) {
     if (ball.max[0] == 100) {
       for (int i = 0; i < BALL_NUM; i++) {
-        strip.setPixelColor(i, 255, 0, 0);
+        strip.setPixelColor(i,0, 0, 0);
       }
     } else {
       int i = ball.max[0] - 1;
@@ -222,27 +224,58 @@ void _UI::NeoPixeldisplay(int _mode) {
       } else if (k > 15) {
         k = 0;
       }
-      strip.setPixelColor(ball.max[0], 255, 0, 0);
-      strip.setPixelColor(i, 255, 0, 0);
-      strip.setPixelColor(k, 255, 0, 0);
+      // strip.setPixelColor(ball.max[0], 255, 0, 0);
+      // strip.setPixelColor(i, 255, 0, 0);
+      // strip.setPixelColor(k, 255, 0, 0);
       // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
     }
   }
   if (mode == 5 || mode == 1) {
     if (active) {
       unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
+      unsigned long lineNeoPixelDicline=front.Color(0,0,0);
       for (int i = 0; i < LED_FRONT; i++) {
-        front.setPixelColor(i, lineNeoPixelColor);
+        if(i>=0&&i<=8){//0-7
+          front.setPixelColor(i,lineNeoPixelDicline);
+        }else{
+          front.setPixelColor(i, lineNeoPixelColor);
+        }
       }
       for (int i = 0; i < LED_REAR; i++) {
-        rear.setPixelColor(i, lineNeoPixelColor);
+        if(i>=0&&i<=8){//0-5
+          rear.setPixelColor(i,lineNeoPixelDicline);
+        }else{
+          rear.setPixelColor(i, lineNeoPixelColor);
+        }
       }
       for (int i = 0; i < LED_LEFT; i++) {
-        left.setPixelColor(i, lineNeoPixelColor);
+        if(i>=0&&i<=7){//4-7
+          left.setPixelColor(i,lineNeoPixelDicline);
+        }else{
+          left.setPixelColor(i, lineNeoPixelColor);
+        }
       }
       for (int i = 0; i < LED_RIGHT; i++) {
-        right.setPixelColor(i, lineNeoPixelColor);
+        if(i>=0&&i<=8){//4-8
+          right.setPixelColor(i,lineNeoPixelDicline);
+        }else{
+          right.setPixelColor(i, lineNeoPixelColor);
+        }
       }
+
+      // if (switchScope < LINE_FRONTNUM) {
+      //   front.setPixelColor(switchScope, lineNeoPixelColor);
+      // } else if (switchScope < LINE_FRONTNUM + LINE_REARNUM) {
+      //   rear.setPixelColor(switchScope - LINE_FRONTNUM, lineNeoPixelColor);
+      // } else if (switchScope < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
+      //   left.setPixelColor(switchScope - LINE_FRONTNUM - LINE_REARNUM,
+      //                       lineNeoPixelColor);
+      // } else if (switchScope <
+      //            LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_RIGHTNUM) {
+      //   right.setPixelColor(
+      //       switchScope - LINE_FRONTNUM - LINE_REARNUM - LINE_LEFTNUM,
+      //       lineNeoPixelColor);
+      // }
     }
   }
   strip.show();
@@ -252,10 +285,10 @@ void _UI::NeoPixeldisplay(int _mode) {
   right.show();
 }
 
-void _UI::StripFulldisplay(unsigned long color){
+void _UI::StripFulldisplay(unsigned long color) {
   strip.clear();
-  for(int i=0; i<16; i++){
-    strip.setPixelColor(i,color);
+  for (int i = 0; i < 16; i++) {
+    strip.setPixelColor(i, color);
   }
   strip.show();
 }
