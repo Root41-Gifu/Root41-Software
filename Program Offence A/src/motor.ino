@@ -51,13 +51,9 @@ void _Motor::directDrive(int* p) {
   }
 
   Serial4.write(data[0]);
-  // delay(1);
-  Serial4.write(data[1]);
-  // delay(1);
-
-  gyro.deg = gyro.read();
-
   Serial1.write(data[2]);
+  gyro.deg = gyro.read();
+  Serial4.write(data[1]);
   Serial1.write(data[3]);
 }
 
@@ -82,7 +78,6 @@ void _Motor::normalBrake(void) {
 
 void _Motor::ultraBrake(void) {
   Serial4.write((0B00000000 + 63));
-
   Serial1.write((0B00000000 + 63));
   gyro.deg = gyro.read();
   Serial4.write((0B10000000 + 63));
@@ -214,11 +209,11 @@ void _Motor::drive(int _deg, int _power, bool _stop = false) {
 }
 
 void _Motor::motorCalc(int _deg, int _power, bool _stop, int _referenceAngle) {
-  float Motor[3];
+  float Motor[4];
   float Max[2];
 
   _deg = constrain(_deg, 0, 360);
-  _power = constrain(_power, 0, 100);
+  _power = constrain(_power, 0, 60);
   _referenceAngle = constrain(_referenceAngle, -180, 180);
   if (abs(_referenceAngle) < 20) {
     //数値は変更
@@ -255,5 +250,9 @@ void _Motor::motorCalc(int _deg, int _power, bool _stop, int _referenceAngle) {
     Motor[1] = Motor[1] * _power / _Max;
     Motor[2] = Motor[2] * _power / _Max;
     Motor[3] = Motor[3] * _power / _Max;
+
+    for(int i=0; i<4; i++){
+      Kval[i]=Motor[i];
+    }
   }
 }

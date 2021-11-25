@@ -51,7 +51,7 @@ void _UI::refrection(void) {
         if (select) {
           submode--;
         } else {
-          mode--;
+          mode++;
         }
       }
       if (switchingFlag[2]) {
@@ -85,7 +85,7 @@ void _UI::refrection(void) {
         if (select) {
           submode--;
         } else {
-          mode--;
+          mode++;
         }
       }
       if (switchingFlag[2]) {
@@ -119,7 +119,7 @@ void _UI::refrection(void) {
         if (select) {
           submode--;
         } else {
-          mode--;
+          mode++;
         }
       }
       if (switchingFlag[2]) {
@@ -156,7 +156,7 @@ void _UI::refrection(void) {
     }
     if (!active) {
       if (switchingFlag[1]) {
-        mode--;
+        mode++;
         switchScope--;
       }
       if (switchingFlag[2]) {
@@ -245,6 +245,25 @@ void _UI::NeoPixeldisplay(int _mode) {
       }
     }
   }
+  if (!active) {
+    if (mode == 1 || mode == 2) {
+      // offence
+      unsigned long OffencelColor = strip.Color(255, 0, 0);
+      StripFulldisplay(OffencelColor);
+    } else if (mode == 3) {
+      unsigned long GyroColor = strip.Color(0, 0, 255);
+      StripFulldisplay(GyroColor);
+    } else if (mode == 4) {
+      unsigned long KickerColor = strip.Color(255, 255, 0);
+      StripFulldisplay(KickerColor);
+    } else if (mode == 5) {
+      unsigned long LineColor = strip.Color(255, 255, 255);
+      StripFulldisplay(LineColor);
+    } else if (mode == 6) {
+      unsigned long MotorColor = strip.Color(255, 0, 255);
+      StripFulldisplay(MotorColor);
+    }
+  }
   strip.show();
   front.show();
   rear.show();
@@ -252,10 +271,10 @@ void _UI::NeoPixeldisplay(int _mode) {
   right.show();
 }
 
-void _UI::StripFulldisplay(unsigned long color){
+void _UI::StripFulldisplay(unsigned long color) {
   strip.clear();
-  for(int i=0; i<16; i++){
-    strip.setPixelColor(i,color);
+  for (int i = 0; i < 16; i++) {
+    strip.setPixelColor(i, color);
   }
   strip.show();
 }
@@ -352,7 +371,10 @@ void _UI::LCDdisplay(void) {
   display.print("Battery: ");
   display.print(Battery);
   display.println(" V");
-  display.println(line.Move_degree);
+  display.print(motor.Kval[0]);
+  display.print(motor.Kval[1]);
+  display.print(motor.Kval[2]);
+  display.print(motor.Kval[3]);
   display.drawLine(0, 15, 127, 15, WHITE);
   // 描画バッファの内容を画面に表示
   display.display();
@@ -375,8 +397,8 @@ void _UI::Errordisplay(int code) {
         } else {
           strip.setPixelColor(i, 255, 255, 0);
         }
-        strip.show();
       }
+      strip.show();
     }
     display.drawLine(0, 15, 127, 15, WHITE);
   }

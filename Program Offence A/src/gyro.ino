@@ -116,33 +116,34 @@ int _gyro::read(void) {
 
 //角速度取得
 int _gyro::differentialRead(void) {
-  if (!dmpReady) {
-    return 0;
-  }
-
-  while (!mpuInterrupt && fifoCount < packetSize) {
-  }
-
-  mpuInterrupt = false;
-  mpuIntStatus = mpu.getIntStatus();
-
-  fifoCount = mpu.getFIFOCount();
-
-  if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-    mpu.resetFIFO();
-    return 0;  // 処理終了
-  }
-
-  while (fifoCount < packetSize) {
-    fifoCount = mpu.getFIFOCount();
-  }
-
-  mpu.getFIFOBytes(fifoBuffer, packetSize);
-  fifoCount -= packetSize;
-
-  mpu.dmpGetGyro(&dmpgyro, fifoBuffer);
-
   return dmpgyro.z;
+  // if (!dmpReady) {
+  //   return 0;
+  // }
+
+  // while (!mpuInterrupt && fifoCount < packetSize) {
+  // }
+
+  // mpuInterrupt = false;
+  // mpuIntStatus = mpu.getIntStatus();
+
+  // fifoCount = mpu.getFIFOCount();
+
+  // if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+  //   mpu.resetFIFO();
+  //   return 0;  // 処理終了
+  // }
+
+  // while (fifoCount < packetSize) {
+  //   fifoCount = mpu.getFIFOCount();
+  // }
+
+  // mpu.getFIFOBytes(fifoBuffer, packetSize);
+  // fifoCount -= packetSize;
+
+  // mpu.dmpGetGyro(&dmpgyro, fifoBuffer);
+
+  // return dmpgyro.z;
 }
 
 int buffersize = 1000;
