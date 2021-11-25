@@ -370,17 +370,17 @@ void loop() {
           /* code */
           float neko;
 
-          motor.susumu = (millis() / 5) % 360;
-          Serial.println(motor.susumu);
+          // motor.susumu = (millis() / 5) % 360;
+          // Serial.println(motor.susumu);
 
-          // motor.val[0] = sin(radians(motor.susumu - 60)) * 40;
-          // motor.val[1] = sin(radians(motor.susumu - 135)) * 40;
-          // motor.val[2] = sin(radians(motor.susumu - 225)) * 40;
-          // motor.val[3] = sin(radians(motor.susumu - 300)) * 40;
-          motor.motorCalc(0, 30, false, 0);
-          for (int i = 0; i < 4; i++) {
-            motor.val[i] = motor.Kval[i];
-          }
+          // // motor.val[0] = sin(radians(motor.susumu - 60)) * 40;
+          // // motor.val[1] = sin(radians(motor.susumu - 135)) * 40;
+          // // motor.val[2] = sin(radians(motor.susumu - 225)) * 40;
+          // // motor.val[3] = sin(radians(motor.susumu - 300)) * 40;
+          // motor.motorCalc(0, 30, false, 0);
+          // for (int i = 0; i < 4; i++) {
+          //   motor.val[i] = motor.Kval[i];
+          // }
 
           // int a = 20;
           // int b = 2;
@@ -397,24 +397,17 @@ void loop() {
             neko = gyro.deg;
           }
 
-          neko *= -0.11;
-          neko += gyro.differentialRead() * -0.027;
-          neko *= 1.2;
+          neko *= -0.13;//P制御
+          neko += gyro.differentialRead() * -0.025;//微分制御
+          // neko *= 1.2;
 
           neko = constrain(neko, -20, 20);
           for (int i = 0; i < 4; i++) {
-            motor.val[i] += round(neko);
+            motor.val[i] = round(neko);
+            motor.val[i] = constrain(motor.val[i], -40, 40);
           }
-          motor.val[0] = 50;
-          motor.val[1] = 50;
-          motor.val[2] = -50;
-          motor.val[3] = -50;
-          // motor.directDrive(motor.val);
-          Serial4.write(0B00010000);
-          Serial1.write(0B01010000);
-          delay(1);
-          Serial4.write(0B10010000);
-          Serial1.write(0B11010000);
+          
+          motor.directDrive(motor.val);
 
           // if (gyro.deg <= 5 || gyro.deg >= 355) {
           //   // motor.motorCalc(0, 30, 0, 0);
