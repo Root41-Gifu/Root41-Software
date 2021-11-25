@@ -21,6 +21,30 @@ _Line::_Line() {
       Line_Where[i] = 6;
     }
   }
+  for(int i=0; i<=7; i++){
+    Line_Where[i]=0;
+  }
+  for(int i=8; i<=9; i++){
+    Line_Where[i]=1;
+  }
+  for(int i=10; i<=15; i++){
+    Line_Where[i]=2;
+  }
+  for(int i=16; i<=18; i++){
+    Line_Where[i]=3;
+  }
+  for(int i=19; i<=22; i++){
+    Line_Where[i]=5;
+  }
+  for(int i=23; i<=26; i++){
+    Line_Where[i]=4;
+  }
+  for(int i=27; i<=31; i++){
+    Line_Where[i]=5;
+  }
+  for(int i=32; i<=40; i++){
+    Line_Where[i]=6;
+  }
 }
 
 void _Line::read(void) {
@@ -176,33 +200,21 @@ void _Line::arrange(void) {
     }
     Block = 0;
   } else {
-    if (FrontEdge > 0 && !checkBlock[0]) {
+    if (Front > 0 && !checkBlock[0]) {
       orderBlock[Block] = 0;
       checkBlock[0] = true;
       Block++;
-    } else if (RearEdge > 0 && !checkBlock[2]) {
+    } else if (Rear > 0 && !checkBlock[1]) {
+      orderBlock[Block] = 1;
+      checkBlock[1] = true;
+      Block++;
+    } else if (Left > 0 && !checkBlock[2]) {
       orderBlock[Block] = 2;
       checkBlock[2] = true;
       Block++;
-    } else if (RearInside > 0 && !checkBlock[3]) {
+    } else if (Right > 0 && !checkBlock[3]) {
       orderBlock[Block] = 3;
       checkBlock[3] = true;
-      Block++;
-    } else if (LeftEdge > 0 && !checkBlock[4]) {
-      orderBlock[Block] = 4;
-      checkBlock[4] = true;
-      Block++;
-    } else if (LeftInside > 0 && !checkBlock[5]) {
-      orderBlock[Block] = 5;
-      checkBlock[5] = true;
-      Block++;
-    } else if (RightEdge > 0 && !checkBlock[6]) {
-      orderBlock[Block] = 6;
-      checkBlock[6] = true;
-      Block++;
-    } else if (RightInside > 0 && !checkBlock[7]) {
-      orderBlock[Block] = 7;
-      checkBlock[7] = true;
       Block++;
     }
   }

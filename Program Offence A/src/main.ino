@@ -37,8 +37,13 @@
 #define LINE_LEFTADDRESS 0x10
 #define LINE_RIGHTADDRESS 0x40
 
+<<<<<<< HEAD
 #define LINE_BRIGHTNESS 180
 #define NEOPIXEL_BRIGHTNESS 10
+=======
+#define LINE_BRIGHTNESS 30//50
+#define NEOPIXEL_BRIGHTNESS 30
+>>>>>>> feature/Ball-Line-Develop
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
@@ -135,6 +140,7 @@ class _Line {
   int Move_degree;
 
   int Line_Where[LINE_NUM];
+
   bool flag;       //ラインセンサーの動きをするか
   bool touch;      //ラインに触れているか
   bool value[47];  //反応値
@@ -165,6 +171,7 @@ class _Line {
   int RearEdge;
   int LeftEdge;
   int RightEdge;
+  int FrontInside;
   int RearInside;   //リア内部 ~3
   int LeftInside;   //左 ~3
   int RightInside;  //右 ~3
@@ -264,6 +271,9 @@ void setup() {
 
   gyro.setting();
   motor.begin();
+
+  unsigned long lineNeoPixelNot=strip.Color(0,0,0);
+  UI.StripFulldisplay(lineNeoPixelNot);
 }
 
 void loop() {
