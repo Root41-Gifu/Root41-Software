@@ -37,13 +37,9 @@
 #define LINE_LEFTADDRESS 0x10
 #define LINE_RIGHTADDRESS 0x40
 
-<<<<<<< HEAD
-#define LINE_BRIGHTNESS 180
-#define NEOPIXEL_BRIGHTNESS 10
-=======
-#define LINE_BRIGHTNESS 30//50
+#define LINE_BRIGHTNESS 255  // 50
 #define NEOPIXEL_BRIGHTNESS 30
->>>>>>> feature/Ball-Line-Develop
+#define LIGHTLIMIT 1
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
@@ -257,6 +253,8 @@ class _gyro {
 
 SPISettings MAX6675Setting(4000000, MSBFIRST, SPI_MODE0);
 
+int _Mdegree;
+
 void setup() {
   delay(1000);
   pinMode(PB10, OUTPUT);
@@ -272,11 +270,12 @@ void setup() {
   gyro.setting();
   motor.begin();
 
-  unsigned long lineNeoPixelNot=strip.Color(0,0,0);
+  unsigned long lineNeoPixelNot = strip.Color(0, 0, 0);
   UI.StripFulldisplay(lineNeoPixelNot);
 }
 
 void loop() {
+  unsigned long STimer = millis();
   Battery = analogRead(voltage) * 0.01612;
 
   // Ball---------------------------------------------
@@ -323,7 +322,7 @@ void loop() {
   }
   ball.average();        //平均とる。この関数イランかも知らん
   ball.calcDirection();  //ボールの方向算出
-  // ball.calc();//動作角度算出
+  ball.calc();           //動作角度算出
 
   // line---------------------------------------------
   line.read();
@@ -360,13 +359,19 @@ void loop() {
   //ジャイロの読みこみ等
 
   // Motor---------------------------------------------
+  _Mdegree=1000;
+  // if (line.flag) {
+  //   _Mdegree = line.Move_degree;
+  // } else {
+    _Mdegree = int(ball.Move_degree);
+  // }
   if (!emergency) {
     //進行角度の選定
-    if (line.flag) {
-      degree = line.Move_degree;
-    } else {
-      degree = ball.Move_degree;
-    }
+    // if (line.flag) {
+    //   degree = line.Move_degree;
+    // } else {
+    //   degree = ball.Move_degree;
+    // }
     if (UI.mode == 0) {
       //セットアップ
       //モーターのセットアップがあったらここで（終わったらmode=1にして）
@@ -374,115 +379,144 @@ void loop() {
     } else if (UI.mode == 1 || UI.mode == 2) {
       //モードオフェンス、ディフェンスの時
       unsigned long processTimer = millis();
-      if (UI.active) {
-        //モーター駆動（角度はdegree,パワーはMotorPower）
-        for (int j = 0; j < 100; j++) {
-          /* code */
-          float neko;
+      if (UI.active == true) {
+        if (_Mdegree != 1000) {
+          //モーター駆動（角度はdegree,パワーはMotorPower）
+          for (int j = 0; j < 1; j++) {
+            /* code */
+            float neko;
 
-          // motor.susumu = (millis() / 5) % 360;
-          // Serial.println(motor.susumu);
+            // motor.susumu = (millis() / 5) % 360;
+            // Serial.println(motor.susumu);
 
-          // // motor.val[0] = sin(radians(motor.susumu - 60)) * 40;
-          // // motor.val[1] = sin(radians(motor.susumu - 135)) * 40;
-          // // motor.val[2] = sin(radians(motor.susumu - 225)) * 40;
-          // // motor.val[3] = sin(radians(motor.susumu - 300)) * 40;
-          // motor.motorCalc(0, 30, false, 0);
-          // for (int i = 0; i < 4; i++) {
-          //   motor.val[i] = motor.Kval[i];
-          // }
+            // // motor.val[0] = sin(radians(motor.susumu - 60)) * 40;
+            // // motor.val[1] = sin(radians(motor.susumu - 135)) * 40;
+            // // motor.val[2] = sin(radians(motor.susumu - 225)) * 40;
+            // // motor.val[3] = sin(radians(motor.susumu - 300)) * 40;
+            // motor.motorCalc(0, 30, false, 0);
+            // for (int i = 0; i < 4; i++) {
+            //   motor.val[i] = motor.Kval[i];
+            // }
 
-          // int a = 20;
-          // int b = 2;
-          // float c = -0.05;
+            // int a = 20;
+            // int b = 2;
+            // float c = -0.05;
 
-          // motor.val[0] = -30;
-          // motor.val[1] = -30;
-          // motor.val[2] = 30;
-          // motor.val[3] = 30;
+            // motor.val[0] = -30;
+            // motor.val[1] = -30;
+            // motor.val[2] = 30;
+            // motor.val[3] = 30;
 
-          if (gyro.deg > 180) {
-            neko = gyro.deg - 360;
-          } else {
-            neko = gyro.deg;
+            if (gyro.deg > 180) {
+              neko = gyro.deg - 360;
+            } else {
+              neko = gyro.deg;
+            }
+            int _Gap = neko;
+
+            neko *= -0.027;                             // P制御
+            neko += gyro.differentialRead() * -0.013;  //微分制御
+                                                       // neko *= 1.2;
+
+            Serial.println(neko);
+            for (int i = 0; i < 4; i++) {
+              motor.val[i] = round(neko);
+              motor.val[i] = constrain(motor.val[i], -30, 30);
+            }
+
+            int powerD = 35;
+            neko = constrain(neko, -100, 100);
+            motor.motorCalc(int(_Mdegree), 10, 0, 0);
+            // motor.motorCalc(0, 20, 0, 0);
+            if (abs(_Gap) < 5) {
+              for (int i = 0; i < 4; i++) {
+                motor.val[i] = motor.Kval[i];
+              }
+            } else {
+              int nekoK[4];
+              for (int i = 0; i < 4; i++) {
+                nekoK[i] = motor.val[i];
+                motor.val[i] = motor.val[i] + motor.Kval[i];
+              }
+            }
+            int _Max;
+            for (int i = 0; i < 4; i++) {
+              if (_Max < motor.val[i]) {
+                _Max = motor.val[i];
+              }
+            }
+            for (int i = 0; i < 4; i++) {
+              motor.val[i] = motor.val[i] * powerD / _Max;
+            }
+            motor.directDrive(motor.val);
+
+            // if (gyro.deg <= 5 || gyro.deg >= 355) {
+            //   // motor.motorCalc(0, 30, 0, 0);
+            //   // for (int i = 0; i < 4; i++) {
+            //   //   motor.val[i] = motor.Kval[i];
+            //   // }
+            //   motor.val[0] = 20;
+            //   motor.val[1] = 20;
+
+            //   motor.val[2] = -20;
+            //   motor.val[3] = -20;
+            //   motor.directDrive(motor.val);
+            // } else if (gyro.deg < 180) {
+            //   for (int i = 0; i < 4; i++) {
+            //     motor.val[i] = -1 * map(gyro.deg, 0, 180, b, a);
+            //     motor.val[i] += gyro.differentialRead() * c;
+
+            //     motor.val[i] = constrain(motor.val[i], -20, -2);
+            //   }
+
+            //   // motor.motorCalc(0, 30, 0, 0);
+            //   // for (int i = 0; i < 4; i++) {
+            //   //   motor.val[i] = motor.val[i] + motor.Kval[i];
+            //   // }
+            //   // float _Max;
+            //   // for (int i = 0; i < 4; i++) {
+            //   //   if (abs(motor.val[i]) > _Max) {
+            //   //     _Max = motor.val[i];
+            //   //   }
+            //   // }
+            //   // motor.val[0] = motor.val[0] * 100 / _Max;
+            //   // motor.val[1] = motor.val[1] * 100 / _Max;
+            //   // motor.val[2] = motor.val[2] * 100 / _Max;
+            //   // motor.val[3] = motor.val[3] * 100 / _Max;
+
+            //   motor.directDrive(motor.val);
+            // } else {
+            //   for (int i = 0; i < 4; i++) {
+            //     motor.val[i] = map(gyro.deg, 180, 360, a, b);
+            //     motor.val[i] += gyro.differentialRead() * c;
+
+            //     motor.val[i] = constrain(motor.val[i], 2, 20);
+            //   }
+
+            //   // motor.motorCalc(0, 30, 0, 0);
+            //   // for (int i = 0; i < 4; i++) {
+            //   //   motor.val[i] = motor.val[i] + motor.Kval[i];
+            //   // }
+            //   // float _Max;
+            //   // for (int i = 0; i < 4; i++) {
+            //   //   if (abs(motor.val[i]) > _Max) {
+            //   //     _Max = motor.val[i];
+            //   //   }
+            //   // }
+            //   // motor.val[0] = motor.val[0] * 100 / _Max;
+            //   // motor.val[1] = motor.val[1] * 100 / _Max;
+            //   // motor.val[2] = motor.val[2] * 100 / _Max;
+            //   // motor.val[3] = motor.val[3] * 100 / _Max;
+
+            //   motor.directDrive(motor.val);
+            // }
+
+            // Serial.println(gyro.differentialRead());
+            // Serial.print("neko:");
+            // Serial.println(gyro.differentialRead());
           }
-
-          neko *= -0.13;//P制御
-          neko += gyro.differentialRead() * -0.025;//微分制御
-          // neko *= 1.2;
-
-          neko = constrain(neko, -20, 20);
-          for (int i = 0; i < 4; i++) {
-            motor.val[i] = round(neko);
-            motor.val[i] = constrain(motor.val[i], -40, 40);
-          }
-          
-          motor.directDrive(motor.val);
-
-          // if (gyro.deg <= 5 || gyro.deg >= 355) {
-          //   // motor.motorCalc(0, 30, 0, 0);
-          //   // for (int i = 0; i < 4; i++) {
-          //   //   motor.val[i] = motor.Kval[i];
-          //   // }
-          //   motor.val[0] = 20;
-          //   motor.val[1] = 20;
-
-          //   motor.val[2] = -20;
-          //   motor.val[3] = -20;
-          //   motor.directDrive(motor.val);
-          // } else if (gyro.deg < 180) {
-          //   for (int i = 0; i < 4; i++) {
-          //     motor.val[i] = -1 * map(gyro.deg, 0, 180, b, a);
-          //     motor.val[i] += gyro.differentialRead() * c;
-
-          //     motor.val[i] = constrain(motor.val[i], -20, -2);
-          //   }
-
-          //   // motor.motorCalc(0, 30, 0, 0);
-          //   // for (int i = 0; i < 4; i++) {
-          //   //   motor.val[i] = motor.val[i] + motor.Kval[i];
-          //   // }
-          //   // float _Max;
-          //   // for (int i = 0; i < 4; i++) {
-          //   //   if (abs(motor.val[i]) > _Max) {
-          //   //     _Max = motor.val[i];
-          //   //   }
-          //   // }
-          //   // motor.val[0] = motor.val[0] * 100 / _Max;
-          //   // motor.val[1] = motor.val[1] * 100 / _Max;
-          //   // motor.val[2] = motor.val[2] * 100 / _Max;
-          //   // motor.val[3] = motor.val[3] * 100 / _Max;
-
-          //   motor.directDrive(motor.val);
-          // } else {
-          //   for (int i = 0; i < 4; i++) {
-          //     motor.val[i] = map(gyro.deg, 180, 360, a, b);
-          //     motor.val[i] += gyro.differentialRead() * c;
-
-          //     motor.val[i] = constrain(motor.val[i], 2, 20);
-          //   }
-
-          //   // motor.motorCalc(0, 30, 0, 0);
-          //   // for (int i = 0; i < 4; i++) {
-          //   //   motor.val[i] = motor.val[i] + motor.Kval[i];
-          //   // }
-          //   // float _Max;
-          //   // for (int i = 0; i < 4; i++) {
-          //   //   if (abs(motor.val[i]) > _Max) {
-          //   //     _Max = motor.val[i];
-          //   //   }
-          //   // }
-          //   // motor.val[0] = motor.val[0] * 100 / _Max;
-          //   // motor.val[1] = motor.val[1] * 100 / _Max;
-          //   // motor.val[2] = motor.val[2] * 100 / _Max;
-          //   // motor.val[3] = motor.val[3] * 100 / _Max;
-
-          //   motor.directDrive(motor.val);
-          // }
-
-          // Serial.println(gyro.differentialRead());
-          Serial.print("neko:");
-          Serial.println(gyro.differentialRead());
+        } else {
+          motor.release();
         }
         // Serial.println(millis() - processTimer);
 
@@ -496,16 +530,26 @@ void loop() {
     motor.release();
   }
 
-  if (Battery < 10.9 || Battery > 12.6) {
-  } else {
-    motor.lowBatteryCount = millis();
-  }
+  // if (Battery < 10.5 || Battery > 12.6) {
+  //   // emergency=true;
+  // } else {
+  //   motor.lowBatteryCount = millis();
+  // }
 
-  if (millis() - motor.lowBatteryCount >= 1000) {
-    emergency = true;
-  }
+  // if (millis() - motor.lowBatteryCount >= 1000) {
+  //   emergency = true;
+  // }
 
-  // Serial.println(gyro.deg);
+  // Serial.println(millis() - STimer);
+  Serial.print(motor.val[1]);
+  Serial.print(" ");
+  Serial.print(motor.val[2]);
+  Serial.print(" ");
+  Serial.print(motor.val[3]);
+  Serial.print(" ");
+  Serial.print(motor.val[4]);
+  Serial.print(" ");
+  Serial.println(gyro.deg);
 }
 
 // int motorPS(int value) {

@@ -169,7 +169,7 @@ void _UI::refrection(void) {
       active = true;
     }
   }
-  if(switchingFlag[1]){
+  if (switchingFlag[1]) {
     switchScope++;
   }
   for (int i = 0; i <= 3; i++) {
@@ -215,7 +215,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   if (_mode == 0) {
     if (ball.max[0] == 100) {
       for (int i = 0; i < BALL_NUM; i++) {
-        strip.setPixelColor(i,0, 0, 0);
+        strip.setPixelColor(i, 0, 0, 0);
       }
     } else {
       int i = ball.max[0] - 1;
@@ -234,32 +234,47 @@ void _UI::NeoPixeldisplay(int _mode) {
   if (mode == 5 || mode == 1) {
     if (active) {
       unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
-      unsigned long lineNeoPixelDicline=front.Color(0,0,0);
-      for (int i = 0; i < LED_FRONT; i++) {
-        if(i>=0&&i<=8){//0-7
-          front.setPixelColor(i,lineNeoPixelDicline);
-        }else{
+      unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
+      if (LIGHTLIMIT==1) {
+        for (int i = 0; i < LED_FRONT; i++) {
+          if (i >= 0 && i <= 8) {  // 0-7
+            front.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            front.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+        for (int i = 0; i < LED_REAR; i++) {
+          if (i >= 0 && i <= 8) {  // 0-5
+            rear.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            rear.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+        for (int i = 0; i < LED_LEFT; i++) {
+          if (i >= 0 && i <= 7) {  // 4-7
+            left.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            left.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+        for (int i = 0; i < LED_RIGHT; i++) {
+          if (i >= 0 && i <= 8) {  // 4-8
+            right.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            right.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+      } else {
+        for (int i = 0; i < LED_FRONT; i++) {
           front.setPixelColor(i, lineNeoPixelColor);
         }
-      }
-      for (int i = 0; i < LED_REAR; i++) {
-        if(i>=0&&i<=8){//0-5
-          rear.setPixelColor(i,lineNeoPixelDicline);
-        }else{
+        for (int i = 0; i < LED_REAR; i++) {
           rear.setPixelColor(i, lineNeoPixelColor);
         }
-      }
-      for (int i = 0; i < LED_LEFT; i++) {
-        if(i>=0&&i<=7){//4-7
-          left.setPixelColor(i,lineNeoPixelDicline);
-        }else{
+        for (int i = 0; i < LED_LEFT; i++) {
           left.setPixelColor(i, lineNeoPixelColor);
         }
-      }
-      for (int i = 0; i < LED_RIGHT; i++) {
-        if(i>=0&&i<=8){//4-8
-          right.setPixelColor(i,lineNeoPixelDicline);
-        }else{
+        for (int i = 0; i < LED_RIGHT; i++) {
           right.setPixelColor(i, lineNeoPixelColor);
         }
       }
@@ -272,7 +287,8 @@ void _UI::NeoPixeldisplay(int _mode) {
       //   left.setPixelColor(switchScope - LINE_FRONTNUM - LINE_REARNUM,
       //                       lineNeoPixelColor);
       // } else if (switchScope <
-      //            LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_RIGHTNUM) {
+      //            LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_RIGHTNUM)
+      //            {
       //   right.setPixelColor(
       //       switchScope - LINE_FRONTNUM - LINE_REARNUM - LINE_LEFTNUM,
       //       lineNeoPixelColor);
@@ -405,10 +421,13 @@ void _UI::LCDdisplay(void) {
   display.print("Battery: ");
   display.print(Battery);
   display.println(" V");
-  display.print(motor.Kval[0]);
-  display.print(motor.Kval[1]);
-  display.print(motor.Kval[2]);
-  display.print(motor.Kval[3]);
+  display.print(line.flag);
+  display.print(" ");
+  display.print(ball.max[0]);
+  display.print(" ");
+  display.print(_Mdegree);
+  // display.print(motor.val[3]);
+  // display.print(gyro.deg);
   display.drawLine(0, 15, 127, 15, WHITE);
   // 描画バッファの内容を画面に表示
   display.display();

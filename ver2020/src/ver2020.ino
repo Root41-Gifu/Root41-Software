@@ -219,7 +219,7 @@ class _LED {
   bool white = false;
   bool dist = false;
 
-  int bright = 150;
+  int bright = 0;
 
   unsigned long defaultColor;
   unsigned long RED;
