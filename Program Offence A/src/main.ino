@@ -38,7 +38,7 @@
 #define LINE_RIGHTADDRESS 0x40
 
 #define LINE_BRIGHTNESS 255  // 50
-#define NEOPIXEL_BRIGHTNESS 30
+#define NEOPIXEL_BRIGHTNESS 0
 #define LIGHTLIMIT 1
 
 Adafruit_SSD1306 display(-1);
@@ -265,7 +265,7 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
   Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   gyro.setting();
   motor.begin();
@@ -324,6 +324,9 @@ void loop() {
   ball.calcDirection();  //ボールの方向算出
   ball.calc();           //動作角度算出
 
+  Serial.print("\tBall*");
+  Serial.print(millis() - STimer);
+
   // line---------------------------------------------
   line.read();
   line.arrange();
@@ -333,8 +336,18 @@ void loop() {
     line.Move_degree = 1000;
   }
 
+  Serial.print("\Line*");
+  Serial.print(millis() - STimer);
+
   // UI---------------------------------------------
-  UI.read();
+  static int uiCounter = 0;
+
+  if (uiCounter >= 10) {
+    UI.read();
+  } else {
+    uiCounter++;
+  }
+
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
 
   for (int i = 0; i <= 3; i++) {
@@ -344,27 +357,31 @@ void loop() {
   if (!emergency) {
     if (UI.active) {
       if (millis() - UI.updateTimer > 500) {
-        UI.LCDdisplay();  // LCD表示（重いので500msで回す）
-        UI.updateTimer = millis();
+        // UI.LCDdisplay();  // LCD表示（重いので500msで回す）
+        // UI.updateTimer = millis();
+
+        // UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
       }
     } else {
       UI.LCDdisplay();
     }
-    UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
   } else {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
+
+  Serial.print("\tUI*");
+  Serial.print(millis() - STimer);
 
   // gyro
   //ジャイロの読みこみ等
 
   // Motor---------------------------------------------
-  _Mdegree=1000;
-  // if (line.flag) {
-  //   _Mdegree = line.Move_degree;
-  // } else {
+  _Mdegree = 1000;
+  if (line.flag) {
+    _Mdegree = line.Move_degree;
+  } else {
     _Mdegree = int(ball.Move_degree);
-  // }
+  }
   if (!emergency) {
     //進行角度の選定
     // if (line.flag) {
@@ -386,26 +403,9 @@ void loop() {
             /* code */
             float neko;
 
-            // motor.susumu = (millis() / 5) % 360;
-            // Serial.println(motor.susumu);
-
-            // // motor.val[0] = sin(radians(motor.susumu - 60)) * 40;
-            // // motor.val[1] = sin(radians(motor.susumu - 135)) * 40;
-            // // motor.val[2] = sin(radians(motor.susumu - 225)) * 40;
-            // // motor.val[3] = sin(radians(motor.susumu - 300)) * 40;
-            // motor.motorCalc(0, 30, false, 0);
-            // for (int i = 0; i < 4; i++) {
-            //   motor.val[i] = motor.Kval[i];
-            // }
-
             // int a = 20;
             // int b = 2;
             // float c = -0.05;
-
-            // motor.val[0] = -30;
-            // motor.val[1] = -30;
-            // motor.val[2] = 30;
-            // motor.val[3] = 30;
 
             if (gyro.deg > 180) {
               neko = gyro.deg - 360;
@@ -414,31 +414,30 @@ void loop() {
             }
             int _Gap = neko;
 
-            neko *= -0.027;                             // P制御
-            neko += gyro.differentialRead() * -0.013;  //微分制御
+            neko *= -0.027;                            // P制御
+            neko += gyro.differentialRead() * -0.012;  //微分制御
                                                        // neko *= 1.2;
 
-            Serial.println(neko);
+            // Serial.println(neko);
             for (int i = 0; i < 4; i++) {
               motor.val[i] = round(neko);
               motor.val[i] = constrain(motor.val[i], -30, 30);
             }
 
-            int powerD = 35;
+            int powerD = 50;
             neko = constrain(neko, -100, 100);
-            motor.motorCalc(int(_Mdegree), 10, 0, 0);
-            // motor.motorCalc(0, 20, 0, 0);
-            if (abs(_Gap) < 5) {
-              for (int i = 0; i < 4; i++) {
-                motor.val[i] = motor.Kval[i];
-              }
-            } else {
-              int nekoK[4];
-              for (int i = 0; i < 4; i++) {
-                nekoK[i] = motor.val[i];
-                motor.val[i] = motor.val[i] + motor.Kval[i];
-              }
+            motor.motorCalc(int(_Mdegree), 8, 0, 0);
+            // if (abs(_Gap) < 5) {
+            //   for (int i = 0; i < 4; i++) {
+            //     motor.val[i] = motor.Kval[i];
+            //   }
+            // } else {
+            int nekoK[4];
+            for (int i = 0; i < 4; i++) {
+              nekoK[i] = motor.val[i];
+              motor.val[i] = motor.val[i] + motor.Kval[i];
             }
+            // }
             int _Max;
             for (int i = 0; i < 4; i++) {
               if (_Max < motor.val[i]) {
@@ -541,29 +540,13 @@ void loop() {
   // }
 
   // Serial.println(millis() - STimer);
-  Serial.print(motor.val[1]);
-  Serial.print(" ");
-  Serial.print(motor.val[2]);
-  Serial.print(" ");
-  Serial.print(motor.val[3]);
-  Serial.print(" ");
-  Serial.print(motor.val[4]);
-  Serial.print(" ");
-  Serial.println(gyro.deg);
+  // Serial.print(motor.val[1]);
+  // Serial.print(" ");
+  // Serial.print(motor.val[2]);
+  // Serial.print(" ");
+  // Serial.print(motor.val[3]);
+  // Serial.print(" ");
+  // Serial.print(motor.val[4]);
+  // Serial.print(" ");
+  // Serial.println(gyro.deg);
 }
-
-// int motorPS(int value) {
-//   // XY------
-//   byte sendValue;
-//   bool rotation;
-//   if (value > 0) {
-//     rotation = true;
-//   } else if (value < 0) {
-//     rotation = false;
-//   }
-//   byte absValue = abs(value);
-//   if (value <= 61) {
-//     sendValue = (rotation << 6) | (absValue);
-//   }
-//   return sendValue;
-// }
