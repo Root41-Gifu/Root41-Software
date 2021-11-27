@@ -324,8 +324,8 @@ void loop() {
   ball.calcDirection();  //ボールの方向算出
   ball.calc();           //動作角度算出
 
-  Serial.print("\tBall*");
-  Serial.print(millis() - STimer);
+  // Serial.print("\tBall*");
+  // Serial.print(millis() - STimer);
 
   // line---------------------------------------------
   line.read();
@@ -336,8 +336,8 @@ void loop() {
     line.Move_degree = 1000;
   }
 
-  Serial.print("\Line*");
-  Serial.print(millis() - STimer);
+  // Serial.print("\Line*");
+  // Serial.print(millis() - STimer);
 
   // UI---------------------------------------------
   static int uiCounter = 0;
@@ -359,9 +359,8 @@ void loop() {
       if (millis() - UI.updateTimer > 500) {
         // UI.LCDdisplay();  // LCD表示（重いので500msで回す）
         // UI.updateTimer = millis();
-
-        // UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
       }
+      UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
     } else {
       UI.LCDdisplay();
     }
@@ -369,8 +368,8 @@ void loop() {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
-  Serial.print("\tUI*");
-  Serial.print(millis() - STimer);
+  // Serial.print("\tUI*");
+  // Serial.print(millis() - STimer);
 
   // gyro
   //ジャイロの読みこみ等
@@ -414,9 +413,12 @@ void loop() {
             }
             int _Gap = neko;
 
-            neko *= -0.027;                            // P制御
+            neko *= -0.07;                             // P制御
             neko += gyro.differentialRead() * -0.012;  //微分制御
-                                                       // neko *= 1.2;
+
+            // neko *= -0.027;                            // P制御
+            // neko += gyro.differentialRead() * -0.012;  //微分制御
+            // neko *= 1.2;
 
             // Serial.println(neko);
             for (int i = 0; i < 4; i++) {
@@ -424,95 +426,34 @@ void loop() {
               motor.val[i] = constrain(motor.val[i], -30, 30);
             }
 
-            int powerD = 50;
-            neko = constrain(neko, -100, 100);
-            motor.motorCalc(int(_Mdegree), 8, 0, 0);
-            // if (abs(_Gap) < 5) {
-            //   for (int i = 0; i < 4; i++) {
-            //     motor.val[i] = motor.Kval[i];
-            //   }
-            // } else {
-            int nekoK[4];
-            for (int i = 0; i < 4; i++) {
-              nekoK[i] = motor.val[i];
-              motor.val[i] = motor.val[i] + motor.Kval[i];
-            }
-            // }
-            int _Max;
-            for (int i = 0; i < 4; i++) {
-              if (_Max < motor.val[i]) {
-                _Max = motor.val[i];
+            if (gyro.deg <= 50 || gyro.deg >= 310) {
+              int powerD = 50;
+              neko = constrain(neko, -100, 100);
+              motor.motorCalc(int(_Mdegree), 8, 0, 0);
+              // if (abs(_Gap) < 5) {
+              //   for (int i = 0; i < 4; i++) {
+              //     motor.val[i] = motor.Kval[i];
+              //   }
+              // } else {
+              int nekoK[4];
+              for (int i = 0; i < 4; i++) {
+                nekoK[i] = motor.val[i];
+                motor.val[i] = motor.val[i] + motor.Kval[i];
               }
+              // }
+              int _Max;
+              for (int i = 0; i < 4; i++) {
+                if (_Max < motor.val[i]) {
+                  _Max = motor.val[i];
+                }
+              }
+              for (int i = 0; i < 4; i++) {
+                motor.val[i] = motor.val[i] * powerD / _Max;
+              }
+            } else {
             }
-            for (int i = 0; i < 4; i++) {
-              motor.val[i] = motor.val[i] * powerD / _Max;
-            }
+
             motor.directDrive(motor.val);
-
-            // if (gyro.deg <= 5 || gyro.deg >= 355) {
-            //   // motor.motorCalc(0, 30, 0, 0);
-            //   // for (int i = 0; i < 4; i++) {
-            //   //   motor.val[i] = motor.Kval[i];
-            //   // }
-            //   motor.val[0] = 20;
-            //   motor.val[1] = 20;
-
-            //   motor.val[2] = -20;
-            //   motor.val[3] = -20;
-            //   motor.directDrive(motor.val);
-            // } else if (gyro.deg < 180) {
-            //   for (int i = 0; i < 4; i++) {
-            //     motor.val[i] = -1 * map(gyro.deg, 0, 180, b, a);
-            //     motor.val[i] += gyro.differentialRead() * c;
-
-            //     motor.val[i] = constrain(motor.val[i], -20, -2);
-            //   }
-
-            //   // motor.motorCalc(0, 30, 0, 0);
-            //   // for (int i = 0; i < 4; i++) {
-            //   //   motor.val[i] = motor.val[i] + motor.Kval[i];
-            //   // }
-            //   // float _Max;
-            //   // for (int i = 0; i < 4; i++) {
-            //   //   if (abs(motor.val[i]) > _Max) {
-            //   //     _Max = motor.val[i];
-            //   //   }
-            //   // }
-            //   // motor.val[0] = motor.val[0] * 100 / _Max;
-            //   // motor.val[1] = motor.val[1] * 100 / _Max;
-            //   // motor.val[2] = motor.val[2] * 100 / _Max;
-            //   // motor.val[3] = motor.val[3] * 100 / _Max;
-
-            //   motor.directDrive(motor.val);
-            // } else {
-            //   for (int i = 0; i < 4; i++) {
-            //     motor.val[i] = map(gyro.deg, 180, 360, a, b);
-            //     motor.val[i] += gyro.differentialRead() * c;
-
-            //     motor.val[i] = constrain(motor.val[i], 2, 20);
-            //   }
-
-            //   // motor.motorCalc(0, 30, 0, 0);
-            //   // for (int i = 0; i < 4; i++) {
-            //   //   motor.val[i] = motor.val[i] + motor.Kval[i];
-            //   // }
-            //   // float _Max;
-            //   // for (int i = 0; i < 4; i++) {
-            //   //   if (abs(motor.val[i]) > _Max) {
-            //   //     _Max = motor.val[i];
-            //   //   }
-            //   // }
-            //   // motor.val[0] = motor.val[0] * 100 / _Max;
-            //   // motor.val[1] = motor.val[1] * 100 / _Max;
-            //   // motor.val[2] = motor.val[2] * 100 / _Max;
-            //   // motor.val[3] = motor.val[3] * 100 / _Max;
-
-            //   motor.directDrive(motor.val);
-            // }
-
-            // Serial.println(gyro.differentialRead());
-            // Serial.print("neko:");
-            // Serial.println(gyro.differentialRead());
           }
         } else {
           motor.release();
@@ -538,6 +479,11 @@ void loop() {
   // if (millis() - motor.lowBatteryCount >= 1000) {
   //   emergency = true;
   // }
+
+  Serial.print(line.orderBlock[0]);
+  Serial.print(" ");
+  Serial.print(line.orderBlock[1]);
+  Serial.println("");
 
   // Serial.println(millis() - STimer);
   // Serial.print(motor.val[1]);

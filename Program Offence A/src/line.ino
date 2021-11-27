@@ -205,15 +205,15 @@ void _Line::arrange(void) {
       checkBlock[0] = true;
       Block++;
     } else if (Rear > 0 && !checkBlock[1]) {
-      orderBlock[Block] = 1;
+      orderBlock[Block] = 2;
       checkBlock[1] = true;
       Block++;
     } else if (Left > 0 && !checkBlock[2]) {
-      orderBlock[Block] = 2;
+      orderBlock[Block] = 4;
       checkBlock[2] = true;
       Block++;
     } else if (Right > 0 && !checkBlock[3]) {
-      orderBlock[Block] = 3;
+      orderBlock[Block] = 6;
       checkBlock[3] = true;
       Block++;
     }
