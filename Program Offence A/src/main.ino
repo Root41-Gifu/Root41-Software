@@ -40,6 +40,7 @@
 #define LINE_BRIGHTNESS 255  // 50
 #define NEOPIXEL_BRIGHTNESS 0
 #define LIGHTLIMIT 1
+#define LINEOVERTIME 500
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
@@ -74,6 +75,7 @@ class _UI {
   int setting;
 
   bool active;  //動作中
+  bool standby;
   bool select;
   bool adjust;
 
@@ -86,6 +88,7 @@ class _UI {
   int counter[4];
   unsigned long longpressTimer[4];  //長押しタイマー
   unsigned long updateTimer;        // UI表示スパン
+  unsigned long standbyTimer;
 
   int switchScope;  //テスト用の変数、ボタンで切り替えれます。
 
@@ -137,7 +140,8 @@ class _Line {
 
   int Line_Where[LINE_NUM];
 
-  bool flag;       //ラインセンサーの動きをするか
+  bool flag;  //ラインセンサーの動きをするか
+  bool Rflag;
   bool touch;      //ラインに触れているか
   bool value[47];  //反応値
   bool check[47];  //加算されたか
@@ -157,6 +161,7 @@ class _Line {
 
   //タイマー
   unsigned long detectTimer[47];
+  unsigned long OutTimer;
 
   //----十字ラインセンサー
   int Front;  //フロント縁部分の反応数 ~7
@@ -174,6 +179,9 @@ class _Line {
 
   //その他
   int mode;
+
+  int leftdegree;
+  int rdegree;
   float t_vectorX;
   float t_vectorY;
 
@@ -379,15 +387,14 @@ void loop() {
   if (line.flag) {
     _Mdegree = line.Move_degree;
   } else {
-    _Mdegree = int(ball.Move_degree);
+    if (millis() - line.OutTimer <= LINEOVERTIME) {
+      _Mdegree = line.rdegree;
+    } else {
+      _Mdegree = int(ball.Move_degree);
+    }
   }
   if (!emergency) {
     //進行角度の選定
-    // if (line.flag) {
-    //   degree = line.Move_degree;
-    // } else {
-    //   degree = ball.Move_degree;
-    // }
     if (UI.mode == 0) {
       //セットアップ
       //モーターのセットアップがあったらここで（終わったらmode=1にして）
@@ -413,8 +420,8 @@ void loop() {
             }
             int _Gap = neko;
 
-            neko *= -0.07;                             // P制御
-            neko += gyro.differentialRead() * -0.012;  //微分制御
+            neko *= -0.082;                            // P制御 0.078
+            neko += gyro.differentialRead() * -0.010;  //微分制御 0.01
 
             // neko *= -0.027;                            // P制御
             // neko += gyro.differentialRead() * -0.012;  //微分制御
@@ -427,9 +434,14 @@ void loop() {
             }
 
             if (gyro.deg <= 50 || gyro.deg >= 310) {
-              int powerD = 50;
+              int powerD;
+              if (line.flag) {
+                powerD = 33;
+              } else {
+                powerD = 31;
+              }
               neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 8, 0, 0);
+              motor.motorCalc(int(_Mdegree), 8, 0, 0);//8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
@@ -450,9 +462,14 @@ void loop() {
               for (int i = 0; i < 4; i++) {
                 motor.val[i] = motor.val[i] * powerD / _Max;
               }
-            } else {
+            } 
+            for(int i=0; i<4; i++){
+              if(gyro.deg<80){
+                motor.val[i]=motor.val[i]*3;
+              }else{
+                motor.val[i]=motor.val[i]*1.6;
+              }
             }
-
             motor.directDrive(motor.val);
           }
         } else {
@@ -480,19 +497,27 @@ void loop() {
   //   emergency = true;
   // }
 
-  Serial.print(line.orderBlock[0]);
-  Serial.print(" ");
-  Serial.print(line.orderBlock[1]);
-  Serial.println("");
+  // Serial.print(millis() - line.OutTimer);
+  // Serial.print(" ");
+  // Serial.print(line.flag);
+  // Serial.print(" ");
+  // Serial.print(line.Rflag);
+  // Serial.print(" ");
+  // Serial.print(line.Move_degree);
+  // Serial.print(" ");
+  // Serial.print(line.leftdegree);
+  // Serial.print(" ");
+  // Serial.print(line.rdegree);
+  // Serial.println("");
 
   // Serial.println(millis() - STimer);
-  // Serial.print(motor.val[1]);
-  // Serial.print(" ");
-  // Serial.print(motor.val[2]);
-  // Serial.print(" ");
-  // Serial.print(motor.val[3]);
-  // Serial.print(" ");
-  // Serial.print(motor.val[4]);
-  // Serial.print(" ");
+  Serial.print(UI.switchingFlag[3]);
+  Serial.print(" ");
+  Serial.print(UI.active);
+  Serial.print(" ");
+  Serial.print(UI.standby);
+  Serial.print(" ");
+  Serial.print(millis()-UI.standbyTimer);
+  Serial.println(" ");
   // Serial.println(gyro.deg);
 }

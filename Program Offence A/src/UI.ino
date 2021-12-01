@@ -66,7 +66,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
+        standby = true;
+        standbyTimer=millis();
+      }
+    } else {
+      if (standby&&!touch[3]) {
         active = true;
+        standby=false;
       }
     }
     if (submode < 0) {
@@ -100,7 +106,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
+        standby=true;
+        standbyTimer=millis();
+      }
+    } else {
+      if (standby&&!touch[3]) {
         active = true;
+        standby=false;
       }
     }
     if (submode < 0) {
@@ -141,7 +153,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
+        standby = true;
+        standbyTimer=millis();
+      }
+    } else {
+      if (standby&&!touch[3]) {
         active = true;
+        standby=false;
       }
     }
     if (submode < 0) {
@@ -166,7 +184,13 @@ void _UI::refrection(void) {
       }
     }
     if (switchingFlag[3]) {
-      active = true;
+      standby=true;
+      standbyTimer=millis();
+    } else {
+      if (standby&&!touch[3]) {
+        active = true;
+        standby=false;
+      }
     }
   }
   if (switchingFlag[1]) {
@@ -235,7 +259,7 @@ void _UI::NeoPixeldisplay(int _mode) {
     if (active) {
       unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
-      if (LIGHTLIMIT==1) {
+      if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {
           if (i >= 0 && i <= 8) {  // 0-7
             front.setPixelColor(i, lineNeoPixelDicline);
@@ -251,7 +275,7 @@ void _UI::NeoPixeldisplay(int _mode) {
           }
         }
         for (int i = 0; i < LED_LEFT; i++) {
-          if (i >= 0 && i <= 7) {  // 4-7
+          if (i >= 1 && i <= 7) {  // 4-7
             left.setPixelColor(i, lineNeoPixelDicline);
           } else {
             left.setPixelColor(i, lineNeoPixelColor);

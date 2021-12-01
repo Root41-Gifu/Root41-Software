@@ -6,44 +6,44 @@ _Line::_Line() {
   //   _vectorX[i] = sin(radians(i * 18));
   //   _vectorY[i] = cos(radians(i * 18));
   // }
-  for (int i = 0; i <4; i++) {
+  for (int i = 0; i < 4; i++) {
     _vectorX[i] = sin(radians(i * 90));
     _vectorY[i] = cos(radians(i * 90));
   }
   for (int i = 0; i < LINE_NUM; i++) {
     if (i < LINE_FRONTNUM) {
       Line_Where[i] = 0;
-    } else if (i < LINE_FRONTNUM+LINE_REARNUM) {
+    } else if (i < LINE_FRONTNUM + LINE_REARNUM) {
       Line_Where[i] = 2;
-    } else if (i < LINE_FRONTNUM+LINE_REARNUM+LINE_LEFTNUM) {
+    } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
       Line_Where[i] = 4;
-    } else if (i < LINE_FRONTNUM+LINE_REARNUM+LINE_LEFTNUM+LINE_REARNUM) {
+    } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_REARNUM) {
       Line_Where[i] = 6;
     }
   }
-  for(int i=0; i<=7; i++){
-    Line_Where[i]=0;
+  for (int i = 0; i <= 7; i++) {
+    Line_Where[i] = 0;
   }
-  for(int i=8; i<=9; i++){
-    Line_Where[i]=1;
+  for (int i = 8; i <= 9; i++) {
+    Line_Where[i] = 1;
   }
-  for(int i=10; i<=15; i++){
-    Line_Where[i]=2;
+  for (int i = 10; i <= 15; i++) {
+    Line_Where[i] = 2;
   }
-  for(int i=16; i<=18; i++){
-    Line_Where[i]=3;
+  for (int i = 16; i <= 18; i++) {
+    Line_Where[i] = 3;
   }
-  for(int i=19; i<=22; i++){
-    Line_Where[i]=5;
+  for (int i = 19; i <= 22; i++) {
+    Line_Where[i] = 5;
   }
-  for(int i=23; i<=26; i++){
-    Line_Where[i]=4;
+  for (int i = 23; i <= 26; i++) {
+    Line_Where[i] = 4;
   }
-  for(int i=27; i<=31; i++){
-    Line_Where[i]=5;
+  for (int i = 27; i <= 31; i++) {
+    Line_Where[i] = 5;
   }
-  for(int i=32; i<=40; i++){
-    Line_Where[i]=6;
+  for (int i = 32; i <= 40; i++) {
+    Line_Where[i] = 6;
   }
 }
 
@@ -135,13 +135,13 @@ void _Line::arrange(void) {
   Rear = 0;
   Left = 0;
   Right = 0;
-  FrontEdge=0;
-  RearEdge=0;
-  LeftEdge=0;
-  RightEdge=0;
-  RearInside=0;
-  LeftInside=0;
-  RightInside=0;
+  FrontEdge = 0;
+  RearEdge = 0;
+  LeftEdge = 0;
+  RightEdge = 0;
+  RearInside = 0;
+  LeftInside = 0;
+  RightInside = 0;
   for (int i = 0; i < LINE_NUM; i++) {
     if (!value[i]) {  //数値逆転
       if (!check[i]) {
@@ -165,6 +165,11 @@ void _Line::arrange(void) {
         //   stopTimer = device.getTime();
         mode = 1;
         flag = true;
+        if (millis() - OutTimer <= LINEOVERTIME) {
+          rdegree = leftdegree;
+        } else {
+          Rflag = false;
+        }
       }
       touch = true;
       if (Line_Where[i] == 0) {
@@ -184,6 +189,7 @@ void _Line::arrange(void) {
       } else if (Line_Where[i] == 7) {
         RightInside++;
       }
+      OutTimer = millis();
     }
   }
   if (!touch) {
@@ -197,6 +203,13 @@ void _Line::arrange(void) {
     for (int i = 0; i < LINE_NUM; i++) {
       order[i] = 100;
       check[i] = 0;
+    }
+    if (millis() - OutTimer > LINEOVERTIME) {
+      Rflag = false;
+      leftdegree = 1000;
+      rdegree = 1000;
+    }else{
+      Rflag=true;
     }
     Block = 0;
   } else {
@@ -260,6 +273,9 @@ void _Line::calc(void) {
       _degree = 270;
     }
   }
+  if (Rflag) {
+    _degree = rdegree;
+  }
   // float _vX;
   // float _vY;
   // for (int i = 0; i < 2; i++) {
@@ -279,4 +295,5 @@ void _Line::calc(void) {
   // }
   // _degree = degrees(atan2(_vY, _vX));
   Move_degree = _degree;
+  leftdegree = _degree;
 }
