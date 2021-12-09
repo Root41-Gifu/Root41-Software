@@ -105,6 +105,18 @@ void _motor::drive(int _deg, int _power, bool _stop = false) {
     val[i] = constrain(val[i], -255, 255);
   }
 
+  int temp = val[1];
+  val[3] = val[1];
+  val[3] = temp;
+
+  // for (int i = 0; i < 4; i++)
+  // {
+  //   val[i] = 0;
+  // }
+
+  // val[3] = 100;
+  
+
   directDrive(val);
 }
 

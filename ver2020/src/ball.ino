@@ -3,11 +3,11 @@ void _ball::read(int* b) {
   for (int i = 0; i <= 15; i++) {
     // *(b + i) += (1 - LPF) * (analogRead(BALL[i]) - *(b + i));
     *(b + i) = analogRead(BALL[i]);
-    if ((i == 6 || i == 13) && !device.robot) {
+    if ((i == 6 || i == 13)) {
       *(b + i) = 700;
     }
-    Serial.print(*(b + i));
-    Serial.print(" ");
+    ////Serial.print(*(b + i));
+    ////Serial.print(" ");
   }
   Serial.println(" ");
   digitalWrite(BALL_RESET, LOW);
@@ -65,8 +65,8 @@ void _ball::calc(void) {
       offset += 15;
     }
     offset = constrain(offset, 0, 100);
-    // Serial.print(offset);
-    // Serial.print("\t");
+    // ////Serial.print(offset);
+    // ////Serial.print("\t");
     // Serial.println(dist);
 
     if (top >= 1 && top <= 15) {

@@ -90,9 +90,9 @@ int _gyro::read(void) {
   // while (Wire.available()) {
   //   Wire.read();
   // }
-  // Serial.print(degrees(ypr[1]));
-  // Serial.print("\t");
-  // Serial.println(degrees(ypr[2]));
+  // //////Serial.print(degrees(ypr[1]));
+  // //////Serial.print("\t");
+  // //Serial.println(degrees(ypr[2]));
   if (degrees(ypr[2]) <= 165 && degrees(ypr[2]) >= -165) {
     isLift = true;
   } else if (degrees(ypr[1]) <= 165 && degrees(ypr[1]) >= -165) {
@@ -161,7 +161,7 @@ void _gyro::calibrationEEPROM(void) {
   }
 
   if (state == 1) {
-    Serial.println("\nCalculating offsets...");
+    //Serial.println("\nCalculating offsets...");
     calibration();
     state++;
     device.waitTime(100);
@@ -169,19 +169,19 @@ void _gyro::calibrationEEPROM(void) {
 
   if (state == 2) {
     meansensors();
-    Serial.println("\nFINISHED!");
-    Serial.print("Your offsets:\t");
-    Serial.print(ax_offset);
-    Serial.print("\t");
-    Serial.print(ay_offset);
-    Serial.print("\t");
-    Serial.print(az_offset);
-    Serial.print("\t");
-    Serial.print(gx_offset);
-    Serial.print("\t");
-    Serial.print(gy_offset);
-    Serial.print("\t");
-    Serial.println(gz_offset);
+    //Serial.println("\nFINISHED!");
+    //////Serial.print("Your offsets:\t");
+    //////Serial.print(ax_offset);
+    //////Serial.print("\t");
+    //////Serial.print(ay_offset);
+    //////Serial.print("\t");
+    //////Serial.print(az_offset);
+    //////Serial.print("\t");
+    //////Serial.print(gx_offset);
+    //////Serial.print("\t");
+    //////Serial.print(gy_offset);
+    //////Serial.print("\t");
+    //Serial.println(gz_offset);
 
     // EEPROMに洗脳する
     EEPROM[1] = highByte(gx_offset);
@@ -257,7 +257,7 @@ void calibration() {
     accelgyro.setZGyroOffset(gz_offset);
 
     meansensors();
-    Serial.println("...");
+    //Serial.println("...");
 
     LED.changeAll(LED.NONE);
     RGBLED.show();
@@ -302,9 +302,9 @@ void calibration() {
 
 void _gyro::offsetRead(void) {
   offsetVal = 0;
-  // Serial.println(gyro.read());
+  // //Serial.println(gyro.read());
   // offsetVal = deg;
-  // Serial.println(offsetVal);
+  // //Serial.println(offsetVal);
 
   for (int i = 0; i < 150; i++) {
     deg = gyro.read();
@@ -322,7 +322,7 @@ void _gyro::offsetRead(void) {
   }
   offsetVal %= 360;
 
-  Serial.println(gyro.read());
+  //Serial.println(gyro.read());
 
   // if (device.getTime() - device.startTimer >= 1200) {
   //   device.startTimer = device.getTime();

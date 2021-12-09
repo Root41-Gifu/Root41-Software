@@ -92,6 +92,8 @@ class _line {
   int reflection;
   int just;
 
+  bool val[20];
+
  private:
   // none
 
@@ -108,8 +110,6 @@ class _line {
 
   float x;
   float y;
-
-  bool val[20];
   int order[20];
   int check[20];
 
@@ -285,21 +285,21 @@ void setup(void) {
   }
 
   Serial.begin(115200);
-  Serial.println("Root41 2020");
-  Serial.print("Robot Number:");
-  Serial.println(device.robot + 1);
-  Serial.print("GyroOffsetX:");
-  Serial.println(gyro.eeprom[0]);
-  Serial.print("GyroOffsetY:");
-  Serial.println(gyro.eeprom[1]);
-  Serial.print("GyroOffsetZ:");
-  Serial.println(gyro.eeprom[2]);
-  Serial.print("AccelOffsetX:");
-  Serial.println(gyro.eeprom[3]);
-  Serial.print("AccelOffsetY:");
-  Serial.println(gyro.eeprom[4]);
-  Serial.print("AccelOffsetZ:");
-  Serial.println(gyro.eeprom[5]);
+  // Serial.println("Root41 2020");
+  // Serial.print("Robot Number:");
+  // Serial.println(device.robot + 1);
+  // Serial.print("GyroOffsetX:");
+  // Serial.println(gyro.eeprom[0]);
+  // Serial.print("GyroOffsetY:");
+  // Serial.println(gyro.eeprom[1]);
+  // Serial.print("GyroOffsetZ:");
+  // Serial.println(gyro.eeprom[2]);
+  // Serial.print("AccelOffsetX:");
+  // Serial.println(gyro.eeprom[3]);
+  // Serial.print("AccelOffsetY:");
+  // Serial.println(gyro.eeprom[4]);
+  // Serial.print("AccelOffsetZ:");
+  // Serial.println(gyro.eeprom[5]);
 
   gyro.setting();
 
@@ -312,7 +312,7 @@ void setup(void) {
 
   gyro.offsetRead();
 
-  device.mode = 1;
+  device.mode = 0;
 }
 
 void loop(void) {
@@ -457,7 +457,11 @@ void loop(void) {
     Wire.read();
   }
 
-  while (Wire.available()) {
-    gyro.read();
+  // Serial.println(gyro.deg);
+  for (int i = 0; i < 20; i++) {
+    Serial.print(line.val[i]==true?"●":"○");
   }
+  Serial.print(gyro.deg);
+
+  Serial.println("");
 }

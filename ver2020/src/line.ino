@@ -182,9 +182,9 @@ void _line::brightnessAdjust(void) {
         }
         reacted[j] = true;
       }
-      Serial.print(val);
+      //////Serial.print(val);
     }
-    Serial.println("");
+    //Serial.println("");
     if (accumulation >= 8) {
       highestBright = i;
       // break;
@@ -198,7 +198,7 @@ void _line::brightnessAdjust(void) {
 
   analogWrite(LINE_BRIGHT, bright);
 
-  Serial.println(bright);
+  //Serial.println(bright);
 }
 
 void _line::read(void) {
