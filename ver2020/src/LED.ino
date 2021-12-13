@@ -1,5 +1,5 @@
 void _LED::gyroShow(unsigned long _color = 'hogehoge') {
-  // Serial.println(gyro.deg);
+  // //Serial.println(gyro.deg);
   if (abs(180 - gyro.deg) <= 178) {
     int deg2 = gyro.deg - 11;
     deg2 += 360;
