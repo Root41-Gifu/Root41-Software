@@ -5,7 +5,7 @@ _UI::_UI() {
 }
 
 void _UI::read() {
-  Wire.requestFrom(UI_ADDRESS, 1);  //アドレスは変えてね
+  Wire.requestFrom(UI_ADDRESS, 1);
   while (Wire.available()) {
     byte readValue = Wire.read();
     touch[2] = !(readValue & (1 << 2));
@@ -67,12 +67,12 @@ void _UI::refrection(void) {
         select = true;
       } else {
         standby = true;
-        standbyTimer=millis();
+        standbyTimer = millis();
       }
     } else {
-      if (standby&&!touch[3]) {
+      if (standby && !touch[3]) {
         active = true;
-        standby=false;
+        standby = false;
       }
     }
     if (submode < 0) {
@@ -106,13 +106,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
-        standby=true;
-        standbyTimer=millis();
+        standby = true;
+        standbyTimer = millis();
       }
     } else {
-      if (standby&&!touch[3]) {
+      if (standby && !touch[3]) {
         active = true;
-        standby=false;
+        standby = false;
       }
     }
     if (submode < 0) {
@@ -154,12 +154,12 @@ void _UI::refrection(void) {
         select = true;
       } else {
         standby = true;
-        standbyTimer=millis();
+        standbyTimer = millis();
       }
     } else {
-      if (standby&&!touch[3]) {
+      if (standby && !touch[3]) {
         active = true;
-        standby=false;
+        standby = false;
       }
     }
     if (submode < 0) {
@@ -184,12 +184,12 @@ void _UI::refrection(void) {
       }
     }
     if (switchingFlag[3]) {
-      standby=true;
-      standbyTimer=millis();
+      standby = true;
+      standbyTimer = millis();
     } else {
-      if (standby&&!touch[3]) {
+      if (standby && !touch[3]) {
         active = true;
-        standby=false;
+        standby = false;
       }
     }
   }
@@ -217,45 +217,96 @@ void _UI::NeoPixeldisplay(int _mode) {
   left.clear();
   right.clear();
   strip.clear();
-  // if (_mode == 0) {
-  //   if (ball.max_average[0] == 100) {
-  //     for (int i = 0; i < BALL_NUM; i++) {
-  //       strip.setPixelColor(i, 255, 0, 0);
-  //     }
-  //   } else {
-  //     int i = ball.max_average[0] - 1;
-  //     int k = ball.max_average[0] + 1;
-  //     if (i < 0) {
-  //       i = 16 + i;
-  //     } else if (k > 15) {
-  //       k = 0;
-  //     }
-  //     strip.setPixelColor(ball.max_average[0], 255, 0, 0);
-  //     strip.setPixelColor(i, 255, 0, 0);
-  //     strip.setPixelColor(k, 255, 0, 0);
-  //     // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
-  //   }
+  // reset
+  // for (int i = 0; i < 16; i++) {
+  //   strip.setPixelColor(i, 0, 0, 0);
   // }
-  if (_mode == 0) {
-    if (ball.max[0] == 100) {
-      for (int i = 0; i < BALL_NUM; i++) {
-        strip.setPixelColor(i, 0, 0, 0);
+  if (active) {
+    // if (mode == 1) {
+    //   if (ball.max[0] != 100) {
+    //     unsigned long TopPixelColor = strip.Color(255, 0, 0);
+    //     strip.setPixelColor(ball.max[0], TopPixelColor);
+    //   } else {
+    //     unsigned long TopPixelColor = strip.Color(255, 0, 0);
+    //     StripFulldisplay(TopPixelColor);
+    //   }
+    // }
+    if (mode == 1) {
+      unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
+      StripFulldisplay(BlackDawn_Color);
+    } else if (mode == 4) {
+      unsigned long BallDistance_Color1 = strip.Color(255, 0, 0);  // distance1
+      unsigned long BallDistance_Color2 =
+          strip.Color(125, 0, 125);                                // distance1
+      unsigned long BallDistance_Color3 = strip.Color(0, 0, 255);  // distance1
+      int _side[2];
+      _side[0] = ball.max[0] - 1;
+      _side[1] = ball.max[0] + 1;
+      if (ball.max[0] - 1 < 0) {
+        _side[0] = 15;
+      } else if (ball.max[0] + 1 > 15) {
+        _side[1] = 0;
+      }
+      switch (ball.distanceLevel) {
+        case 0:
+          StripFulldisplay(BallDistance_Color3);
+          break;
+        case 3:
+          strip.setPixelColor(ball.max[0], BallDistance_Color3);
+          strip.setPixelColor(_side[0], BallDistance_Color3);
+          strip.setPixelColor(_side[1], BallDistance_Color3);
+          break;
+        case 2:
+          strip.setPixelColor(ball.max[0], BallDistance_Color2);
+          strip.setPixelColor(_side[0], BallDistance_Color2);
+          strip.setPixelColor(_side[1], BallDistance_Color2);
+          break;
+
+        case 1:
+          strip.setPixelColor(ball.max[0], BallDistance_Color1);
+          strip.setPixelColor(_side[0], BallDistance_Color1);
+          strip.setPixelColor(_side[1], BallDistance_Color1);
+          break;
+
+        default:
+          break;
+      }
+    }
+  } else if (standby) {
+    //スタンバイ中
+    unsigned long NeoPixelColor = strip.Color(255, 255, 255);
+    //スタンバイ時のの演出
+    if (millis() - standbyTimer < 400) {
+      int timerSeparate = millis() - standbyTimer;
+      for (int i = 0; i <= (timerSeparate / 50) % 8; i++) {
+        strip.setPixelColor(i, NeoPixelColor);
+        strip.setPixelColor(15 - i, NeoPixelColor);
       }
     } else {
-      int i = ball.max[0] - 1;
-      int k = ball.max[0] + 1;
-      if (i < 0) {
-        i = 16 + i;
-      } else if (k > 15) {
-        k = 0;
-      }
-      // strip.setPixelColor(ball.max[0], 255, 0, 0);
-      // strip.setPixelColor(i, 255, 0, 0);
-      // strip.setPixelColor(k, 255, 0, 0);
-      // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
+      StripFulldisplay(NeoPixelColor);
+    }
+  } else {
+    if (mode == 1 || mode == 2) {
+      // offence
+      unsigned long OffencelColor = strip.Color(255, 0, 0);
+      StripFulldisplay(OffencelColor);
+    } else if (mode == 3) {
+      unsigned long GyroColor = strip.Color(0, 0, 255);
+      StripFulldisplay(GyroColor);
+    } else if (mode == 4) {
+      unsigned long KickerColor = strip.Color(255, 255, 0);
+      StripFulldisplay(KickerColor);
+    } else if (mode == 5) {
+      unsigned long LineColor = strip.Color(255, 255, 255);
+      StripFulldisplay(LineColor);
+    } else if (mode == 6) {
+      unsigned long MotorColor = strip.Color(255, 0, 255);
+      StripFulldisplay(MotorColor);
     }
   }
-  if (mode == 5 || mode == 1) {
+
+  // line
+  if (mode == 5 || mode == 1 || mode == 2) {
     if (active) {
       unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
@@ -317,25 +368,6 @@ void _UI::NeoPixeldisplay(int _mode) {
       //       switchScope - LINE_FRONTNUM - LINE_REARNUM - LINE_LEFTNUM,
       //       lineNeoPixelColor);
       // }
-    }
-  }
-  if (!active) {
-    if (mode == 1 || mode == 2) {
-      // offence
-      unsigned long OffencelColor = strip.Color(255, 0, 0);
-      StripFulldisplay(OffencelColor);
-    } else if (mode == 3) {
-      unsigned long GyroColor = strip.Color(0, 0, 255);
-      StripFulldisplay(GyroColor);
-    } else if (mode == 4) {
-      unsigned long KickerColor = strip.Color(255, 255, 0);
-      StripFulldisplay(KickerColor);
-    } else if (mode == 5) {
-      unsigned long LineColor = strip.Color(255, 255, 255);
-      StripFulldisplay(LineColor);
-    } else if (mode == 6) {
-      unsigned long MotorColor = strip.Color(255, 0, 255);
-      StripFulldisplay(MotorColor);
     }
   }
   strip.show();
@@ -401,7 +433,7 @@ void _UI::LCDdisplay(void) {
     display.setCursor(0, 17);
     display.setTextSize(1);
   } else if (UI.mode == 4) {
-    display.println("Kicker");
+    display.println("Ball");
   } else if (UI.mode == 5) {
     display.println("Line");
   } else if (UI.mode == 6) {
@@ -498,4 +530,10 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
   right.begin();
   right.show();
   right.setBrightness(brightL);
+}
+
+void _UI::SerialPrint(bool Display) {
+  if (Display) {
+    Serial.println(ball.distance);
+  }
 }

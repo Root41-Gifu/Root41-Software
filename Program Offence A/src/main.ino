@@ -1,5 +1,3 @@
-
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
@@ -17,6 +15,14 @@
 #define LINE_REARNUM 9
 #define LINE_LEFTNUM 14
 #define LINE_RIGHTNUM 8
+#define LINE_FRONTEDGENUM 0
+#define LINE_REAREDGENUM 0
+#define LINE_LEFTEDGENUM 0
+#define LINE_RIGHTEDGENUM 0
+#define LINE_FRONTINSIDENUM 0
+#define LINE_REARINSIDENUM 0
+#define LINE_LEFTINSIDENUM 0
+#define LINE_RIGHTINSIDENUM 0
 #define LED_STRIP 16
 #define LED_FRONT 13
 #define LED_REAR 14
@@ -38,8 +44,8 @@
 #define LINE_RIGHTADDRESS 0x40
 
 #define LINE_BRIGHTNESS 255  // 50
-#define NEOPIXEL_BRIGHTNESS 0
-#define LIGHTLIMIT 1
+#define NEOPIXEL_BRIGHTNESS 30
+#define LIGHTLIMIT 0
 #define LINEOVERTIME 500
 
 Adafruit_SSD1306 display(-1);
@@ -69,6 +75,7 @@ class _UI {
   void Errordisplay(int);
   void NeoPixeldisplay(int);
   void StripFulldisplay(unsigned long);
+  void SerialPrint(bool);
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
@@ -98,19 +105,22 @@ class _UI {
 class _Ball {
  public:
   _Ball(void);
-  void read(void);
+  void SPI_read(void);
   void average(void);
   void calcDistance(void);
   void calcDirection(void);
   void calc(void);
   int adjustValue(int, int);
+  void Max_calc(float*);
   void LPF(void);
   unsigned long value[16];  //読み込み値
   float LPF_value[16];      // LPF補正値
   float LastLPF[16];        //前回のLPF補正値
   int dist[16];             //距離
-  int max[3];               //最大値（のポート番号）
-  int max_average[3];       //最大値の平均
+  int distance;
+  int distanceLevel;
+  int max[3];          //最大値（のポート番号）
+  int max_average[3];  //最大値の平均
   int averageCounter[17];
   int degree;       //ボールの角度
   int Move_degree;  //進行角度
@@ -147,6 +157,7 @@ class _Line {
   bool check[47];  //加算されたか
   bool checkBlock[8];
   int Block;
+  int Edge;
   int order[47];  //反応した順番
   int orderBlock[8];
 
@@ -277,17 +288,16 @@ void setup() {
 
   gyro.setting();
   motor.begin();
-
-  unsigned long lineNeoPixelNot = strip.Color(0, 0, 0);
-  UI.StripFulldisplay(lineNeoPixelNot);
 }
 
 void loop() {
   unsigned long STimer = millis();
+
+  // Battery-check---------------------------------------------
   Battery = analogRead(voltage) * 0.01612;
 
   // Ball---------------------------------------------
-  ball.read();  // SPI読み込み
+  ball.SPI_read();  // SPI読み込み
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
       ball.value[i] = 0;
@@ -306,34 +316,34 @@ void loop() {
   // }
   ball.LPF();  // LPFかける。魔法のフィルタ
   // MAX値求める、max[0]は一番反応いいやつ。
-  ball.max[0] = 100;
-  ball.max[1] = 100;
-  ball.max[2] = 100;
-  for (int i = 0; i < 16; i++) {
-    if (ball.LPF_value[ball.max[0]] < ball.LPF_value[i] || ball.max[0] == 100) {
-      ball.max[2] = ball.max[1];
-      ball.max[1] = ball.max[0];
-      ball.max[0] = i;
-    } else if (ball.LPF_value[ball.max[1]] < ball.LPF_value[i] ||
-               ball.max[1] == 100) {
-      ball.max[2] = ball.max[1];
-      ball.max[1] = i;
-    } else if (ball.LPF_value[ball.max[2]] < ball.LPF_value[i] ||
-               ball.max[2] == 100) {
-      ball.max[2] = i;
-    }
-  }
-  for (int i = 0; i < 3; i++) {
-    if (ball.LPF_value[ball.max[i]] < 20) {
-      ball.max[i] = 100;
-    }
-  }
-  ball.average();        //平均とる。この関数イランかも知らん
+  // ball.max[0] = 100;
+  // ball.max[1] = 100;
+  // ball.max[2] = 100;
+  // for (int i = 0; i < 16; i++) {
+  //   if (ball.LPF_value[ball.max[0]] < ball.LPF_value[i] || ball.max[0] ==
+  //   100) {
+  //     ball.max[2] = ball.max[1];
+  //     ball.max[1] = ball.max[0];
+  //     ball.max[0] = i;
+  //   } else if (ball.LPF_value[ball.max[1]] < ball.LPF_value[i] ||
+  //              ball.max[1] == 100) {
+  //     ball.max[2] = ball.max[1];
+  //     ball.max[1] = i;
+  //   } else if (ball.LPF_value[ball.max[2]] < ball.LPF_value[i] ||
+  //              ball.max[2] == 100) {
+  //     ball.max[2] = i;
+  //   }
+  // }
+  // for (int i = 0; i < 3; i++) {
+  //   if (ball.LPF_value[ball.max[i]] < 20) {
+  //     ball.max[i] = 100;
+  //   }
+  // }
+  ball.Max_calc(ball.LPF_value);  //おかしかったらここコメントアウト
+  ball.average();  //平均とる。この関数イランかも知らん
+  ball.calcDistance();
   ball.calcDirection();  //ボールの方向算出
   ball.calc();           //動作角度算出
-
-  // Serial.print("\tBall*");
-  // Serial.print(millis() - STimer);
 
   // line---------------------------------------------
   line.read();
@@ -344,17 +354,14 @@ void loop() {
     line.Move_degree = 1000;
   }
 
-  // Serial.print("\Line*");
-  // Serial.print(millis() - STimer);
-
   // UI---------------------------------------------
   static int uiCounter = 0;
 
-  if (uiCounter >= 10) {
-    UI.read();
-  } else {
-    uiCounter++;
-  }
+  // if (uiCounter >= 10) {
+  UI.read();
+  // } else {
+  //   uiCounter++;
+  // }
 
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
 
@@ -363,14 +370,17 @@ void loop() {
   }
   UI.refrection();  //スイッチの反映
   if (!emergency) {
-    if (UI.active) {
-      if (millis() - UI.updateTimer > 500) {
-        // UI.LCDdisplay();  // LCD表示（重いので500msで回す）
-        // UI.updateTimer = millis();
+    if (UI.active || UI.standby) {
+      if (millis() - UI.updateTimer > 1000) {
+        UI.LCDdisplay();  // LCD表示（重いので500msで回す）
+        UI.updateTimer = millis();
       }
-      UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
+      if (UI.mode != 1||UI.standby) {             //消灯します
+        UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
+      }
     } else {
-      UI.LCDdisplay();
+      UI.LCDdisplay();  // LCD表示（重いので500msで回す）
+      UI.NeoPixeldisplay(UI.mode);
     }
   } else {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
@@ -420,8 +430,8 @@ void loop() {
             }
             int _Gap = neko;
 
-            neko *= -0.082;                            // P制御 0.078
-            neko += gyro.differentialRead() * -0.010;  //微分制御 0.01
+            neko *= -0.078;                            // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから
+            neko += gyro.differentialRead() * -0.01;  //微分制御 0.01 Mizunami 0.015
 
             // neko *= -0.027;                            // P制御
             // neko += gyro.differentialRead() * -0.012;  //微分制御
@@ -433,15 +443,15 @@ void loop() {
               motor.val[i] = constrain(motor.val[i], -30, 30);
             }
 
-            if (gyro.deg <= 50 || gyro.deg >= 310) {
-              int powerD;
-              if (line.flag) {
-                powerD = 33;
-              } else {
-                powerD = 31;
-              }
+            int powerD;
+            if (line.flag) {
+              powerD = 42;
+            } else {
+              powerD = 42;
+            }
+            if (gyro.deg <= 60 || gyro.deg >= 300) {
               neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 8, 0, 0);//8
+              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
@@ -450,7 +460,7 @@ void loop() {
               int nekoK[4];
               for (int i = 0; i < 4; i++) {
                 nekoK[i] = motor.val[i];
-                motor.val[i] = motor.val[i] + motor.Kval[i];
+                motor.val[i] = motor.val[i] + motor.Kval[i];//motorとジャイロの比率//0.9でも
               }
               // }
               int _Max;
@@ -462,12 +472,13 @@ void loop() {
               for (int i = 0; i < 4; i++) {
                 motor.val[i] = motor.val[i] * powerD / _Max;
               }
-            } 
-            for(int i=0; i<4; i++){
-              if(gyro.deg<80){
-                motor.val[i]=motor.val[i]*3;
-              }else{
-                motor.val[i]=motor.val[i]*1.6;
+            } else {
+              for (int i = 0; i < 4; i++) {
+                if (gyro.deg <  100 || gyro.deg > 280) {
+                  motor.val[i] = motor.val[i] * powerD*0.033; //0.04(0.9)//振り切れたと起用の
+                  // } else {
+                  // motor.val[i] = motor.val[i] * 4;
+                }
               }
             }
             motor.directDrive(motor.val);
@@ -497,27 +508,5 @@ void loop() {
   //   emergency = true;
   // }
 
-  // Serial.print(millis() - line.OutTimer);
-  // Serial.print(" ");
-  // Serial.print(line.flag);
-  // Serial.print(" ");
-  // Serial.print(line.Rflag);
-  // Serial.print(" ");
-  // Serial.print(line.Move_degree);
-  // Serial.print(" ");
-  // Serial.print(line.leftdegree);
-  // Serial.print(" ");
-  // Serial.print(line.rdegree);
-  // Serial.println("");
-
-  // Serial.println(millis() - STimer);
-  Serial.print(UI.switchingFlag[3]);
-  Serial.print(" ");
-  Serial.print(UI.active);
-  Serial.print(" ");
-  Serial.print(UI.standby);
-  Serial.print(" ");
-  Serial.print(millis()-UI.standbyTimer);
-  Serial.println(" ");
-  // Serial.println(gyro.deg);
+  UI.SerialPrint(true);
 }

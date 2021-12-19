@@ -139,6 +139,7 @@ void _Line::arrange(void) {
   RearEdge = 0;
   LeftEdge = 0;
   RightEdge = 0;
+  FrontInside = 0;
   RearInside = 0;
   LeftInside = 0;
   RightInside = 0;
@@ -149,16 +150,38 @@ void _Line::arrange(void) {
         whited++;
         check[i] = true;
         // if (i >= 20) {
-        if (i < LINE_FRONTNUM) {
-          Front++;
-        } else if (i < LINE_FRONTNUM + LINE_REARNUM) {
-          Rear++;
-        } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
-          Left++;
-        } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM +
-                           LINE_RIGHTNUM) {
-          Right++;
-        }
+        // if (i < LINE_FRONTNUM) {
+        //   Front++;
+        // } else if (i < LINE_FRONTNUM + LINE_REARNUM) {
+        //   Rear++;
+        // } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
+        //   Left++;
+        // } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM +
+        //                    LINE_RIGHTNUM) {
+        //   Right++;
+        // }
+        // if(i<LINE_FRONTEDGENUM){
+        //   FrontEdge++;
+        // }else if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM){
+        //   FrontInside++;
+        // }else if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM+LINE_REAREDGENUM){
+        //   RearEdge++;
+        // }else
+        // if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM+LINE_REAREDGENUM+LINE_REARINSIDENUM){
+        //   RearInside++;
+        // }else
+        // if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM+LINE_REAREDGENUM+LINE_REARINSIDENUM+LINE_LEFTEDGENUM){
+        //   LeftEdge++;
+        // }else
+        // if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM+LINE_REAREDGENUM+LINE_REARINSIDENUM+LINE_LEFTEDGENUM+LINE_LEFTINSIDENUM){
+        //   LeftInside++;
+        // }else
+        // if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM+LINE_REAREDGENUM+LINE_REARINSIDENUM+LINE_LEFTEDGENUM+LINE_LEFTINSIDENUM+LINE_RIGHTEDGENUM){
+        //   RightEdge++;
+        // }else
+        // if(i<LINE_FRONTEDGENUM+LINE_FRONTINSIDENUM+LINE_REAREDGENUM+LINE_REARINSIDENUM+LINE_LEFTEDGENUM+LINE_LEFTINSIDENUM+LINE_RIGHTEDGENUM+LINE_RIGHTINSIDENUM){
+        //   RightInside++;
+        // }
         // }
       }
       if (!flag) {
@@ -175,7 +198,7 @@ void _Line::arrange(void) {
       if (Line_Where[i] == 0) {
         FrontEdge++;
       } else if (Line_Where[i] == 1) {
-        // FrontInside++;
+        FrontInside++;
       } else if (Line_Where[i] == 2) {
         RearEdge++;
       } else if (Line_Where[i] == 3) {
@@ -208,28 +231,45 @@ void _Line::arrange(void) {
       Rflag = false;
       leftdegree = 1000;
       rdegree = 1000;
-    }else{
-      Rflag=true;
+    } else {
+      Rflag = true;
     }
     Block = 0;
   } else {
-    if (Front > 0 && !checkBlock[0]) {
+    if (FrontEdge > 0 && !checkBlock[0]) {
       orderBlock[Block] = 0;
       checkBlock[0] = true;
       Block++;
-    } else if (Rear > 0 && !checkBlock[1]) {
-      orderBlock[Block] = 2;
+    } else if (FrontInside > 0 && !checkBlock[1]) {
+      orderBlock[Block] = 1;
       checkBlock[1] = true;
       Block++;
-    } else if (Left > 0 && !checkBlock[2]) {
-      orderBlock[Block] = 4;
+    } else if (RearEdge > 0 && !checkBlock[2]) {
+      orderBlock[Block] = 2;
       checkBlock[2] = true;
       Block++;
-    } else if (Right > 0 && !checkBlock[3]) {
-      orderBlock[Block] = 6;
+    } else if (RearInside > 0 && !checkBlock[3]) {
+      orderBlock[Block] = 3;
       checkBlock[3] = true;
       Block++;
+    } else if (LeftEdge > 0 && !checkBlock[4]) {
+      orderBlock[Block] = 4;
+      checkBlock[4] = true;
+      Block++;
+    } else if (LeftInside > 0 && !checkBlock[5]) {
+      orderBlock[Block] = 5;
+      checkBlock[5] = true;
+      Block++;
+    } else if (RightEdge > 0 && !checkBlock[6]) {
+      orderBlock[Block] = 6;
+      checkBlock[6] = true;
+      Block++;
+    } else if (RightInside > 0 && !checkBlock[7]) {
+      orderBlock[Block] = 7;
+      checkBlock[7] = true;
+      Block++;
     }
+    Edge=int(checkBlock[0]/2);
   }
 }
 
