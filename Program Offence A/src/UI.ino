@@ -306,7 +306,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   }
 
   // line
-  if (mode == 5 || mode == 1 || mode == 2) {
+  if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
       unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
@@ -534,6 +534,9 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
 
 void _UI::SerialPrint(bool Display) {
   if (Display) {
-    Serial.println(ball.distance);
+    for(int i=0; i<8; i++){
+      Serial.print(line.detected_num[i]);
+    }
+    Serial.println(UI.mode);
   }
 }
