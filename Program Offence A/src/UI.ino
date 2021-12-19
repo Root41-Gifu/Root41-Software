@@ -5,7 +5,7 @@ _UI::_UI() {
 }
 
 void _UI::read() {
-  Wire.requestFrom(UI_ADDRESS, 1);  //アドレスは変えてね
+  Wire.requestFrom(UI_ADDRESS, 1);
   while (Wire.available()) {
     byte readValue = Wire.read();
     touch[2] = !(readValue & (1 << 2));
@@ -66,7 +66,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
+        standby = true;
+        standbyTimer = millis();
+      }
+    } else {
+      if (standby && !touch[3]) {
         active = true;
+        standby = false;
       }
     }
     if (submode < 0) {
@@ -100,7 +106,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
+        standby = true;
+        standbyTimer = millis();
+      }
+    } else {
+      if (standby && !touch[3]) {
         active = true;
+        standby = false;
       }
     }
     if (submode < 0) {
@@ -141,7 +153,13 @@ void _UI::refrection(void) {
       if (!select) {
         select = true;
       } else {
+        standby = true;
+        standbyTimer = millis();
+      }
+    } else {
+      if (standby && !touch[3]) {
         active = true;
+        standby = false;
       }
     }
     if (submode < 0) {
@@ -166,10 +184,16 @@ void _UI::refrection(void) {
       }
     }
     if (switchingFlag[3]) {
-      active = true;
+      standby = true;
+      standbyTimer = millis();
+    } else {
+      if (standby && !touch[3]) {
+        active = true;
+        standby = false;
+      }
     }
   }
-  if(switchingFlag[1]){
+  if (switchingFlag[1]) {
     switchScope++;
   }
   for (int i = 0; i <= 3; i++) {
@@ -193,93 +217,75 @@ void _UI::NeoPixeldisplay(int _mode) {
   left.clear();
   right.clear();
   strip.clear();
-  // if (_mode == 0) {
-  //   if (ball.max_average[0] == 100) {
-  //     for (int i = 0; i < BALL_NUM; i++) {
-  //       strip.setPixelColor(i, 255, 0, 0);
-  //     }
-  //   } else {
-  //     int i = ball.max_average[0] - 1;
-  //     int k = ball.max_average[0] + 1;
-  //     if (i < 0) {
-  //       i = 16 + i;
-  //     } else if (k > 15) {
-  //       k = 0;
-  //     }
-  //     strip.setPixelColor(ball.max_average[0], 255, 0, 0);
-  //     strip.setPixelColor(i, 255, 0, 0);
-  //     strip.setPixelColor(k, 255, 0, 0);
-  //     // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
-  //   }
+  // reset
+  // for (int i = 0; i < 16; i++) {
+  //   strip.setPixelColor(i, 0, 0, 0);
   // }
-  if (_mode == 0) {
-    if (ball.max[0] == 100) {
-      for (int i = 0; i < BALL_NUM; i++) {
-        strip.setPixelColor(i,0, 0, 0);
+  if (active) {
+    // if (mode == 1) {
+    //   if (ball.max[0] != 100) {
+    //     unsigned long TopPixelColor = strip.Color(255, 0, 0);
+    //     strip.setPixelColor(ball.max[0], TopPixelColor);
+    //   } else {
+    //     unsigned long TopPixelColor = strip.Color(255, 0, 0);
+    //     StripFulldisplay(TopPixelColor);
+    //   }
+    // }
+    if (mode == 1) {
+      unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
+      StripFulldisplay(BlackDawn_Color);
+    } else if (mode == 4) {
+      unsigned long BallDistance_Color1 = strip.Color(255, 0, 0);  // distance1
+      unsigned long BallDistance_Color2 =
+          strip.Color(125, 0, 125);                                // distance1
+      unsigned long BallDistance_Color3 = strip.Color(0, 0, 255);  // distance1
+      int _side[2];
+      _side[0] = ball.max[0] - 1;
+      _side[1] = ball.max[0] + 1;
+      if (ball.max[0] - 1 < 0) {
+        _side[0] = 15;
+      } else if (ball.max[0] + 1 > 15) {
+        _side[1] = 0;
+      }
+      switch (ball.distanceLevel) {
+        case 0:
+          StripFulldisplay(BallDistance_Color3);
+          break;
+        case 3:
+          strip.setPixelColor(ball.max[0], BallDistance_Color3);
+          strip.setPixelColor(_side[0], BallDistance_Color3);
+          strip.setPixelColor(_side[1], BallDistance_Color3);
+          break;
+        case 2:
+          strip.setPixelColor(ball.max[0], BallDistance_Color2);
+          strip.setPixelColor(_side[0], BallDistance_Color2);
+          strip.setPixelColor(_side[1], BallDistance_Color2);
+          break;
+
+        case 1:
+          strip.setPixelColor(ball.max[0], BallDistance_Color1);
+          strip.setPixelColor(_side[0], BallDistance_Color1);
+          strip.setPixelColor(_side[1], BallDistance_Color1);
+          break;
+
+        default:
+          break;
+      }
+    }
+  } else if (standby) {
+    //スタンバイ中
+    unsigned long NeoPixelColor = strip.Color(255, 255, 255);
+    //スタンバイ時のの演出
+    if (millis() - standbyTimer < 400) {
+      int timerSeparate = millis() - standbyTimer;
+      for (int i = 0; i <= (timerSeparate / 50) % 8; i++) {
+        strip.setPixelColor(i, NeoPixelColor);
+        strip.setPixelColor(15 - i, NeoPixelColor);
       }
     } else {
-      int i = ball.max[0] - 1;
-      int k = ball.max[0] + 1;
-      if (i < 0) {
-        i = 16 + i;
-      } else if (k > 15) {
-        k = 0;
-      }
-      // strip.setPixelColor(ball.max[0], 255, 0, 0);
-      // strip.setPixelColor(i, 255, 0, 0);
-      // strip.setPixelColor(k, 255, 0, 0);
-      // strip.setPixelColor(ball.max_average[2], 0, 0, 255);
+      StripFulldisplay(NeoPixelColor);
     }
-  }
-  if (mode == 5 || mode == 1) {
-    if (active) {
-      unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
-      unsigned long lineNeoPixelDicline=front.Color(0,0,0);
-      for (int i = 0; i < LED_FRONT; i++) {
-        if(i>=0&&i<=8){//0-7
-          front.setPixelColor(i,lineNeoPixelDicline);
-        }else{
-          front.setPixelColor(i, lineNeoPixelColor);
-        }
-      }
-      for (int i = 0; i < LED_REAR; i++) {
-        if(i>=0&&i<=8){//0-5
-          rear.setPixelColor(i,lineNeoPixelDicline);
-        }else{
-          rear.setPixelColor(i, lineNeoPixelColor);
-        }
-      }
-      for (int i = 0; i < LED_LEFT; i++) {
-        if(i>=0&&i<=7){//4-7
-          left.setPixelColor(i,lineNeoPixelDicline);
-        }else{
-          left.setPixelColor(i, lineNeoPixelColor);
-        }
-      }
-      for (int i = 0; i < LED_RIGHT; i++) {
-        if(i>=0&&i<=8){//4-8
-          right.setPixelColor(i,lineNeoPixelDicline);
-        }else{
-          right.setPixelColor(i, lineNeoPixelColor);
-        }
-      }
-
-      // if (switchScope < LINE_FRONTNUM) {
-      //   front.setPixelColor(switchScope, lineNeoPixelColor);
-      // } else if (switchScope < LINE_FRONTNUM + LINE_REARNUM) {
-      //   rear.setPixelColor(switchScope - LINE_FRONTNUM, lineNeoPixelColor);
-      // } else if (switchScope < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
-      //   left.setPixelColor(switchScope - LINE_FRONTNUM - LINE_REARNUM,
-      //                       lineNeoPixelColor);
-      // } else if (switchScope <
-      //            LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_RIGHTNUM) {
-      //   right.setPixelColor(
-      //       switchScope - LINE_FRONTNUM - LINE_REARNUM - LINE_LEFTNUM,
-      //       lineNeoPixelColor);
-      // }
-    }
-  }
-  if (!active) {
+  } else {
     if (mode == 1 || mode == 2) {
       // offence
       unsigned long OffencelColor = strip.Color(255, 0, 0);
@@ -296,6 +302,72 @@ void _UI::NeoPixeldisplay(int _mode) {
     } else if (mode == 6) {
       unsigned long MotorColor = strip.Color(255, 0, 255);
       StripFulldisplay(MotorColor);
+    }
+  }
+
+  // line
+  if (mode == 5 || mode == 1 || mode == 2) {
+    if (active) {
+      unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
+      unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
+      if (LIGHTLIMIT == 1) {
+        for (int i = 0; i < LED_FRONT; i++) {
+          if (i >= 0 && i <= 8) {  // 0-7
+            front.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            front.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+        for (int i = 0; i < LED_REAR; i++) {
+          if (i >= 0 && i <= 8) {  // 0-5
+            rear.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            rear.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+        for (int i = 0; i < LED_LEFT; i++) {
+          if (i >= 1 && i <= 7) {  // 4-7
+            left.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            left.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+        for (int i = 0; i < LED_RIGHT; i++) {
+          if (i >= 0 && i <= 8) {  // 4-8
+            right.setPixelColor(i, lineNeoPixelDicline);
+          } else {
+            right.setPixelColor(i, lineNeoPixelColor);
+          }
+        }
+      } else {
+        for (int i = 0; i < LED_FRONT; i++) {
+          front.setPixelColor(i, lineNeoPixelColor);
+        }
+        for (int i = 0; i < LED_REAR; i++) {
+          rear.setPixelColor(i, lineNeoPixelColor);
+        }
+        for (int i = 0; i < LED_LEFT; i++) {
+          left.setPixelColor(i, lineNeoPixelColor);
+        }
+        for (int i = 0; i < LED_RIGHT; i++) {
+          right.setPixelColor(i, lineNeoPixelColor);
+        }
+      }
+
+      // if (switchScope < LINE_FRONTNUM) {
+      //   front.setPixelColor(switchScope, lineNeoPixelColor);
+      // } else if (switchScope < LINE_FRONTNUM + LINE_REARNUM) {
+      //   rear.setPixelColor(switchScope - LINE_FRONTNUM, lineNeoPixelColor);
+      // } else if (switchScope < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
+      //   left.setPixelColor(switchScope - LINE_FRONTNUM - LINE_REARNUM,
+      //                       lineNeoPixelColor);
+      // } else if (switchScope <
+      //            LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_RIGHTNUM)
+      //            {
+      //   right.setPixelColor(
+      //       switchScope - LINE_FRONTNUM - LINE_REARNUM - LINE_LEFTNUM,
+      //       lineNeoPixelColor);
+      // }
     }
   }
   strip.show();
@@ -361,7 +433,7 @@ void _UI::LCDdisplay(void) {
     display.setCursor(0, 17);
     display.setTextSize(1);
   } else if (UI.mode == 4) {
-    display.println("Kicker");
+    display.println("Ball");
   } else if (UI.mode == 5) {
     display.println("Line");
   } else if (UI.mode == 6) {
@@ -405,10 +477,13 @@ void _UI::LCDdisplay(void) {
   display.print("Battery: ");
   display.print(Battery);
   display.println(" V");
-  display.print(motor.Kval[0]);
-  display.print(motor.Kval[1]);
-  display.print(motor.Kval[2]);
-  display.print(motor.Kval[3]);
+  display.print(line.flag);
+  display.print(" ");
+  display.print(ball.max[0]);
+  display.print(" ");
+  display.print(_Mdegree);
+  // display.print(motor.val[3]);
+  // display.print(gyro.deg);
   display.drawLine(0, 15, 127, 15, WHITE);
   // 描画バッファの内容を画面に表示
   display.display();
@@ -455,4 +530,10 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
   right.begin();
   right.show();
   right.setBrightness(brightL);
+}
+
+void _UI::SerialPrint(bool Display) {
+  if (Display) {
+    Serial.println(ball.distance);
+  }
 }
