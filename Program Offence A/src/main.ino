@@ -7,6 +7,7 @@
 #include <SPI.h>
 #include <Wire.h>
 
+
 #define voltage PC0
 
 #define BALL_NUM 16
@@ -47,6 +48,8 @@
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
 #define LINEOVERTIME 500
+
+// #include "lib/def.h"
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);

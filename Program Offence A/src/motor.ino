@@ -1,37 +1,10 @@
 _Motor::_Motor(void) {
   for (int i = 0; i < 359; i++) {
-    sinVal[0][i] = round(sin(radians(i - 60)));
+    sinVal[0][i] = round(sin(radians(i - 45)));
     sinVal[1][i] = round(sin(radians(i - 135)));
     sinVal[2][i] = round(sin(radians(i - 225)));
-    sinVal[3][i] = round(sin(radians(i - 300)));
+    sinVal[3][i] = round(sin(radians(i - 315)));
   }
-  //   for (int i = 0; i <= 359; i++) {
-  //     float s;
-  //     motor.calcVal[0][i] = round(sin(radians(i - 300)) * 100.0);
-  //     motor.calcVal[1][i] = round(sin(radians(i - 60)) * 100.0);
-  //     motor.calcVal[2][i] = round(sin(radians(i - 225)) * 100.0);
-  //     motor.calcVal[3][i] = round(sin(radians(i - 135)) * 100.0);
-
-  //     int valTemp[4];
-  //     for (int k = 0; k < 4; k++) {
-  //       valTemp[k] = motor.calcVal[k][i];
-  //     }
-
-  //     for (int k = 0; k < 4; ++k) {
-  //       for (int j = k + 1; j < 4; ++j) {
-  //         if (abs(valTemp[k]) >= abs(valTemp[j])) {
-  //           int temp = valTemp[k];
-  //           valTemp[k] = valTemp[j];
-  //           valTemp[j] = temp;
-  //         }
-  //       }
-  //     }
-  //     s = 255.0 / float(abs(valTemp[3]));
-  //     motor.calcVal[0][i] = round((float)motor.calcVal[0][i] * s);
-  //     motor.calcVal[1][i] = round((float)motor.calcVal[1][i] * s);
-  //     motor.calcVal[2][i] = round((float)motor.calcVal[2][i] * s);
-  //     motor.calcVal[3][i] = round((float)motor.calcVal[3][i] * s);
-  //   }
 }
 
 void _Motor::directDrive(int* p) {
