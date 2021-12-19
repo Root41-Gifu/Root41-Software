@@ -375,9 +375,9 @@ void loop() {
         UI.LCDdisplay();  // LCD表示（重いので500msで回す）
         UI.updateTimer = millis();
       }
-      if (UI.mode != 1||UI.standby) {             //消灯します
+      // if (UI.mode != 1||UI.standby) {             //消灯します
         UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
-      }
+      // }
     } else {
       UI.LCDdisplay();  // LCD表示（重いので500msで回す）
       UI.NeoPixeldisplay(UI.mode);
