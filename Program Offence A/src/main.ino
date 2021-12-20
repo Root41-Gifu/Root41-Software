@@ -7,49 +7,7 @@
 #include <SPI.h>
 #include <Wire.h>
 
-
-#define voltage PC0
-
-#define BALL_NUM 16
-#define LINE_NUM 41
-#define LINE_FRONTNUM 10
-#define LINE_REARNUM 9
-#define LINE_LEFTNUM 14
-#define LINE_RIGHTNUM 8
-#define LINE_FRONTEDGENUM 0
-#define LINE_REAREDGENUM 0
-#define LINE_LEFTEDGENUM 0
-#define LINE_RIGHTEDGENUM 0
-#define LINE_FRONTINSIDENUM 0
-#define LINE_REARINSIDENUM 0
-#define LINE_LEFTINSIDENUM 0
-#define LINE_RIGHTINSIDENUM 0
-#define LED_STRIP 16
-#define LED_FRONT 13
-#define LED_REAR 14
-#define LED_LEFT 12
-#define LED_RIGHT 12
-
-#define LED_PIN_T PB6
-#define LED_PIN_F PB7
-#define LED_PIN_L PA15
-#define LED_PIN_B PC1
-#define LED_PIN_R PB1
-
-#define LCD_INTERVAL 300
-
-#define UI_ADDRESS 0x04
-#define LINE_FRONTADDRESS 0x08
-#define LINE_REARADDRESS 0x20
-#define LINE_LEFTADDRESS 0x10
-#define LINE_RIGHTADDRESS 0x40
-
-#define LINE_BRIGHTNESS 255  // 50
-#define NEOPIXEL_BRIGHTNESS 30
-#define LIGHTLIMIT 0
-#define LINEOVERTIME 500
-
-// #include "lib/def.h"
+#include "lib/def.h"
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
@@ -236,6 +194,9 @@ class _Motor {
 
   int ultraBrakeFlag = 0;
 
+  long gapIntegral = 0;
+  unsigned long integralTimer = 0;
+
  private:
   float Kp;
   float Ki;
@@ -379,7 +340,7 @@ void loop() {
         UI.updateTimer = millis();
       }
       // if (UI.mode != 1||UI.standby) {             //消灯します
-        UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
+      UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
       // }
     } else {
       UI.LCDdisplay();  // LCD表示（重いので500msで回す）
@@ -420,69 +381,32 @@ void loop() {
           //モーター駆動（角度はdegree,パワーはMotorPower）
           for (int j = 0; j < 1; j++) {
             /* code */
-            float neko;
-
-            // int a = 20;
-            // int b = 2;
-            // float c = -0.05;
+            float Collection;
 
             if (gyro.deg > 180) {
-              neko = gyro.deg - 360;
+              Collection = gyro.deg - 360;
             } else {
-              neko = gyro.deg;
+              Collection = gyro.deg;
             }
-            int _Gap = neko;
 
-            neko *= -0.078;                            // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから
-            neko += gyro.differentialRead() * -0.01;  //微分制御 0.01 Mizunami 0.015
+            if (motor.integralTimer - millis() > 25) {
+              motor.gapIntegral += Collection;
+              motor.gapIntegral = constrain(motor.gapIntegral, -1000, 1000);
 
-            // neko *= -0.027;                            // P制御
-            // neko += gyro.differentialRead() * -0.012;  //微分制御
-            // neko *= 1.2;
+              motor.integralTimer = millis();
+            }
 
-            // Serial.println(neko);
+            Collection *= -0.115;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
+                                   // 0.062(0.7)<比率によって違うから3
+
+            Collection -= motor.gapIntegral / 400;
+            Collection += gyro.differentialRead()  * -0.022;
+
+            Serial.println(motor.gapIntegral);
+
             for (int i = 0; i < 4; i++) {
-              motor.val[i] = round(neko);
-              motor.val[i] = constrain(motor.val[i], -30, 30);
-            }
-
-            int powerD;
-            if (line.flag) {
-              powerD = 42;
-            } else {
-              powerD = 42;
-            }
-            if (gyro.deg <= 60 || gyro.deg >= 300) {
-              neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
-              // if (abs(_Gap) < 5) {
-              //   for (int i = 0; i < 4; i++) {
-              //     motor.val[i] = motor.Kval[i];
-              //   }
-              // } else {
-              int nekoK[4];
-              for (int i = 0; i < 4; i++) {
-                nekoK[i] = motor.val[i];
-                motor.val[i] = motor.val[i] + motor.Kval[i];//motorとジャイロの比率//0.9でも
-              }
-              // }
-              int _Max;
-              for (int i = 0; i < 4; i++) {
-                if (_Max < motor.val[i]) {
-                  _Max = motor.val[i];
-                }
-              }
-              for (int i = 0; i < 4; i++) {
-                motor.val[i] = motor.val[i] * powerD / _Max;
-              }
-            } else {
-              for (int i = 0; i < 4; i++) {
-                if (gyro.deg <  100 || gyro.deg > 280) {
-                  motor.val[i] = motor.val[i] * powerD*0.033; //0.04(0.9)//振り切れたと起用の
-                  // } else {
-                  // motor.val[i] = motor.val[i] * 4;
-                }
-              }
+              motor.val[i] = round(Collection);
+              motor.val[i] = constrain(motor.val[i], -20, 20);
             }
             motor.directDrive(motor.val);
           }
@@ -511,5 +435,5 @@ void loop() {
   //   emergency = true;
   // }
 
-  UI.SerialPrint(true);
+  // UI.SerialPrint(true);
 }
