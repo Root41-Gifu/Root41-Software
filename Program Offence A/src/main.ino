@@ -424,10 +424,10 @@ void loop() {
             Collection *= -0.115;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
                                    // 0.062(0.7)<比率によって違うから3
 
-            Collection -= motor.gapIntegral / 400;
-            Collection += gyro.differentialRead()  * -0.022;
+            Collection -= motor.gapIntegral / 400;//I　上げると弱くなる
+            Collection += gyro.differentialRead()  * -0.022;//D 
 
-            Serial.println(motor.gapIntegral);
+            // Serial.println(motor.gapIntegral);
 
             for (int i = 0; i < 4; i++) {
               motor.val[i] = round(Collection);
@@ -460,5 +460,5 @@ void loop() {
   //   emergency = true;
   // }
 
-  // UI.SerialPrint(true);
+  UI.SerialPrint(true);
 }

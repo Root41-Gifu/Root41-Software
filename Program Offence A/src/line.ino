@@ -42,8 +42,11 @@ _Line::_Line() {
   for (int i = 27; i <= 31; i++) {
     Line_Where[i] = 5;
   }
-  for (int i = 32; i <= 40; i++) {
+  for (int i = 32; i <= 34; i++) {
     Line_Where[i] = 6;
+  }
+  for (int i = 35; i <= 40; i++) {
+    Line_Where[i] = 7;
   }
 }
 
