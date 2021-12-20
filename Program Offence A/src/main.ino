@@ -7,14 +7,53 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include "lib/def.h"
+#define voltage PC0
+
+#define BALL_NUM 16
+#define LINE_NUM 41
+#define LINE_FRONTNUM 10
+#define LINE_REARNUM 9
+#define LINE_LEFTNUM 14
+#define LINE_RIGHTNUM 8
+#define LINE_FRONTEDGENUM 0
+#define LINE_REAREDGENUM 0
+#define LINE_LEFTEDGENUM 0
+#define LINE_RIGHTEDGENUM 0
+#define LINE_FRONTINSIDENUM 0
+#define LINE_REARINSIDENUM 0
+#define LINE_LEFTINSIDENUM 0
+#define LINE_RIGHTINSIDENUM 0
+#define LED_STRIP 16
+#define LED_FRONT 13
+#define LED_REAR 14
+#define LED_LEFT 12
+#define LED_RIGHT 12
+
+#define LED_PIN_T PB6
+#define LED_PIN_F PB7
+#define LED_PIN_L PA15
+#define LED_PIN_B PC1
+#define LED_PIN_R PB1
+
+#define LCD_INTERVAL 300
+
+#define UI_ADDRESS 0x04
+#define LINE_FRONTADDRESS 0x08
+#define LINE_REARADDRESS 0x20
+#define LINE_LEFTADDRESS 0x10
+#define LINE_RIGHTADDRESS 0x40
+
+#define LINE_BRIGHTNESS 100  // 50
+#define NEOPIXEL_BRIGHTNESS 30
+#define LIGHTLIMIT 0
+#define LINEOVERTIME 500
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
-Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ400);
+Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ400);
+Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ400);
+Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ400);
 
 //モーターのやつ
 HardwareSerial Serial4(A1, A0);
@@ -104,7 +143,6 @@ class _Line {
   void read(void);
   void arrange(void);
   void calcDirection(void);
-  // void brightnessAdjust(void);
   void calc(void);
 
   int Move_degree;
@@ -136,18 +174,8 @@ class _Line {
   unsigned long OutTimer;
 
   //----十字ラインセンサー
-  int Front;  //フロント縁部分の反応数 ~7
-  int Rear;   //リア縁 ~5
-  int Left;   //左 ~3
-  int Right;  //右 ~3
-  int FrontEdge;
-  int RearEdge;
-  int LeftEdge;
-  int RightEdge;
-  int FrontInside;
-  int RearInside;   //リア内部 ~3
-  int LeftInside;   //左 ~3
-  int RightInside;  //右 ~3
+  int detect_num[8];
+  int passed_num[8];
 
   //その他
   int mode;
@@ -349,9 +377,6 @@ void loop() {
   } else {
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
-
-  // Serial.print("\tUI*");
-  // Serial.print(millis() - STimer);
 
   // gyro
   //ジャイロの読みこみ等
