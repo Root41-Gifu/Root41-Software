@@ -398,11 +398,14 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *= -0.115;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
+          Collection *= -0.08;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
                                  // 0.062(0.7)<比率によって違うから3
 
           Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
           // Collection += gyro.differentialRead() * -0.022;  // D
+
+            // neko *= -0.078;                            // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから
+            // neko += gyro.differentialRead() * -0.01; 
 
           // Serial.println(motor.gapIntegral);
 
@@ -414,13 +417,13 @@ void loop() {
           if (_Mdegree != 1000) {
             int powerD;
             if (line.flag) {
-              powerD = 42;
+              powerD = 30;
             } else {
-              powerD = 42;
+              powerD = 30;
             }
-            if (gyro.deg <= 60 || gyro.deg >= 300) {
+            if (gyro.deg <= 80 || gyro.deg >= 280) {
               //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
+              motor.motorCalc(int(_Mdegree), 6, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
