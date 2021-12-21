@@ -433,6 +433,46 @@ void loop() {
               motor.val[i] = round(Collection);
               motor.val[i] = constrain(motor.val[i], -20, 20);
             }
+
+            int powerD;
+            if (line.flag) {
+              powerD = 42;
+            } else {
+              powerD = 42;
+            }
+            if (gyro.deg <= 60 || gyro.deg >= 300) {
+            //   neko = constrain(neko, -100, 100);
+              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
+              // if (abs(_Gap) < 5) {
+              //   for (int i = 0; i < 4; i++) {
+              //     motor.val[i] = motor.Kval[i];
+              //   }
+              // } else {
+              int nekoK[4];
+              for (int i = 0; i < 4; i++) {
+                nekoK[i] = motor.val[i];
+                motor.val[i] = motor.val[i] + motor.Kval[i];//motorとジャイロの比率//0.9でも
+              }
+              // }
+              int _Max;
+              for (int i = 0; i < 4; i++) {
+                if (_Max < motor.val[i]) {
+                  _Max = motor.val[i];
+                }
+              }
+              for (int i = 0; i < 4; i++) {
+                motor.val[i] = motor.val[i] * powerD / _Max;
+              }
+            } else {
+              for (int i = 0; i < 4; i++) {
+                if (gyro.deg <  100 || gyro.deg > 280) {
+                  motor.val[i] = motor.val[i] * powerD*0.033; //0.04(0.9)//振り切れたと起用の
+                  // } else {
+                  // motor.val[i] = motor.val[i] * 4;
+                }
+              }
+            }
+
             motor.directDrive(motor.val);
           }
         } else {
