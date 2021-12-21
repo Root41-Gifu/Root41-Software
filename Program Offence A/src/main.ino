@@ -208,10 +208,10 @@ class _Motor {
   int calcVal[4][360];
   int deg;
   int speed;
-  int count;
   int time = 5;
   int referenceAngle = 0;
   int susumu;
+  int count;
   unsigned long timer;
 
   int direction = 0;
@@ -306,7 +306,7 @@ void loop() {
 
   //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。
   // }
-  ball.LPF();  // LPFかける。魔法のフィルタ
+  ball.LPF();                     // LPFかける。魔法のフィルタ
   ball.Max_calc(ball.LPF_value);  //おかしかったらここコメントアウト
   ball.average();  //平均とる。この関数イランかも知らん
   ball.calcDistance();
@@ -359,14 +359,14 @@ void loop() {
 
   // Motor---------------------------------------------
   _Mdegree = 1000;
-  line.flag=false;//テスト用消す
+  line.flag = false;  //テスト用消す
   if (line.flag) {
     _Mdegree = line.Move_degree;
   } else {
     // if (millis() - line.OutTimer <= LINEOVERTIME) {
     //   _Mdegree = line.rdegree;
     // } else {
-      _Mdegree = int(ball.Move_degree);
+    _Mdegree = int(ball.Move_degree);
     // }
   }
   if (!emergency) {
@@ -382,7 +382,6 @@ void loop() {
         // if (_Mdegree != 1000) {
         //モーター駆動（角度はdegree,パワーはMotorPower）
         for (int j = 0; j < 1; j++) {
-          /* code */
           float Collection;
 
           if (gyro.deg > 180) {
@@ -398,14 +397,15 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *= -0.08;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
+          Collection *= -0.078;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
                                  // 0.062(0.7)<比率によって違うから3
 
-          Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
-          // Collection += gyro.differentialRead() * -0.022;  // D
+          // Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
+          Collection += gyro.differentialRead() * -0.001;  // D
 
-            // neko *= -0.078;                            // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから
-            // neko += gyro.differentialRead() * -0.01; 
+          // neko *= -0.078;                            // P制御 0.078 Mizunami
+          // 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから neko +=
+          // gyro.differentialRead() * -0.01;
 
           // Serial.println(motor.gapIntegral);
 
@@ -414,16 +414,12 @@ void loop() {
             motor.val[i] = constrain(motor.val[i], -20, 20);
           }
 
+          int powerD;
+          powerD = 42;
           if (_Mdegree != 1000) {
-            int powerD;
-            if (line.flag) {
-              powerD = 30;
-            } else {
-              powerD = 30;
-            }
-            if (gyro.deg <= 80 || gyro.deg >= 280) {
+            if (gyro.deg <= 60 || gyro.deg >= 300) {
               //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 6, 0, 0);  // 8
+              motor.motorCalc(int(_Mdegree), 9, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
