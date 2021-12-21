@@ -402,38 +402,39 @@ void loop() {
       //モードオフェンス、ディフェンスの時
       unsigned long processTimer = millis();
       if (UI.active == true) {
-        if (_Mdegree != 1000) {
-          //モーター駆動（角度はdegree,パワーはMotorPower）
-          for (int j = 0; j < 1; j++) {
-            /* code */
-            float Collection;
+        // if (_Mdegree != 1000) {
+        //モーター駆動（角度はdegree,パワーはMotorPower）
+        for (int j = 0; j < 1; j++) {
+          /* code */
+          float Collection;
 
-            if (gyro.deg > 180) {
-              Collection = gyro.deg - 360;
-            } else {
-              Collection = gyro.deg;
-            }
+          if (gyro.deg > 180) {
+            Collection = gyro.deg - 360;
+          } else {
+            Collection = gyro.deg;
+          }
 
-            if (motor.integralTimer - millis() > 25) {
-              motor.gapIntegral += Collection;
-              motor.gapIntegral = constrain(motor.gapIntegral, -1000, 1000);
+          if (motor.integralTimer - millis() > 25) {
+            motor.gapIntegral += Collection;
+            motor.gapIntegral = constrain(motor.gapIntegral, -1000, 1000);
 
-              motor.integralTimer = millis();
-            }
+            motor.integralTimer = millis();
+          }
 
-            Collection *= -0.115;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
-                                   // 0.062(0.7)<比率によって違うから3
+          Collection *= -0.115;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
+                                 // 0.062(0.7)<比率によって違うから3
 
-            Collection -= motor.gapIntegral / 400;//I　上げると弱くなる
-            Collection += gyro.differentialRead()  * -0.022;//D 
+          Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
+          Collection += gyro.differentialRead() * -0.022;  // D
 
-            // Serial.println(motor.gapIntegral);
+          // Serial.println(motor.gapIntegral);
 
-            for (int i = 0; i < 4; i++) {
-              motor.val[i] = round(Collection);
-              motor.val[i] = constrain(motor.val[i], -20, 20);
-            }
+          for (int i = 0; i < 4; i++) {
+            motor.val[i] = round(Collection);
+            motor.val[i] = constrain(motor.val[i], -20, 20);
+          }
 
+          if (_Mdegree != 1000) {
             int powerD;
             if (line.flag) {
               powerD = 42;
@@ -441,7 +442,7 @@ void loop() {
               powerD = 42;
             }
             if (gyro.deg <= 60 || gyro.deg >= 300) {
-            //   neko = constrain(neko, -100, 100);
+              //   neko = constrain(neko, -100, 100);
               motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
@@ -451,7 +452,8 @@ void loop() {
               int nekoK[4];
               for (int i = 0; i < 4; i++) {
                 nekoK[i] = motor.val[i];
-                motor.val[i] = motor.val[i] + motor.Kval[i];//motorとジャイロの比率//0.9でも
+                motor.val[i] = motor.val[i] +
+                               motor.Kval[i];  // motorとジャイロの比率//0.9でも
               }
               // }
               int _Max;
@@ -463,21 +465,15 @@ void loop() {
               for (int i = 0; i < 4; i++) {
                 motor.val[i] = motor.val[i] * powerD / _Max;
               }
-            } else {
-              for (int i = 0; i < 4; i++) {
-                if (gyro.deg <  100 || gyro.deg > 280) {
-                  motor.val[i] = motor.val[i] * powerD*0.033; //0.04(0.9)//振り切れたと起用の
-                  // } else {
-                  // motor.val[i] = motor.val[i] * 4;
-                }
-              }
             }
-
+            motor.directDrive(motor.val);
+          } else {
             motor.directDrive(motor.val);
           }
-        } else {
-          motor.release();
         }
+        // } else {
+        // motor.release();
+        // }
         // Serial.println(millis() - processTimer);
 
       } else {
