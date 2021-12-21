@@ -534,9 +534,6 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
 
 void _UI::SerialPrint(bool Display) {
   if (Display) {
-    for(int i=32; i<=40; i++){
-      Serial.print(line.value[i]);
-    }
-    Serial.println("");
+    Serial.println(_Mdegree);
   }
 }

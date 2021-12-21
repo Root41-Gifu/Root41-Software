@@ -307,30 +307,6 @@ void loop() {
   //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。
   // }
   ball.LPF();  // LPFかける。魔法のフィルタ
-  // MAX値求める、max[0]は一番反応いいやつ。
-  // ball.max[0] = 100;
-  // ball.max[1] = 100;
-  // ball.max[2] = 100;
-  // for (int i = 0; i < 16; i++) {
-  //   if (ball.LPF_value[ball.max[0]] < ball.LPF_value[i] || ball.max[0] ==
-  //   100) {
-  //     ball.max[2] = ball.max[1];
-  //     ball.max[1] = ball.max[0];
-  //     ball.max[0] = i;
-  //   } else if (ball.LPF_value[ball.max[1]] < ball.LPF_value[i] ||
-  //              ball.max[1] == 100) {
-  //     ball.max[2] = ball.max[1];
-  //     ball.max[1] = i;
-  //   } else if (ball.LPF_value[ball.max[2]] < ball.LPF_value[i] ||
-  //              ball.max[2] == 100) {
-  //     ball.max[2] = i;
-  //   }
-  // }
-  // for (int i = 0; i < 3; i++) {
-  //   if (ball.LPF_value[ball.max[i]] < 20) {
-  //     ball.max[i] = 100;
-  //   }
-  // }
   ball.Max_calc(ball.LPF_value);  //おかしかったらここコメントアウト
   ball.average();  //平均とる。この関数イランかも知らん
   ball.calcDistance();
@@ -383,14 +359,15 @@ void loop() {
 
   // Motor---------------------------------------------
   _Mdegree = 1000;
+  line.flag=false;//テスト用消す
   if (line.flag) {
     _Mdegree = line.Move_degree;
   } else {
-    if (millis() - line.OutTimer <= LINEOVERTIME) {
-      _Mdegree = line.rdegree;
-    } else {
+    // if (millis() - line.OutTimer <= LINEOVERTIME) {
+    //   _Mdegree = line.rdegree;
+    // } else {
       _Mdegree = int(ball.Move_degree);
-    }
+    // }
   }
   if (!emergency) {
     //進行角度の選定
@@ -425,7 +402,7 @@ void loop() {
                                  // 0.062(0.7)<比率によって違うから3
 
           Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
-          Collection += gyro.differentialRead() * -0.022;  // D
+          // Collection += gyro.differentialRead() * -0.022;  // D
 
           // Serial.println(motor.gapIntegral);
 
