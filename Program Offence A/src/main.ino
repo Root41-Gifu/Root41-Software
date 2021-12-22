@@ -46,7 +46,7 @@
 #define LINE_BRIGHTNESS 100  // 50
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 500
+#define LINEOVERTIME 200
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
@@ -144,6 +144,7 @@ class _Line {
   void arrange(void);
   void calcDirection(void);
   void calc(void);
+  void vectorCalc(void);
 
   int Move_degree;
 
@@ -266,6 +267,9 @@ SPISettings MAX6675Setting(4000000, MSBFIRST, SPI_MODE0);
 
 int _Mdegree;
 
+float block_vectorX[8];
+float block_vectorY[8];
+
 void setup() {
   delay(1000);
   pinMode(PB10, OUTPUT);
@@ -277,6 +281,8 @@ void setup() {
   SPI.beginTransaction(MAX6675Setting);
   Wire.begin();
   Serial.begin(115200);
+
+  line.vectorCalc();
 
   gyro.setting();
   motor.begin();
@@ -358,17 +364,16 @@ void loop() {
   //ジャイロの読みこみ等
 
   // Motor---------------------------------------------
-  _Mdegree = 1000;
-  line.flag = false;  //テスト用消す
-  if (line.flag) {
-    _Mdegree = line.Move_degree;
-  } else {
-    // if (millis() - line.OutTimer <= LINEOVERTIME) {
-    //   _Mdegree = line.rdegree;
-    // } else {
-    _Mdegree = int(ball.Move_degree);
-    // }
-  }
+  // _Mdegree = 90;
+  // if (line.flag) {
+  //   _Mdegree = line.Move_degree;
+  // } else {
+  //   // if (millis() - line.OutTimer <= LINEOVERTIME) {
+  //   //   _Mdegree = line.rdegree;
+  //   // } else {
+  _Mdegree = int(ball.Move_degree);
+  //   // }
+  // }
   if (!emergency) {
     //進行角度の選定
     if (UI.mode == 0) {
@@ -397,11 +402,11 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *= -0.078;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
+          Collection *= -0.07;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
                                  // 0.062(0.7)<比率によって違うから3
 
           // Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
-          Collection += gyro.differentialRead() * -0.001;  // D
+          // Collection += gyro.differentialRead() * -0.0025;  // D
 
           // neko *= -0.078;                            // P制御 0.078 Mizunami
           // 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから neko +=
@@ -411,15 +416,15 @@ void loop() {
 
           for (int i = 0; i < 4; i++) {
             motor.val[i] = round(Collection);
-            motor.val[i] = constrain(motor.val[i], -20, 20);
+            motor.val[i] = constrain(motor.val[i], -30, 30);
           }
 
           int powerD;
-          powerD = 42;
+          powerD = 44;
           if (_Mdegree != 1000) {
-            if (gyro.deg <= 60 || gyro.deg >= 300) {
+            if (gyro.deg <= 180 || gyro.deg >= 180) {
               //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 9, 0, 0);  // 8
+              motor.motorCalc(int(_Mdegree), 7, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
@@ -434,12 +439,16 @@ void loop() {
               // }
               int _Max;
               for (int i = 0; i < 4; i++) {
-                if (_Max < motor.val[i]) {
-                  _Max = motor.val[i];
+                if (abs(_Max) < abs(motor.val[i])) {
+                  _Max = abs(motor.val[i]);
                 }
               }
               for (int i = 0; i < 4; i++) {
-                motor.val[i] = motor.val[i] * powerD / _Max;
+                motor.val[i] = motor.val[i] * powerD / abs(_Max);
+              }
+            } else {
+              for (int i = 0; i < 4; i++) {
+                motor.val[i] = motor.val[i] * 1.2;
               }
             }
             motor.directDrive(motor.val);
