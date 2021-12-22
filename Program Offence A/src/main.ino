@@ -364,7 +364,7 @@ void loop() {
   //ジャイロの読みこみ等
 
   // Motor---------------------------------------------
-  // _Mdegree = 90;
+  // _Mdegree = 1000;
   // if (line.flag) {
   //   _Mdegree = line.Move_degree;
   // } else {
@@ -402,11 +402,11 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *= -0.07;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
+          Collection *= -0.058;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
                                  // 0.062(0.7)<比率によって違うから3
 
           // Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
-          // Collection += gyro.differentialRead() * -0.0025;  // D
+          Collection += gyro.differentialRead() * -0.0055;  // D
 
           // neko *= -0.078;                            // P制御 0.078 Mizunami
           // 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから neko +=
@@ -420,11 +420,11 @@ void loop() {
           }
 
           int powerD;
-          powerD = 44;
+          powerD = 35;
           if (_Mdegree != 1000) {
             if (gyro.deg <= 180 || gyro.deg >= 180) {
               //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 7, 0, 0);  // 8
+              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
@@ -433,8 +433,7 @@ void loop() {
               int nekoK[4];
               for (int i = 0; i < 4; i++) {
                 nekoK[i] = motor.val[i];
-                motor.val[i] = motor.val[i] +
-                               motor.Kval[i];  // motorとジャイロの比率//0.9でも
+                motor.val[i] = (motor.val[i] + motor.Kval[i]) ;  // motorとジャイロの比率//0.9でも
               }
               // }
               int _Max;
