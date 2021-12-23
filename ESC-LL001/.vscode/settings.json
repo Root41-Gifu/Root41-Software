@@ -1,0 +1,4 @@
+{
+  "cortex-debug.armToolchainPath": "/Users/Shirokuma89/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/10.2.1-1.1.2/.content/bin",
+  "cortex-debug.openocdPath": "/Users/Shirokuma89/Library/Application Support/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/openocd/0.11.0-2.1/.content/bin/openocd"
+}
