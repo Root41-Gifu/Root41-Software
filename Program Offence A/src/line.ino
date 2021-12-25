@@ -163,7 +163,7 @@ void _Line::arrange(void) {
         check[i] = true;
         passed_num[Line_Where[i]]++;
       }
-      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 1) {
+      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 2) {
         checkBlock[Line_Where[i]] = true;
         orderBlock[Block] = Line_Where[i];
         Block++;
@@ -210,8 +210,6 @@ void _Line::arrange(void) {
         check[i] = 0;
       }
     }
-  }else{
-    Rflag=false;//koko
   }
 }
 
@@ -238,12 +236,6 @@ void _Line::calc(void) {
     }
     if (orderBlock[0] != 100) {
       _degree = degrees(atan2(t_vectorX, t_vectorY));
-      Serial.println("aaa");
-      if(_degree>=0){
-        _degree+=180;
-      }else{
-        _degree+=180;
-      }
     } else {
       degree = 1000;
     }
