@@ -1,9 +1,9 @@
 _Motor::_Motor(void) {
   for (int i = 0; i < 359; i++) {
-    sinVal[0][i] = round(sin(radians(i - 45)));
-    sinVal[1][i] = round(sin(radians(i - 135)));
-    sinVal[2][i] = round(sin(radians(i - 225)));
-    sinVal[3][i] = round(sin(radians(i - 315)));
+    sinVal[0][i] = round(sin(radians(i - 40)));
+    sinVal[1][i] = round(sin(radians(i - 140)));
+    sinVal[2][i] = round(sin(radians(i - 220)));
+    sinVal[3][i] = round(sin(radians(i - 320)));
   }
 }
 

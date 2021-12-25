@@ -360,11 +360,14 @@ void loop() {
   _Mdegree = 1000;
   if (line.flag) {
     _Mdegree = line.Move_degree;
+  } else if (line.Rflag && millis() - line.OutTimer < 200) {
+    _Mdegree = line.leftdegree;
   } else {
     if (millis() - line.OutTimer <= LINEOVERTIME) {
       _Mdegree = line.rdegree;
     } else {
-      _Mdegree = int(ball.Move_degree);
+      // _Mdegree = int(ball.Move_degree);
+      _Mdegree = ball.Move_degree;
     }
   }
   if (!emergency) {
@@ -394,9 +397,9 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *= -0.064;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 63
+          Collection *=-0.042;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
           // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
-          Collection += gyro.differentialRead() * -0.0064;  // D制御 64
+          Collection += gyro.differentialRead() * -0.014;  // D制御 64 0.012
 
           // neko *= -0.078;                            // P制御 0.078 Mizunami
           // 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから neko +=
@@ -411,19 +414,33 @@ void loop() {
 
           int powerD;
           //スピード調整
-          if (gyro.deg < 45 || gyro.deg > 315) {
-            powerD = 35;
-          } else if (gyro.deg < 90 || gyro.deg > 270) {
-            powerD = 35;
-          } else if (gyro.deg < 135 || gyro.deg > 225) {
-            powerD = 35;
-          } else {
-            powerD = 35;
+          // if (gyro.deg < 45 || gyro.deg > 315) {
+          switch (2) {
+            case 1:
+              powerD = 38;
+              break;
+            case 2:
+              powerD = 40;
+              break;
+            case 3:
+              powerD = 42;
+              break;
+
+            default:
+              powerD = 38;
+              break;
           }
+          // } else if (gyro.deg < 90 || gyro.deg > 270) {
+          //   powerD = 40;
+          // } else if (gyro.deg < 135 || gyro.deg > 225) {
+          //   powerD = 38;
+          // } else {
+          //   powerD = 36;
+          // }
           if (_Mdegree != 1000) {
-            if (gyro.deg <= 150 || gyro.deg >= 210) {
+            if (gyro.deg <= 80 || gyro.deg >= 280) {
               //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 11, 0, 0);  // 8
+              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8 10
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];

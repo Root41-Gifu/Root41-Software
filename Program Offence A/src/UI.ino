@@ -538,10 +538,8 @@ void _UI::SerialPrint(bool Display) {
     Serial.print(" ");
     Serial.print(line.Rflag);
     Serial.print(" ");
-    Serial.print(line.orderBlock[0]);
+    Serial.print(line.Move_degree);
     Serial.print(" ");
-    Serial.print(line.orderBlock[1]);
-    Serial.print(" ");
-    Serial.println(line.Move_degree);
+    Serial.println(_Mdegree);
   }
 }

@@ -181,6 +181,7 @@ void _Line::arrange(void) {
       whiting = true;
       touch = true;
       flag = true;
+      Rflag=false;
       detect_num[Line_Where[i]]++;
       OutTimer = millis();
     }
@@ -191,6 +192,7 @@ void _Line::arrange(void) {
   if (!flag) {
     if (millis() - OutTimer > LINEOVERTIME) {
       Rflag = false;
+      flag=false;
       leftdegree = 1000;
       rdegree = 1000;
     } else {
@@ -238,7 +240,6 @@ void _Line::calc(void) {
     }
     if (orderBlock[0] != 100) {
       _degree = degrees(atan2(t_vectorX, t_vectorY));
-      Serial.println("aaa");
       if(_degree>=0){
         _degree+=180;
       }else{
@@ -250,6 +251,7 @@ void _Line::calc(void) {
   }
   if (Rflag) {
     _degree = rdegree;
+    flag=false;//test
   }
   Move_degree = _degree;
   leftdegree = _degree;
