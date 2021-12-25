@@ -105,22 +105,22 @@ class _UI {
 class _Ball {
  public:
   _Ball(void);
-  void SPI_read(void);
-  void average(void);
-  void calcDistance(void);
-  void calcDirection(void);
-  void calc(void);
+  void SPI_read(void);       // SPI読み込み
+  void average(void);        //平均換算今使ってない
+  void calcDistance(void);   //距離計算
+  void calcDirection(void);  //ベクトル位置計算
+  void calc(void);           //進行方向算出
   int adjustValue(int, int);
   void Max_calc(float*);
-  void LPF(void);
+  void LPF(void);           //ローパスフィルタ
   unsigned long value[16];  //読み込み値
   float LPF_value[16];      // LPF補正値
   float LastLPF[16];        //前回のLPF補正値
   int dist[16];             //距離
-  int distance;
-  int distanceLevel;
-  int max[3];          //最大値（のポート番号）
-  int max_average[3];  //最大値の平均
+  int distance;             //距離
+  int distanceLevel;        //距離（０～３）
+  int max[3];               //最大値（のポート番号）
+  int max_average[3];       //最大値の平均
   int averageCounter[17];
   int degree;       //ボールの角度
   int Move_degree;  //進行角度
@@ -140,26 +140,26 @@ class _Ball {
 class _Line {
  public:
   _Line(void);
-  void read(void);
-  void arrange(void);
-  void calcDirection(void);
-  void calc(void);
-  void vectorCalc(void);
+  void read(void);           //読み込みI2C
+  void arrange(void);        //読み込み値を処理数値に変換
+  void calcDirection(void);  //方向（現在はベクトル）を算出
+  void calc(void);           //ベクトル数値から進行方向を算出
+  void vectorCalc(void);     //センサーごとのベクトル数値計算
 
-  int Move_degree;
+  int Move_degree;  //進行方向
 
   int Line_Where[LINE_NUM];
 
-  bool flag;  //ラインセンサーの動きをするか
-  bool Rflag;
-  bool touch;      //ラインに触れているか
-  bool value[47];  //反応値
-  bool check[47];  //加算されたか
-  bool checkBlock[8];
-  int Block;
+  bool flag;           //ラインセンサーの動きをするか
+  bool Rflag;          //飛び出しリターン時のフラグ
+  bool touch;          //ラインに触れているか
+  bool value[47];      //反応値
+  bool check[47];      //計測されたか
+  bool checkBlock[8];  //８分割ブロックの計測フラグ
+  int Block;           //８分割ブロック
   int Edge;
-  int order[47];  //反応した順番
-  int orderBlock[8];
+  int order[47];      //反応した順番
+  int orderBlock[8];  //８分割ブロック
 
   //カウンター
   int whited;   //反応した数
@@ -171,20 +171,19 @@ class _Line {
   int just;  //今反応してるやつ
 
   //タイマー
-  unsigned long detectTimer[47];
-  unsigned long OutTimer;
+  unsigned long detectTimer[47];  //反応時間計測
+  unsigned long OutTimer;         //ラインアウト時間計測
 
   //----十字ラインセンサー
-  int detect_num[8];
-  int passed_num[8];
-
+  int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
+  int passed_num[8];  //８分割ブロックごとの計測数（通過後を含む）
   //その他
-  int mode;
+  int mode;  //モード
 
-  int leftdegree;
-  int rdegree;
-  float t_vectorX;
-  float t_vectorY;
+  int leftdegree;   //ラインアウト時のライン進行方向
+  int rdegree;      //ラインアウト時のリターン進行方向
+  float t_vectorX;  //ベクトル換算時のベクトルＸ
+  float t_vectorY;  //ベクトル換算時のベクトルＹ
 
  private:
   float _vectorX[47];
@@ -329,13 +328,7 @@ void loop() {
   }
 
   // UI---------------------------------------------
-  static int uiCounter = 0;
-
-  // if (uiCounter >= 10) {
   UI.read();
-  // } else {
-  //   uiCounter++;
-  // }
 
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
 
@@ -364,16 +357,16 @@ void loop() {
   //ジャイロの読みこみ等
 
   // Motor---------------------------------------------
-  // _Mdegree = 1000;
-  // if (line.flag) {
-  //   _Mdegree = line.Move_degree;
-  // } else {
-  //   // if (millis() - line.OutTimer <= LINEOVERTIME) {
-  //   //   _Mdegree = line.rdegree;
-  //   // } else {
-  _Mdegree = int(ball.Move_degree);
-  //   // }
-  // }
+  _Mdegree = 1000;
+  if (line.flag) {
+    _Mdegree = line.Move_degree;
+  } else {
+    if (millis() - line.OutTimer <= LINEOVERTIME) {
+      _Mdegree = line.rdegree;
+    } else {
+      _Mdegree = int(ball.Move_degree);
+    }
+  }
   if (!emergency) {
     //進行角度の選定
     if (UI.mode == 0) {
@@ -398,15 +391,12 @@ void loop() {
           if (motor.integralTimer - millis() > 25) {
             motor.gapIntegral += Collection;
             motor.gapIntegral = constrain(motor.gapIntegral, -1000, 1000);
-
             motor.integralTimer = millis();
           }
 
-          Collection *= -0.058;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09)
-                                 // 0.062(0.7)<比率によって違うから3
-
-          // Collection -= motor.gapIntegral / 400;  // I　上げると弱くなる
-          Collection += gyro.differentialRead() * -0.0055;  // D
+          Collection *= -0.064;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 63
+          // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
+          Collection += gyro.differentialRead() * -0.0064;  // D制御 64
 
           // neko *= -0.078;                            // P制御 0.078 Mizunami
           // 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから neko +=
@@ -420,11 +410,20 @@ void loop() {
           }
 
           int powerD;
-          powerD = 35;
+          //スピード調整
+          if (gyro.deg < 45 || gyro.deg > 315) {
+            powerD = 35;
+          } else if (gyro.deg < 90 || gyro.deg > 270) {
+            powerD = 35;
+          } else if (gyro.deg < 135 || gyro.deg > 225) {
+            powerD = 35;
+          } else {
+            powerD = 35;
+          }
           if (_Mdegree != 1000) {
-            if (gyro.deg <= 180 || gyro.deg >= 180) {
+            if (gyro.deg <= 150 || gyro.deg >= 210) {
               //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8
+              motor.motorCalc(int(_Mdegree), 11, 0, 0);  // 8
               // if (abs(_Gap) < 5) {
               //   for (int i = 0; i < 4; i++) {
               //     motor.val[i] = motor.Kval[i];
@@ -433,7 +432,9 @@ void loop() {
               int nekoK[4];
               for (int i = 0; i < 4; i++) {
                 nekoK[i] = motor.val[i];
-                motor.val[i] = (motor.val[i] + motor.Kval[i]) ;  // motorとジャイロの比率//0.9でも
+                motor.val[i] =
+                    (motor.val[i] +
+                     motor.Kval[i]);  // motorとジャイロの比率//0.9でも
               }
               // }
               int _Max;

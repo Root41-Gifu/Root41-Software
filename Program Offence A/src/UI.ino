@@ -534,6 +534,14 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
 
 void _UI::SerialPrint(bool Display) {
   if (Display) {
-    Serial.println(_Mdegree);
+    Serial.print(line.flag);
+    Serial.print(" ");
+    Serial.print(line.Rflag);
+    Serial.print(" ");
+    Serial.print(line.orderBlock[0]);
+    Serial.print(" ");
+    Serial.print(line.orderBlock[1]);
+    Serial.print(" ");
+    Serial.println(line.Move_degree);
   }
 }
