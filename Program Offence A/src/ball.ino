@@ -136,6 +136,9 @@ void _Ball::calcDistance(void) {
     } else {
       distanceLevel = 1;
     }
+    if(distance<110&&ball.distance!=0){
+      distanceLevel=1;
+    }
   } else {
     distanceLevel = 0;
   }
@@ -153,8 +156,8 @@ void _Ball::calcDirection(void) {
   }
 
   degree = degrees(atan2(vectortX, vectortY));
-  if(degree<0){
-    degree+=360;
+  if (degree < 0) {
+    degree += 360;
   }
   //右が（0~180）、左が(-180~0)
 }
@@ -211,20 +214,29 @@ void _Ball::average(void) {
 void _Ball::calc(void) {
   //簡単な方向、距離の分割プログラム
   int _degree;
-  int move_16[16] = {0,   22,  60,  110, 150, 180, 210, 240,
-                     270, 120, 150, 180, 210, 250, 300, 337};
-  // {0, 22, 45, 68, 90, 112, 135, 157, 180, 202, 225, 247,
-  //  270, 292, 315, 337},
-  // {0, 22, 45, 68, 90, 112, 135, 157, 180, 202, 225, 247,
-  //  270, 292, 315, 337}};
+  int move_16[3][16] = {{0, 22, 60, 110, 150, 180, 210, 240, 270, 120, 150, 180,
+                      210, 250, 300, 337},
+                    {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
+                      180, 210, 320, 340},
+                     {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
+                      180, 210, 320, 340}};
   // for(int i=0; i<16; i++){
-  //   move_16[1][i]=i*22.5;
+  //   move_16[0][i]=i*22.5;
   // }
   if (max[0] == 100) {
     _degree = 1000;
   } else {
-    _degree=degree;
-    // _degree = move_16[max[0]];
+    // _degree = degree;
+    if(distanceLevel==0){
+      _degree=1000;
+    }else{
+      if(distance!=1){
+        _degree = move_16[2][max[0]];
+      }else{
+        // _degree=move_16[2][max[0]];
+        _degree=degree;
+      }
+    }
     // _degree = move_16[max[0]][distanceLevel];
   }
   Move_degree = _degree;

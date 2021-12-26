@@ -163,7 +163,7 @@ void _Line::arrange(void) {
         check[i] = true;
         passed_num[Line_Where[i]]++;
       }
-      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 1) {
+      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 2) {
         checkBlock[Line_Where[i]] = true;
         orderBlock[Block] = Line_Where[i];
         Block++;
@@ -172,6 +172,11 @@ void _Line::arrange(void) {
         //   stopTimer = device.getTime();
         mode = 1;
         flag = true;
+        if(gyro.deg<180){
+          reference_degree=gyro.deg;
+        }else{
+          reference_degree=gyro.deg-360;
+        }
         if (millis() - OutTimer <= LINEOVERTIME) {
           rdegree = leftdegree;
         } else {
@@ -232,7 +237,7 @@ void _Line::calc(void) {
   if (flag) {
     t_vectorX = 0;
     t_vectorY = 0;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
       if (orderBlock[i] != 100) {
         t_vectorX += block_vectorX[orderBlock[i]]*(1-i*0.3);
         t_vectorY += block_vectorY[orderBlock[i]]*(1-i*0.3);
@@ -246,7 +251,7 @@ void _Line::calc(void) {
         _degree+=180;
       }
     } else {
-      degree = 1000;
+      degree = 10000;//まだ動けフラグ
     }
   }
   if (Rflag) {

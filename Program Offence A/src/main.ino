@@ -43,10 +43,10 @@
 #define LINE_LEFTADDRESS 0x10
 #define LINE_RIGHTADDRESS 0x40
 
-#define LINE_BRIGHTNESS 100  // 50
-#define NEOPIXEL_BRIGHTNESS 30
+#define LINE_BRIGHTNESS 130  // 50
+#define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 200
+#define LINEOVERTIME 120
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
@@ -166,6 +166,7 @@ class _Line {
   int whiting;  //反応している数
 
   //----エンジェルラインセンサー
+  int reference_degree;
 
   //番号記録
   int just;  //今反応してるやつ
@@ -358,17 +359,24 @@ void loop() {
 
   // Motor---------------------------------------------
   _Mdegree = 1000;
-  if (line.flag) {
-    _Mdegree = line.Move_degree;
+  if(line.Move_degree==10000){
+    _Mdegree=ball.Move_degree;
+  }else if (line.flag) {
+    _Mdegree = line.Move_degree-line.reference_degree;
   } else if (line.Rflag && millis() - line.OutTimer < 200) {
-    _Mdegree = line.leftdegree;
+    _Mdegree = line.leftdegree-line.reference_degree;
   } else {
-    if (millis() - line.OutTimer <= LINEOVERTIME) {
-      _Mdegree = line.rdegree;
+    if (millis() - line.OutTimer <= 40) {
+      _Mdegree = line.rdegree-line.reference_degree;
     } else {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
     }
+  }
+  if(_Mdegree>360){
+    _Mdegree=_Mdegree-360;
+  }else if(_Mdegree<0){
+    _Mdegree=_Mdegree+360;
   }
   if (!emergency) {
     //進行角度の選定
@@ -397,7 +405,7 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *=-0.042;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+          Collection *=-0.043;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
           // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
           Collection += gyro.differentialRead() * -0.014;  // D制御 64 0.012
 
@@ -415,15 +423,15 @@ void loop() {
           int powerD;
           //スピード調整
           // if (gyro.deg < 45 || gyro.deg > 315) {
-          switch (2) {
+          switch (1) {
             case 1:
-              powerD = 38;
+              powerD = 45;
               break;
             case 2:
-              powerD = 40;
+              powerD = 47;
               break;
             case 3:
-              powerD = 42;
+              powerD = 49;
               break;
 
             default:
@@ -438,7 +446,7 @@ void loop() {
           //   powerD = 36;
           // }
           if (_Mdegree != 1000) {
-            if (gyro.deg <= 80 || gyro.deg >= 280) {
+            if (gyro.deg <= 150 || gyro.deg >= 210) {
               //   neko = constrain(neko, -100, 100);
               motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8 10
               // if (abs(_Gap) < 5) {
@@ -498,5 +506,5 @@ void loop() {
   //   emergency = true;
   // }
 
-  UI.SerialPrint(true);
+  UI.SerialPrint(false);
 }

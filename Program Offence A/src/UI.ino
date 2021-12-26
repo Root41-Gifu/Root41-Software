@@ -231,10 +231,11 @@ void _UI::NeoPixeldisplay(int _mode) {
     //     StripFulldisplay(TopPixelColor);
     //   }
     // }
-    if (mode == 1) {
-      unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
-      StripFulldisplay(BlackDawn_Color);
-    } else if (mode == 4) {
+    // if (mode == 1) {
+    //   unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
+    //   StripFulldisplay(BlackDawn_Color);
+    // } else 
+    if (mode == 4||mode==1) {
       unsigned long BallDistance_Color1 = strip.Color(255, 0, 0);  // distance1
       unsigned long BallDistance_Color2 =
           strip.Color(125, 0, 125);                                // distance1
@@ -534,11 +535,15 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
 
 void _UI::SerialPrint(bool Display) {
   if (Display) {
-    Serial.print(line.flag);
+    Serial.print(line.Rflag);
     Serial.print(" ");
     Serial.print(line.Rflag);
     Serial.print(" ");
     Serial.print(line.Move_degree);
+    Serial.print(" ");
+    Serial.print(line.leftdegree);
+    Serial.print(" ");
+    Serial.print(ball.Move_degree);
     Serial.print(" ");
     Serial.println(_Mdegree);
   }
