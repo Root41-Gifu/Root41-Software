@@ -219,7 +219,7 @@ class _LED {
   bool white = false;
   bool dist = false;
 
-  int bright = 0;
+  int bright = 100;
 
   unsigned long defaultColor;
   unsigned long RED;
@@ -458,10 +458,10 @@ void loop(void) {
   }
 
   // Serial.println(gyro.deg);
-  for (int i = 0; i < 20; i++) {
-    Serial.print(line.val[i]==true?"●":"○");
-  }
-  Serial.print(gyro.deg);
+  // for (int i = 0; i < 20; i++) {
+  //   Serial.print(line.val[i]==true?"●":"○");
+  // }
+  // Serial.print(gyro.deg);
 
-  Serial.println("");
+  // Serial.println("");
 }

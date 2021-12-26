@@ -6,11 +6,11 @@ void _ball::read(int* b) {
     if ((i == 6 || i == 13)) {
       *(b + i) = 700;
     }
-    ////Serial.print(*(b + i));
-    ////Serial.print(" ");
+    Serial.print(*(b + i));
+    Serial.print(" ");
   }
   Serial.println(" ");
-  digitalWrite(BALL_RESET, LOW);
+  // digitalWrite(BALL_RESET, LOW);
 
   *b *= 0.98;
 }

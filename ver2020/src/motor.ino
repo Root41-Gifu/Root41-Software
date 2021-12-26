@@ -105,9 +105,9 @@ void _motor::drive(int _deg, int _power, bool _stop = false) {
     val[i] = constrain(val[i], -255, 255);
   }
 
-  int temp = val[1];
+  int temp = val[3];
   val[3] = val[1];
-  val[3] = temp;
+  val[1] = temp * -1;
 
   // for (int i = 0; i < 4; i++)
   // {

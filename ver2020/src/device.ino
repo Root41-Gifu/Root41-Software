@@ -60,6 +60,7 @@ void _device::initialize(void) {
   //   pinMode(BALL[i], INPUT);
   // }
   pinMode(BALL_RESET, OUTPUT);
+  digitalWrite(BALL_RESET, HIGH);
   pinMode(BALL_HOLD, INPUT);
 
   pinMode(LINE_BRIGHT, OUTPUT);
