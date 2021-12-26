@@ -89,6 +89,8 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   LL_TIM_EnableCounter(TIM2);
+  LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH3);
+  LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH4);
   LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH1);
   /* USER CODE END 2 */
 

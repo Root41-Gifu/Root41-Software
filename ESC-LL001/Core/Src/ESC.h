@@ -52,8 +52,8 @@ void sekuta(int sek, int power) {
 
 void ESC_Drive() {
 	for(int i = 0; i < 6; i++){
-		sekuta(2,20);
-//		HAL_Delay(100);
+		sekuta(i,35);
+		HAL_Delay(1);
 	}
 }
 
