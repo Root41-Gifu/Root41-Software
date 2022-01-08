@@ -63,13 +63,13 @@ void _Ball::SPI_read(void) {
       value[readp] = data;
     }
   }
-  value[6]=(value[5]+value[8])/2;
-  value[7]=(value[5]+value[8])/2;
-  if(value[8]>100){
-    value[8]*1.7;
+  value[6] = (value[5] + value[8]) / 2;
+  value[7] = (value[5] + value[8]) / 2;
+  if (value[8] > 100) {
+    value[8] * 1.7;
   }
-  if(value[9]>100){
-    value[9]*1.4;
+  if (value[9] > 100) {
+    value[9] * 1.4;
   }
   digitalWrite(PB5, HIGH);
   unsigned long endTime = micros();
@@ -106,18 +106,18 @@ void _Ball::calcDistance(void) {
   }
   if (LPF_value[max[0]] > 15) {
     int _Level[3];
-    if(max[0]<8){
-      _Level[3]=140;
-      _Level[2]=230;
-    }else if(max[0]==8){
-      _Level[3]=140;
-      _Level[2]=180;
-    }else if(max[0]<12){
-      _Level[3]=160;
-      _Level[2]=230;
-    }else{
-      _Level[3]=170;
-      _Level[2]=230;
+    if (max[0] < 8) {
+      _Level[3] = 140;
+      _Level[2] = 230;
+    } else if (max[0] == 8) {
+      _Level[3] = 140;
+      _Level[2] = 180;
+    } else if (max[0] < 12) {
+      _Level[3] = 160;
+      _Level[2] = 230;
+    } else {
+      _Level[3] = 170;
+      _Level[2] = 230;
     }
     // }else if(max[0]>11){
     //   _Level[3]=250;
@@ -136,6 +136,9 @@ void _Ball::calcDistance(void) {
     } else {
       distanceLevel = 1;
     }
+    if(distance<110&&ball.distance!=0){
+      distanceLevel=1;
+    }
   } else {
     distanceLevel = 0;
   }
@@ -153,6 +156,9 @@ void _Ball::calcDirection(void) {
   }
 
   degree = degrees(atan2(vectortX, vectortY));
+  if (degree < 0) {
+    degree += 360;
+  }
   //右が（0~180）、左が(-180~0)
 }
 
@@ -208,20 +214,35 @@ void _Ball::average(void) {
 void _Ball::calc(void) {
   //簡単な方向、距離の分割プログラム
   int _degree;
-  int move_16[16] = {0,   22,  80,  100, 120, 180, 210, 240,
-                     270, 120, 150, 180, 240, 260, 280, 337};
-  // {0,22,45,68,90,112,135,157,180,202,225,247,270,292,315,337},
-  //     {0,22,45,68,90,112,135,157,180,202,225,247,270,292,315,337}
-  // };
+  int move_16[3][16] = {{0, 22, 60, 110, 150, 180, 210, 240, 270, 120, 150, 180,
+                      210, 250, 300, 337},
+                    {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
+                      180, 210, 320, 340},
+                     {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
+                      180, 210, 320, 340}};
+  // for(int i=0; i<16; i++){
+  //   move_16[0][i]=i*22.5;
+  // }
   if (max[0] == 100) {
     _degree = 1000;
   } else {
-    _degree = move_16[max[0]];
+    // _degree = degree;
+    if(distanceLevel==0){
+      _degree=1000;
+    }else{
+      if(distance!=1){
+        _degree = move_16[2][max[0]];
+      }else{
+        // _degree=move_16[2][max[0]];
+        _degree=degree;
+      }
+    }
+    // _degree = move_16[max[0]][distanceLevel];
   }
-  Move_degree = degree;
-  if(Move_degree<0){
-    Move_degree=360+Move_degree;
-  }
+  Move_degree = _degree;
+  // if (Move_degree < 0) {
+  //   Move_degree = 360 + Move_degree;
+  // }
 }
 
 void _Ball::LPF(void) {
