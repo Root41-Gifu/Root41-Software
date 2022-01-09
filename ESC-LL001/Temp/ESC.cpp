@@ -13,6 +13,7 @@ int mechanicalAngleOffset = 0;
 const int outputVoltageLimit = 200;  //出力電圧のリミット。0-255の間で指定。
 const int interval = 1000;  //割り込み時間間隔の設定。単位はμs
 const int intervalCounterLimit = 10;  //間引き用実行処理間隔指定
+const char sinWave[128];              // Todo:ここを頑張って求める。Excelとかでいいんじゃね？
 
 //---------------モーターとは直接関わりのない変数。---------------
 int intervalCounter = 0;  //間引いて実行したい時用のインターバルカウンタ。
@@ -22,40 +23,44 @@ int realAngularVelocity = 0;  //符号ありであることに気をつける
 int targetAngularVelocity = 0;
 int deviation;
 
+int mechanicalAngle = 0;
+int electricalAngle = 0;
+
 //---------------関数---------------
 
 void INTERVAL(void) {  // ここはinterval[μs]秒ごとに実行される
-  intervalCounter++;   //間引き実行用カウンタ
-  intervalCounter %= intervalCounterLimit;
+  mechanicalAngle = getMechanicalAngle();  //機械角の取得
+  electricalAngle = convertToElectricalAngle(mechanicalAngle);  //電気角への変換
 
+  intervalCounter++;  //間引き実行用カウンタ
+  intervalCounter %= intervalCounterLimit;
   if (intervalCounter == 0) {
     //---------------この中に間引き実行したいプログラムを記述しろ---------------
     realAngularVelocity = getAngularVelocity();
     deviation = realAngularVelocity = targetAngularVelocity;
     //---------------ここまで---------------
   }
-  
 }
 
 int getAngularVelocity(void) {  // 角速度を求める。Δtが一定であることが動作条件
 }
 
 int getMechanicalAngle(void) {  //現在ロータ位置の取得 0-4095でreturnされる
-  int mechanicalAngle = 1234;  // LLでアナログ値の取得を行う。1234は仮の値
+  int _mechanicalAngle = 1234;  // LLでアナログ値の取得を行う。1234は仮の値
 
   //オフセット処理（検出用磁石が電気角0度に向いているとは限らない）
-  mechanicalAngle += 4096;
-  mechanicalAngle += mechanicalAngleOffset;
-  mechanicalAngle %= 4096;
+  _mechanicalAngle += 4096;
+  _mechanicalAngle += _mechanicalAngleOffset;
+  _mechanicalAngle %= 4096;
 
-  return mechanicalAngle;
+  return _mechanicalAngle;
 }
 
 int convertToElectricalAngle(const int _mechanicalAngle) {  //電気角に変換
-  int electricalAngle = constrain(_mechanicalAngle, 0, 4095) % 585;
-  electricalAngle = constrain(map(electricalAngle, 0, 585, 0, 127), 0, 127);
+  int _electricalAngle = constrain(_mechanicalAngle, 0, 4095) % 585;
+  _electricalAngle = constrain(map(_electricalAngle, 0, 585, 0, 127), 0, 127);
 
-  return electricalAngle;
+  return _electricalAngle;
 }
 
 void drive(int _electricalAngle, int power) {}
