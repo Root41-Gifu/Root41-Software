@@ -17,9 +17,24 @@ const int intervalCounterLimit = 10;  //間引き用実行処理間隔指定
 //---------------モーターとは直接関わりのない変数。---------------
 int intervalCounter = 0;  //間引いて実行したい時用のインターバルカウンタ。
 
+//---------------変数とか---------------
+int realAngularVelocity = 0;  //符号ありであることに気をつける
+int targetAngularVelocity = 0;
+int deviation;
+
 //---------------関数---------------
 
 void INTERVAL(void) {  // ここはinterval[μs]秒ごとに実行される
+  intervalCounter++;   //間引き実行用カウンタ
+  intervalCounter %= intervalCounterLimit;
+
+  if (intervalCounter == 0) {
+    //---------------この中に間引き実行したいプログラムを記述しろ---------------
+    realAngularVelocity = getAngularVelocity();
+    deviation = realAngularVelocity = targetAngularVelocity;
+    //---------------ここまで---------------
+  }
+  
 }
 
 int getAngularVelocity(void) {  // 角速度を求める。Δtが一定であることが動作条件
