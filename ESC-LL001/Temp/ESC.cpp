@@ -1,4 +1,6 @@
 //---------------よく使う数学的関数やマクロ---------------
+
+//NOTE:Arduinoからの引用
 #define constrain(amt, low, high) \
   ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
@@ -13,7 +15,8 @@ int mechanicalAngleOffset = 0;
 const int outputVoltageLimit = 200;  //出力電圧のリミット。0-255の間で指定。
 const int interval = 1000;  //割り込み時間間隔の設定。単位はμs
 const int intervalCounterLimit = 10;  //間引き用実行処理間隔指定
-const char sinWave[128];              // Todo:ここを頑張って求める。Excelとかでいいんじゃね？
+const char
+    sinWave[128];  // TODO:ここを頑張って求める。Excelとかでいいんじゃね？
 
 //---------------モーターとは直接関わりのない変数。---------------
 int intervalCounter = 0;  //間引いて実行したい時用のインターバルカウンタ。
@@ -40,9 +43,13 @@ void INTERVAL(void) {  // ここはinterval[μs]秒ごとに実行される
     deviation = realAngularVelocity = targetAngularVelocity;
     //---------------ここまで---------------
   }
+
+  //CHECK:次回ここから実装する
+  
 }
 
 int getAngularVelocity(void) {  // 角速度を求める。Δtが一定であることが動作条件
+  return 0;  // TODO:ちゃんと実装しろ
 }
 
 int getMechanicalAngle(void) {  //現在ロータ位置の取得 0-4095でreturnされる
@@ -63,4 +70,5 @@ int convertToElectricalAngle(const int _mechanicalAngle) {  //電気角に変換
   return _electricalAngle;
 }
 
-void drive(int _electricalAngle, int power) {}
+void drive(int _electricalAngle, int power) {  // TODO:ちゃんと実装しろ
+}
