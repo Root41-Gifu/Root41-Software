@@ -63,7 +63,7 @@ int getMechanicalAngle(void) {  //現在ロータ位置の取得 0-4095でreturn
   return _mechanicalAngle;
 }
 
-int convertToElectricalAngle(const int _mechanicalAngle) {  //電気角に変換
+int convertToElectricalAngle(const int _mechanicalAngle) {  //電気角に変換 1byteで返す
   int _electricalAngle = constrain(_mechanicalAngle, 0, 4095) % 585;
   _electricalAngle = constrain(map(_electricalAngle, 0, 585, 0, 127), 0, 127);
 

@@ -1,20 +1,10 @@
+//周波数変更
 void changeFreq(unsigned long freq) {
-
-	/* USER CODE BEGIN TIM2_Init 0 */
-
-	/* USER CODE END TIM2_Init 0 */
-
 	LL_TIM_InitTypeDef TIM_InitStruct = { 0 };
 	LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = { 0 };
 
 	LL_GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-
-	/* Peripheral clock enable */
 	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
-
-	/* USER CODE BEGIN TIM2_Init 1 */
-
-	/* USER CODE END TIM2_Init 1 */
 	TIM_InitStruct.Prescaler = (125000 / freq) - 1;
 	TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
 	TIM_InitStruct.Autoreload = 255;
@@ -39,16 +29,8 @@ void changeFreq(unsigned long freq) {
 	LL_TIM_OC_DisablePreload(TIM2, LL_TIM_CHANNEL_CH1);
 	LL_TIM_OC_DisablePreload(TIM2, LL_TIM_CHANNEL_CH3);
 	LL_TIM_OC_DisablePreload(TIM2, LL_TIM_CHANNEL_CH4);
-	/* USER CODE BEGIN TIM2_Init 2 */
-
-	/* USER CODE END TIM2_Init 2 */
 	LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
 	LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOB);
-	/**TIM2 GPIO Configuration
-	 PA5   ------> TIM2_CH1
-	 PB1   ------> TIM2_CH4
-	 PA10   ------> TIM2_CH3
-	 */
 	GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
 	GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
 	GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
@@ -131,23 +113,15 @@ void sekuta(int sek, int power) {
 	}
 }
 
-const int gakfuLength = 128;
-const int gakfu[] = { 1568, 1568, 1760, 1760, 1245, 1319, 1319, 1175, 1245,
-		1175, 1047, 1047, 1047, 1047, 1175, 1175, 1245, 1245, 1245, 1175, 1047,
-		1175, 1319, 1568, 1760, 1319, 1568, 1175, 1319, 1047, 1175, 1047, 1319,
-		1319, 1568, 1568, 1760, 1319, 1568, 1047, 1175, 1047, 1245, 1319, 1245,
-		1175, 1047, 1175, 1245, 1245, 1245, 1175, 1047, 1175, 1319, 1568, 1175,
-		1047, 1175, 1175, 1047, 1047, 1047, 1047, 1047, 1047, 784, 880, 1047,
-		1047, 784, 880, 1047, 1319, 1397, 1319, 1397, 1319, 1397, 1568, 1047,
-		1047, 1047, 1047, 784, 880, 1047, 1319, 1397, 1319, 1397, 1568, 1047,
-		1047, 988, 988, 1047, 1047, 784, 880, 1047, 1047, 784, 880, 1047, 1319,
-		1397, 1319, 1397, 1319, 1397, 1568, 1047, 1047, 1047, 1047, 784, 880,
-		1047, 1319, 1397, 1319, 1175, 1175, 1047, 1047, 1047, 1047 };
-
-const int gakfuIntroLength = 32;
-const int gakfuIntro[] = { 1319, 1397, 1568, 1568, 2093, 2093, 1319, 1397, 1568,
-		2093, 2349, 2637, 2349, 1976, 2093, 2093, 1568, 1568, 1319, 1397, 1568,
-		1568, 2093, 2093, 2349, 1976, 2093, 2349, 2794, 2637, 2794, 2349 };
+char waveTable[] = { 127, 133, 139, 146, 152, 158, 164, 170, 176, 181, 187, 192,
+		198, 203, 208, 212, 217, 221, 225, 229, 233, 236, 239, 242, 244, 247,
+		249, 250, 252, 253, 253, 254, 254, 254, 253, 253, 252, 250, 249, 247,
+		244, 242, 239, 236, 233, 229, 225, 221, 217, 212, 208, 203, 198, 192,
+		187, 181, 176, 170, 164, 158, 152, 146, 139, 133, 127, 121, 115, 108,
+		102, 96, 90, 84, 78, 73, 67, 62, 56, 51, 46, 42, 37, 33, 29, 25, 21, 18,
+		15, 12, 10, 7, 5, 4, 2, 1, 1, 0, 0, 0, 1, 1, 2, 4, 5, 7, 10, 12, 15, 18,
+		21, 25, 29, 33, 37, 42, 46, 51, 56, 62, 67, 73, 78, 84, 90, 96, 102,
+		108, 115, 121 };
 
 int counter = 0;
 int neko = 0;
@@ -155,28 +129,17 @@ int nekoCounter = 0;
 const int speed = 115;
 
 void ESC_Drive() {
-	for (int i = 0; i < 6; i++) {
-		sekuta(i, 20);
-		HAL_Delay(3);
-	}
-	if (neko == 0) {
-		if (nekoCounter * speed + 1000 < HAL_GetTick()) {
-			changeFreq(gakfuIntro[nekoCounter]);
-			nekoCounter++;
-			if (nekoCounter == gakfuIntroLength) {
-				neko = 1;
-			}
-		}
-	} else {
-		if (counter * speed + speed * gakfuIntroLength
-				+ gakfuLength * speed * (neko - 1) + 1000 < HAL_GetTick()) {
-			changeFreq(gakfu[counter]);
-			counter++;
-			if (counter == gakfuLength) {
-				neko++;
-				counter = 0;
-			}
-		}
+	HAL_SYSTICK_Config(SystemCoreClock / (50000U / uwTickFreq));
+
+	LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_9);    //! U
+	LL_GPIO_SetOutputPin(GPIOC, GPIO_PIN_14);   //! V
+	LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_6);  //! W
+	for (int i = 0; i < 128; i++) {
+		LL_TIM_OC_SetCompareCH3(TIM2, waveTable[i] * 0.3);
+		LL_TIM_OC_SetCompareCH4(TIM2, waveTable[(i + 43) % 128] * 0.3);
+		LL_TIM_OC_SetCompareCH1(TIM2, waveTable[(i + 85) % 128] * 0.3);
+//		sekuta(i, 20);
+		HAL_Delay(1);
 	}
 }
 
