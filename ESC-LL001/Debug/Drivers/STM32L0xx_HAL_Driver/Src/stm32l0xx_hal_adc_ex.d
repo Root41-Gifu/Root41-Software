@@ -1,4 +1,9 @@
-Core/Src/system_stm32l0xx.o: ../Core/Src/system_stm32l0xx.c \
+Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_adc_ex.o: \
+ ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_adc_ex.c \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
+ ../Core/Inc/stm32l0xx_hal_conf.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l0xx.h \
  ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l010x4.h \
  ../Drivers/CMSIS/Include/core_cm0plus.h \
@@ -6,10 +11,6 @@ Core/Src/system_stm32l0xx.o: ../Core/Src/system_stm32l0xx.c \
  ../Drivers/CMSIS/Include/cmsis_compiler.h \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/system_stm32l0xx.h \
- ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
- ../Core/Inc/stm32l0xx_hal_conf.h \
- ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h \
- ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_def.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_exti.h \
@@ -27,6 +28,14 @@ Core/Src/system_stm32l0xx.o: ../Core/Src/system_stm32l0xx.c \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_pwr.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_pwr_ex.h
 
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
+
+../Core/Inc/stm32l0xx_hal_conf.h:
+
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h:
+
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_def.h:
+
 ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l0xx.h:
 
 ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/stm32l010x4.h:
@@ -40,14 +49,6 @@ Core/Src/system_stm32l0xx.o: ../Core/Src/system_stm32l0xx.c \
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 
 ../Drivers/CMSIS/Device/ST/STM32L0xx/Include/system_stm32l0xx.h:
-
-../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
-
-../Core/Inc/stm32l0xx_hal_conf.h:
-
-../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h:
-
-../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_def.h:
 
 ../Drivers/STM32L0xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h:
 
