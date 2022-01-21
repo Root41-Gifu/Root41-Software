@@ -59,6 +59,8 @@ Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ400);
 HardwareSerial Serial4(A1, A0);
 HardwareSerial Serial1(PA10, PA9);
 
+float sin_d[360];
+float cos_d[360];
 float Battery;
 int MotorPower = 100;
 int degree;
@@ -130,6 +132,8 @@ class _Ball {
   float vectortX;  //変数（算出用）
   float vectortY;
 
+  float vectorMove[2];
+
  private:
   int move[3][16];
   int readp;
@@ -150,6 +154,14 @@ class _Line {
 
   int Line_Where[LINE_NUM];
 
+  int mode;
+  /* modeのリスト
+  0:ライン踏んでない（!flag）
+  1:ライン踏んでまだwhitedが3以下
+  2:ライン踏んで4以上（ずれ少ない）
+  3:ライン踏んで4以上（ずれあり）
+  */
+
   bool flag;           //ラインセンサーの動きをするか
   bool Rflag;          //飛び出しリターン時のフラグ
   bool touch;          //ラインに触れているか
@@ -167,6 +179,7 @@ class _Line {
 
   //----エンジェルラインセンサー
   int reference_degree;
+  int current_degree;
 
   //番号記録
   int just;  //今反応してるやつ
@@ -179,7 +192,7 @@ class _Line {
   int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
   int passed_num[8];  //８分割ブロックごとの計測数（通過後を含む）
   //その他
-  int mode;  //モード
+  // int mode;  //モード
 
   int leftdegree;   //ラインアウト時のライン進行方向
   int rdegree;      //ラインアウト時のリターン進行方向
@@ -203,6 +216,8 @@ class _Motor {
   void ultraBrake(void);
   void motorCalc(int, int, bool, int);
   void motorPID_drive(float, float, float, int, int);
+
+  int reference_degree;
 
   int val[4];
   int Kval[4];
@@ -291,6 +306,12 @@ void setup() {
   line.vectorCalc();  //ラインごとのベクトル計算
   gyro.setting();
   motor.begin();
+
+  //三角関数
+  for(int i=0; i<360; i++){
+    sin_d[i]=sin(degrees(i));
+    cos_d[i]=cos(degrees(i));
+  }
 }
 
 void loop() {

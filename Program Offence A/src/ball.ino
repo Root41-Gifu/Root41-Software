@@ -136,8 +136,8 @@ void _Ball::calcDistance(void) {
     } else {
       distanceLevel = 1;
     }
-    if(distance<110&&ball.distance!=0){
-      distanceLevel=1;
+    if (distance < 110 && ball.distance != 0) {
+      distanceLevel = 1;
     }
   } else {
     distanceLevel = 0;
@@ -215,26 +215,49 @@ void _Ball::calc(void) {
   //簡単な方向、距離の分割プログラム
   int _degree;
   int move_16[3][16] = {{0, 22, 60, 110, 150, 180, 210, 240, 270, 120, 150, 180,
-                      210, 250, 300, 337},
-                    {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
-                      180, 210, 320, 340},
-                     {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
-                      180, 210, 320, 340}};
+                         210, 250, 300, 337},
+                        {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
+                         180, 210, 320, 340},
+                        {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
+                         180, 210, 320, 340}};
   // for(int i=0; i<16; i++){
   //   move_16[0][i]=i*22.5;
   // }
   if (max[0] == 100) {
     _degree = 1000;
   } else {
+    int gain_degree;
+    float _plusvector[2];
+    float gain_constant = 1;
+    if (vectortX > 0) {
+      int gain_degree;
+      gain_degree = map(ball.degree, 0, 180, 0, 90);
+      _plusvector[0] = vectortX+sin(degree + gain_degree) * gain_constant;
+      _plusvector[1] = vectortY+cos(degree + gain_degree) * gain_constant;
+      _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+      if (_degree < 0) {
+        _degree += 360;
+      }
+      Serial.println(degree+gain_degree);
+    } else {
+      int gain_degree;
+      gain_degree = map(ball.degree, 180, 360, 90, 0);
+      _plusvector[0] = vectortX+sin(degree - gain_degree) * gain_constant;
+      _plusvector[1] = vectortY+cos(degree - gain_degree) * gain_constant;
+      _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+      if (_degree < 0) {
+        _degree += 360;
+      }
+    }
     // _degree = degree;
-    if(distanceLevel==0){
-      _degree=1000;
-    }else{
-      if(distance!=1){
+    if (distanceLevel == 0) {
+      _degree = 1000;
+    } else {
+      if (distance != 1) {
         _degree = move_16[2][max[0]];
-      }else{
+      } else {
         // _degree=move_16[2][max[0]];
-        _degree=degree;
+        _degree = degree;
       }
     }
     // _degree = move_16[max[0]][distanceLevel];
@@ -250,7 +273,7 @@ void _Ball::LPF(void) {
   // LPF調整ファイト
   for (int i = 0; i < 16; i++) {
     if (abs(value[i] - LPF_value[i]) > 30) {
-      k = 0.07;  // 0.1
+      k = 0.06;  // 0.07
       if (value[i] - LPF_value[i] < -30) {
         k = 0.15;  // 0.15
       }
