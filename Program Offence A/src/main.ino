@@ -306,11 +306,12 @@ void setup() {
   line.vectorCalc();  //ラインごとのベクトル計算
   gyro.setting();
   motor.begin();
+  UI.mode=1;
 
   //三角関数
   for(int i=0; i<360; i++){
-    sin_d[i]=sin(degrees(i));
-    cos_d[i]=cos(degrees(i));
+    sin_d[i]=sin(radians(i));
+    cos_d[i]=cos(radians(i));
   }
 }
 

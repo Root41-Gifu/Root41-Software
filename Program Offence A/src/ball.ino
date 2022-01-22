@@ -226,38 +226,49 @@ void _Ball::calc(void) {
   if (max[0] == 100) {
     _degree = 1000;
   } else {
-    int gain_degree;
     float _plusvector[2];
-    float gain_constant = 1;
+    float gain_constant = 6;
+    int max_gain = 140;
+    int gain_degree;
+
     if (vectortX > 0) {
-      int gain_degree;
-      gain_degree = map(ball.degree, 0, 180, 0, 90);
-      _plusvector[0] = vectortX+sin(degree + gain_degree) * gain_constant;
-      _plusvector[1] = vectortY+cos(degree + gain_degree) * gain_constant;
+      gain_degree = map(ball.degree, 0, 180, 0, max_gain);
+      _plusvector[0] = vectortX + sin_d[degree + gain_degree] * gain_constant;
+      _plusvector[1] = vectortY + cos_d[degree + gain_degree] * gain_constant;
       _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
       if (_degree < 0) {
         _degree += 360;
       }
-      Serial.println(degree+gain_degree);
     } else {
-      int gain_degree;
-      gain_degree = map(ball.degree, 180, 360, 90, 0);
-      _plusvector[0] = vectortX+sin(degree - gain_degree) * gain_constant;
-      _plusvector[1] = vectortY+cos(degree - gain_degree) * gain_constant;
+      gain_degree = map(ball.degree, 180, 360, max_gain, 0);
+      _plusvector[0] = vectortX + sin_d[degree - gain_degree] * gain_constant;
+      _plusvector[1] = vectortY + cos_d[degree - gain_degree] * gain_constant;
       _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
       if (_degree < 0) {
         _degree += 360;
       }
     }
+    Serial.print(vectortX);
+    Serial.print(" ");
+    Serial.print(vectortY);
+    Serial.print(" ");
+    Serial.print(sin_d[degree+gain_degree]);
+    Serial.print(" ");
+    Serial.print(cos_d[degree+gain_degree]);
+    Serial.print(" ");
+    Serial.print(degree);
+    Serial.print(" ");
+    Serial.print(gain_degree);
+    Serial.println(" ");
     // _degree = degree;
     if (distanceLevel == 0) {
       _degree = 1000;
     } else {
       if (distance != 1) {
-        _degree = move_16[2][max[0]];
+        // _degree = move_16[2][max[0]];
       } else {
         // _degree=move_16[2][max[0]];
-        _degree = degree;
+        // _degree = degree;
       }
     }
     // _degree = move_16[max[0]][distanceLevel];

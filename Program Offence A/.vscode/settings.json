@@ -20,6 +20,7 @@
         "vector": "cpp",
         "initializer_list": "cpp",
         "*.tcc": "cpp",
-        "iterator": "cpp"
+        "iterator": "cpp",
+        "cmath": "cpp"
     }
 }
