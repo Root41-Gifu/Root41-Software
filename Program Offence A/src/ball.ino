@@ -219,8 +219,8 @@ void _Ball::calc(int _distance) {
   } else {
     float _plusvector[2];
     float gain_constant = 6;
-    int max_gain = 150;
-    int distance_constant=500;
+    int max_gain = 120;
+    int distance_constant=300;
     int gain_degree;
 
     if (vectortX > 0) {

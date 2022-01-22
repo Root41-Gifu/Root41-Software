@@ -549,8 +549,8 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
 
 void _UI::SerialPrint(bool Display) {
   if (Display) {
-    Serial.print(float(ball.vectortX));
-    Serial.print(" ");
-    Serial.println(float(ball.vectortY));
+    // Serial.print(_Mdegree);
+    // Serial.print(" ");
+    // Serial.println(ball.Move_degree);
   }
 }
