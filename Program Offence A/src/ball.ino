@@ -211,7 +211,7 @@ void _Ball::average(void) {
   }
 }
 
-void _Ball::calc(void) {
+void _Ball::calc(int _distance) {
   //簡単な方向、距離の分割プログラム
   int _degree;
   if (max[0] == 100) {
@@ -220,12 +220,13 @@ void _Ball::calc(void) {
     float _plusvector[2];
     float gain_constant = 6;
     int max_gain = 140;
+    int distance_constant=100;
     int gain_degree;
 
     if (vectortX > 0) {
       gain_degree = map(ball.degree, 0, 180, 0, max_gain);
-      _plusvector[0] = vectortX + sin_d[degree + gain_degree] * gain_constant;
-      _plusvector[1] = vectortY + cos_d[degree + gain_degree] * gain_constant;
+      _plusvector[0] = vectortX + sin_d[degree + gain_degree] * gain_constant*(distance_constant/_distance);
+      _plusvector[1] = vectortY + cos_d[degree + gain_degree] * gain_constant*(distance_constant/_distance);
       _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
       if (_degree < 0) {
         _degree += 360;

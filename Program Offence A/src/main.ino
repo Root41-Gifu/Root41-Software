@@ -111,7 +111,7 @@ class _Ball {
   void average(void);        //平均換算今使ってない
   void calcDistance(void);   //距離計算
   void calcDirection(void);  //ベクトル位置計算
-  void calc(void);           //進行方向算出
+  void calc(int);           //進行方向算出
   int adjustValue(int, int);
   void Max_calc(float*);
   void LPF(void);           //ローパスフィルタ
@@ -344,7 +344,7 @@ void loop() {
 
   ball.calcDirection();  //ボールの方向算出
 
-  ball.calc();  //動作角度算出
+  ball.calc(ball.distance);  //動作角度算出
 
   // line---------------------------------------------
   line.read();  // I2Cでライン読み込み
