@@ -219,8 +219,8 @@ void _Ball::calc(int _distance) {
   } else {
     float _plusvector[2];
     float gain_constant = 6;
-    int max_gain = 140;
-    int distance_constant=100;
+    int max_gain = 150;
+    int distance_constant=500;
     int gain_degree;
 
     if (vectortX > 0) {
@@ -233,8 +233,8 @@ void _Ball::calc(int _distance) {
       }
     } else {
       gain_degree = map(ball.degree, 180, 360, max_gain, 0);
-      _plusvector[0] = vectortX + sin_d[degree - gain_degree] * gain_constant;
-      _plusvector[1] = vectortY + cos_d[degree - gain_degree] * gain_constant;
+      _plusvector[0] = vectortX + sin_d[degree - gain_degree] * gain_constant*(distance_constant/_distance);
+      _plusvector[1] = vectortY + cos_d[degree - gain_degree] * gain_constant*(distance_constant/_distance);
       _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
       if (_degree < 0) {
         _degree += 360;

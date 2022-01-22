@@ -111,7 +111,7 @@ class _Ball {
   void average(void);        //平均換算今使ってない
   void calcDistance(void);   //距離計算
   void calcDirection(void);  //ベクトル位置計算
-  void calc(int);           //進行方向算出
+  void calc(int);            //進行方向算出
   int adjustValue(int, int);
   void Max_calc(float*);
   void LPF(void);           //ローパスフィルタ
@@ -306,12 +306,12 @@ void setup() {
   line.vectorCalc();  //ラインごとのベクトル計算
   gyro.setting();
   motor.begin();
-  UI.mode=1;
+  UI.mode = 1;
 
   //三角関数
-  for(int i=0; i<360; i++){
-    sin_d[i]=sin(radians(i));
-    cos_d[i]=cos(radians(i));
+  for (int i = 0; i < 360; i++) {
+    sin_d[i] = sin(radians(i));
+    cos_d[i] = cos(radians(i));
   }
 }
 
@@ -394,26 +394,28 @@ void loop() {
   // Motor---------------------------------------------
 
   _Mdegree = 1000;
+  motor.reference_degree=0;
+  motor.referenceAngle=0;
   // line.reference_degree=0//これは角度のずれを考慮したいときにコメントアウトにして
 
-  if (line.Move_degree == 10000) {
-    //ラインなし、ボール反応時
-    _Mdegree = ball.Move_degree;
-  } else if (line.flag) {
-    //ラインあり、ライン検知時
-    _Mdegree = line.Move_degree - line.reference_degree;
-  } else if (line.Rflag && millis() - line.OutTimer < 200) {
-    //ラインあり、ラインオーバー時
-    _Mdegree = line.leftdegree - line.reference_degree;
-  } else {
-    //ラインあり、ラインから距離をとる
-    if (millis() - line.OutTimer <= 40) {
-      _Mdegree = line.rdegree - line.reference_degree;
-    } else {
-      // _Mdegree = int(ball.Move_degree);
-      _Mdegree = ball.Move_degree;
-    }
-  }
+  // if (line.Move_degree == 10000) {
+  //   //ラインなし、ボール反応時
+  //   _Mdegree = ball.Move_degree;
+  // } else if (line.flag) {
+  //   //ラインあり、ライン検知時
+  //   _Mdegree = line.Move_degree - line.reference_degree;
+  // } else if (line.Rflag && millis() - line.OutTimer < 200) {
+  //   //ラインあり、ラインオーバー時
+  //   _Mdegree = line.leftdegree - line.reference_degree;
+  // } else {
+  //   //ラインあり、ラインから距離をとる
+  //   if (millis() - line.OutTimer <= 40) {
+  //     _Mdegree = line.rdegree - line.reference_degree;
+  //   } else {
+  //     // _Mdegree = int(ball.Move_degree);
+  _Mdegree = ball.Move_degree;
+  // }
+  // }
 
   //角度オーバーの修正
   if (_Mdegree > 360) {
