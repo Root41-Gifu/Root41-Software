@@ -1,0 +1,7 @@
+stm32l0xx_hal_adc_ex.c:107:19:HAL_ADCEx_Calibration_Start	32	static
+stm32l0xx_hal_adc_ex.c:192:10:HAL_ADCEx_Calibration_GetValue	16	static
+stm32l0xx_hal_adc_ex.c:211:19:HAL_ADCEx_Calibration_SetValue	32	static
+stm32l0xx_hal_adc_ex.c:259:19:HAL_ADCEx_EnableVREFINT	16	static
+stm32l0xx_hal_adc_ex.c:291:6:HAL_ADCEx_DisableVREFINT	8	static
+stm32l0xx_hal_adc_ex.c:306:19:HAL_ADCEx_EnableVREFINTTempSensor	16	static
+stm32l0xx_hal_adc_ex.c:338:6:HAL_ADCEx_DisableVREFINTTempSensor	8	static
