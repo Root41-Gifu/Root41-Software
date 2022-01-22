@@ -5,6 +5,7 @@ _UI::_UI() {
 }
 
 void _UI::read() {
+  UI.touch[0] = !digitalRead(PA8);  //センサー検知
   Wire.requestFrom(UI_ADDRESS, 1);
   while (Wire.available()) {
     byte readValue = Wire.read();
@@ -241,30 +242,43 @@ void _UI::NeoPixeldisplay(int _mode) {
           strip.Color(125, 0, 125);                                // distance1
       unsigned long BallDistance_Color3 = strip.Color(0, 0, 255);  // distance1
       int _side[2];
-      _side[0] = ball.max[0] - 1;
-      _side[1] = ball.max[0] + 1;
-      if (ball.max[0] - 1 < 0) {
+      int ball_separate;
+      ball_separate=int(ball.Move_degree/22.5);
+      // _side[0] = ball.max[0] - 1;
+      // _side[1] = ball.max[0] + 1;
+      // if (ball.max[0] - 1 < 0) {
+      //   _side[0] = 15;
+      // } else if (ball.max[0] + 1 > 15) {
+      //   _side[1] = 0;
+      // }
+      _side[0] = ball_separate - 1;
+      _side[1] = ball_separate + 1;
+      if (ball_separate - 1 < 0) {
         _side[0] = 15;
-      } else if (ball.max[0] + 1 > 15) {
+      } else if (ball_separate + 1 > 15) {
         _side[1] = 0;
       }
+      
       switch (ball.distanceLevel) {
         case 0:
           StripFulldisplay(BallDistance_Color3);
           break;
         case 3:
-          strip.setPixelColor(ball.max[0], BallDistance_Color3);
+          // strip.setPixelColor(ball.max[0], BallDistance_Color3);
+          strip.setPixelColor(ball_separate, BallDistance_Color3);
           strip.setPixelColor(_side[0], BallDistance_Color3);
           strip.setPixelColor(_side[1], BallDistance_Color3);
           break;
         case 2:
-          strip.setPixelColor(ball.max[0], BallDistance_Color2);
+          // strip.setPixelColor(ball.max[0], BallDistance_Color2);
+          strip.setPixelColor(ball_separate, BallDistance_Color2);
           strip.setPixelColor(_side[0], BallDistance_Color2);
           strip.setPixelColor(_side[1], BallDistance_Color2);
           break;
 
         case 1:
-          strip.setPixelColor(ball.max[0], BallDistance_Color1);
+          // strip.setPixelColor(ball.max[0], BallDistance_Color1);
+          strip.setPixelColor(ball_separate, BallDistance_Color1);
           strip.setPixelColor(_side[0], BallDistance_Color1);
           strip.setPixelColor(_side[1], BallDistance_Color1);
           break;
@@ -535,16 +549,8 @@ void _UI::NeoPixelReset(int brightS, int brightL) {
 
 void _UI::SerialPrint(bool Display) {
   if (Display) {
-    Serial.print(line.Rflag);
+    Serial.print(float(ball.vectortX));
     Serial.print(" ");
-    Serial.print(line.Rflag);
-    Serial.print(" ");
-    Serial.print(line.Move_degree);
-    Serial.print(" ");
-    Serial.print(line.leftdegree);
-    Serial.print(" ");
-    Serial.print(ball.Move_degree);
-    Serial.print(" ");
-    Serial.println(_Mdegree);
+    Serial.println(float(ball.vectortY));
   }
 }
