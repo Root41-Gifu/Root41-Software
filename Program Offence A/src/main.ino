@@ -439,7 +439,7 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.048, 1, 0.014, 40,
+            0.044, 1, 0.019, 33,
             7);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
