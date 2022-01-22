@@ -214,15 +214,6 @@ void _Ball::average(void) {
 void _Ball::calc(void) {
   //簡単な方向、距離の分割プログラム
   int _degree;
-  int move_16[3][16] = {{0, 22, 60, 110, 150, 180, 210, 240, 270, 120, 150, 180,
-                         210, 250, 300, 337},
-                        {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
-                         180, 210, 320, 340},
-                        {0, 20, 40, 150, 180, 200, 210, 260, 260, 100, 150, 160,
-                         180, 210, 320, 340}};
-  // for(int i=0; i<16; i++){
-  //   move_16[0][i]=i*22.5;
-  // }
   if (max[0] == 100) {
     _degree = 1000;
   } else {
@@ -248,28 +239,9 @@ void _Ball::calc(void) {
         _degree += 360;
       }
     }
-    Serial.print(vectortX);
-    Serial.print(" ");
-    Serial.print(vectortY);
-    Serial.print(" ");
-    Serial.print(sin_d[degree+gain_degree]);
-    Serial.print(" ");
-    Serial.print(cos_d[degree+gain_degree]);
-    Serial.print(" ");
-    Serial.print(degree);
-    Serial.print(" ");
-    Serial.print(gain_degree);
-    Serial.println(" ");
     // _degree = degree;
     if (distanceLevel == 0) {
       _degree = 1000;
-    } else {
-      if (distance != 1) {
-        // _degree = move_16[2][max[0]];
-      } else {
-        // _degree=move_16[2][max[0]];
-        // _degree = degree;
-      }
     }
     // _degree = move_16[max[0]][distanceLevel];
   }
