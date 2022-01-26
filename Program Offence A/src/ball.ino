@@ -269,7 +269,7 @@ void _Ball::LPF(void) {
   // LPF調整ファイト
   for (int i = 0; i < 16; i++) {
     if (abs(value[i] - LPF_value[i]) > 30) {
-      k = 0.09;  // 0.07
+      k = 0.15;  // 0.07
       if (value[i] - LPF_value[i] < -30) {
         k = 0.15;  // 0.15
       }
