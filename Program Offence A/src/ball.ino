@@ -218,7 +218,7 @@ void _Ball::calc(int _distance) {
     _degree = 1000;
   } else {
     float _plusvector[2];
-    float gain_constant = 6;
+    float gain_constant = 8;
     int max_gain = 120;
     int distance_constant = 300;
     int gain_degree;
@@ -269,7 +269,7 @@ void _Ball::LPF(void) {
   // LPF調整ファイト
   for (int i = 0; i < 16; i++) {
     if (abs(value[i] - LPF_value[i]) > 30) {
-      k = 0.15;  // 0.07
+      k = 0.3;  // 0.07
       if (value[i] - LPF_value[i] < -30) {
         k = 0.15;  // 0.15
       }
