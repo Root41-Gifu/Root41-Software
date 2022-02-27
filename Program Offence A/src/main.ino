@@ -171,6 +171,7 @@ class _Line {
   bool check[47];      //計測されたか
   bool checkBlock[8];  //８分割ブロックの計測フラグ
   int Block;           //８分割ブロック
+  int Block_degree[8]={0,0,0,0,0,0,0,0};
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック

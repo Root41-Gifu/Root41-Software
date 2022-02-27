@@ -204,7 +204,7 @@ void _Line::arrange(void) {
   }
 
   if (flag) {
-    if (whited < 20) {
+    if (Block <= 1) {
       mode = 1;
     } else if (abs(reference_degree) < 50) {
       mode = 2;
@@ -268,14 +268,19 @@ void _Line::calc(void) {
     t_vectorY = 0;
     if (mode == 1) {
       //少数反応
-      t_vectorX = block_vectorX[orderBlock[0]];
-      t_vectorY = block_vectorY[orderBlock[0]];
-    } else if (mode == 2) {
+      calcDirection();
+      _degree=Block_degree[orderBlock[0]];
+    }else if (mode == 2) {
       //ずれ少ない多数反応
-      t_vectorX += block_vectorX[orderBlock[0]];
-      t_vectorY += block_vectorY[orderBlock[0]];
-      t_vectorX += block_vectorX[orderBlock[1]] * 0.5;
-      t_vectorY += block_vectorY[orderBlock[1]] * 0.5;
+      calcDirection();
+      if(abs(orderBlock[0]-orderBlock[1])==4){
+        //連番　直線的な可能性
+        //角度修正ありにしたい＜
+        _degree=Block_degree[orderBlock[0]]-current_degree;
+      }else if(abs(orderBlock[0]-orderBlock[1])==1){
+        //1-3も追加して
+        //半分とる
+      }
     }
     // t_vectorX = 0;
     // t_vectorY = 0;
@@ -285,25 +290,25 @@ void _Line::calc(void) {
     //     t_vectorY += block_vectorY[orderBlock[i]] * (1 - i * 0.3);
     //   }
     //
-    if (orderBlock[0] != 100) {
-      _degree = degrees(atan2(t_vectorX, t_vectorY));
+    // if (orderBlock[0] != 100) {
+    //   _degree = degrees(atan2(t_vectorX, t_vectorY));
 
-      if (mode == 1) {
-        motor.reference_degree = 0;  //角度変えながら
-        _degree -= current_degree;   //最新のに合わせる
-      } else if (mode == 2) {
-        motor.reference_degree = reference_degree;
-        _degree -= current_degree;
-      }
+    //   if (mode == 1) {
+    //     motor.reference_degree = 0;  //角度変えながら
+    //     _degree -= current_degree;   //最新のに合わせる
+    //   } else if (mode == 2) {
+    //     motor.reference_degree = reference_degree;
+    //     _degree -= current_degree;
+    //   }
 
-      if (_degree >= 0) {
-        _degree += 180;
-      } else {
-        _degree += 180;
-      }
-    } else {
-      degree = 10000;  //まだ動けフラグ
-    }
+    //   if (_degree >= 0) {
+    //     _degree += 180;
+    //   } else {
+    //     _degree += 180;
+    //   }
+    // } else {
+    //   degree = 10000;  //まだ動けフラグ
+    // }
   }
   if (Rflag) {
     _degree = rdegree;
