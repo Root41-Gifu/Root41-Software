@@ -278,9 +278,24 @@ void _Line::calc(void) {
         //角度修正ありにしたい＜
         _degree=Block_degree[orderBlock[0]]-current_degree;
       }else if(abs(orderBlock[0]-orderBlock[1])==1){
-        //1-3も追加して
-        //半分とる
+        //横での連続
+        _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
+      }else{
+        if(orderBlock[0]==3){
+          if(orderBlock[1]==0){
+            _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
+          }
+        }
+        if(orderBlock[0]==0){
+          if(orderBlock[1]==3){
+            _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
+          }
+        }
       }
+    }else if(mode==3){
+      //オーバー　
+      calcDirection();
+      _degree=totaldegree-current_degree;
     }
     // t_vectorX = 0;
     // t_vectorY = 0;

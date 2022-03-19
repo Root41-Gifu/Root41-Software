@@ -197,6 +197,7 @@ class _Line {
   //その他
   // int mode;  //モード
 
+  int totaldegree;
   int leftdegree;   //ラインアウト時のライン進行方向
   int rdegree;      //ラインアウト時のリターン進行方向
   float t_vectorX;  //ベクトル換算時のベクトルＸ
