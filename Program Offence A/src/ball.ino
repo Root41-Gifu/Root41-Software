@@ -240,15 +240,15 @@ void _Ball::calc(int _distance) {
     // }
     int gain_degree;
 
-    if (degree < 180 || degree > 180) {
+    if (degree < 50 || degree > 310) {
       _degree = degree;
-    } else if (degree < 90 || degree > 270) {
-      if (degree < 90) {
-        int gain_degree = map(degree, 0, 90, 0, 90);
-      } else {
-        int gain_degree = map(degree, 180, 360, -90, 0);
-      }
-      _degree += gain_degree;
+    // } else if (degree < 90 || degree > 270) {
+    //   if (degree < 90) {
+    //     int gain_degree = map(degree, 0, 90, 0, 90);
+    //   } else {
+    //     int gain_degree = map(degree, 180, 360, -90, 0);
+    //   }
+    //   _degree += gain_degree;
     } else {
       if (vectortX > 0) {
         //右側

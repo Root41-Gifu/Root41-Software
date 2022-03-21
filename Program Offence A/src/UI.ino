@@ -55,13 +55,13 @@ void _UI::refrection(void) {
           mode++;
         }
       }
-      if (switchingFlag[2]) {
-        // if(select){
-        //     submode++;
-        // }else{
-        //     mode++;
-        // }
-      }
+      // if (switchingFlag[2]) {
+      //   if (select) {
+      //     submode++;
+      //   } else {
+      //     mode++;
+      //   }
+      // }
     }
     if (switchingFlag[3]) {
       if (!select) {
@@ -95,13 +95,13 @@ void _UI::refrection(void) {
           mode++;
         }
       }
-      if (switchingFlag[2]) {
-        // if(select){
-        //     submode++;
-        // }else{
-        //     mode++;
-        // }
-      }
+      // if (switchingFlag[2]) {
+      //   if (select) {
+      //     submode++;
+      //   } else {
+      //     mode++;
+      //   }
+      // }
     }
     if (switchingFlag[3]) {
       if (!select) {
@@ -132,16 +132,16 @@ void _UI::refrection(void) {
         if (select) {
           submode--;
         } else {
-          mode++;
+          mode;
         }
       }
-      if (switchingFlag[2]) {
-        // if(select){
-        //     submode++;
-        // }else{
-        //     mode++;
-        // }
-      }
+      // if (switchingFlag[2]) {
+      //   if(select){
+      //       submode++;
+      //   }else{
+      //       mode++;
+      //   }
+      // }
     } else {
       if (switchingFlag[1]) {
         MotorPower += 5;

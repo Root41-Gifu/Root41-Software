@@ -488,7 +488,7 @@ void loop() {
   //   emergency = true;
   // }
 
-  if (true) {
+  if (false) {
     Serial.print(UI.touch[2]);
     Serial.println(UI.mode);
   }
