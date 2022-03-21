@@ -1,9 +1,9 @@
 _Motor::_Motor(void) {
   for (int i = 0; i < 359; i++) {
-    sinVal[0][i] = round(sin(radians(i - 40)));  // 40
-    sinVal[1][i] = round(sin(radians(i - 140)));
-    sinVal[2][i] = round(sin(radians(i - 220)));
-    sinVal[3][i] = round(sin(radians(i - 320)));  // 320
+    sinVal[0][i] = round(sin(radians(i - 45)));//40
+    sinVal[1][i] = round(sin(radians(i - 135)));
+    sinVal[2][i] = round(sin(radians(i - 225)));
+    sinVal[3][i] = round(sin(radians(i - 315)));//320
   }
 }
 
@@ -15,10 +15,10 @@ void _Motor::directDrive(int* p) {
     }
 
     if (*(p + i) < 0) {
-      data[i] += 0B00000000;
+      data[i] += 0B01000000;
       data[i] += constrain(abs(*(p + i)), 0, 60);
     } else {
-      data[i] += 0B01000000;
+      data[i] += 0B00000000;
       data[i] += constrain(abs(*(p + i)), 0, 60);
     }
   }
@@ -40,21 +40,19 @@ void _Motor::release(void) {
 }
 
 void _Motor::normalBrake(void) {
-  Serial4.write((0B00000000 + 62));
-  // delay(1);
-  Serial4.write((0B10000000 + 62));
+  Serial4.write((0B01111111));
+  Serial1.write((0B01111111));
   gyro.deg = gyro.read();
-  Serial1.write((0B00000000 + 62));
-  // delay(1);
-  Serial1.write((0B10000000 + 62));
+  Serial4.write((0B11111111));
+  Serial1.write((0B11111111));
 }
 
 void _Motor::ultraBrake(void) {
-  Serial4.write((0B00000000 + 63));
-  Serial1.write((0B00000000 + 63));
+  Serial4.write((0B01111111));
+  Serial1.write((0B01111111));
   gyro.deg = gyro.read();
-  Serial4.write((0B10000000 + 63));
-  Serial1.write((0B10000000 + 63));
+  Serial4.write((0B11111111));
+  Serial1.write((0B11111111));
 }
 
 void _Motor::begin(void) {
