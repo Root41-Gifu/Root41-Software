@@ -9,6 +9,8 @@
 
 #define voltage PC0
 
+#define LINE_EFFECT 0
+
 #define BALL_NUM 16
 #define LINE_NUM 41
 #define LINE_FRONTNUM 10
@@ -111,7 +113,7 @@ class _Ball {
   void average(void);        //平均換算今使ってない
   void calcDistance(void);   //距離計算
   void calcDirection(void);  //ベクトル位置計算
-  void calc(void);           //進行方向算出
+  void calc(int);            //進行方向算出
   int adjustValue(int, int);
   void Max_calc(float*);
   void LPF(void);           //ローパスフィルタ
@@ -169,6 +171,7 @@ class _Line {
   bool check[47];      //計測されたか
   bool checkBlock[8];  //８分割ブロックの計測フラグ
   int Block;           //８分割ブロック
+  int Block_degree[8]={0,0,0,0,0,0,0,0};
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
@@ -194,6 +197,7 @@ class _Line {
   //その他
   // int mode;  //モード
 
+  int totaldegree;
   int leftdegree;   //ラインアウト時のライン進行方向
   int rdegree;      //ラインアウト時のリターン進行方向
   float t_vectorX;  //ベクトル換算時のベクトルＸ
@@ -306,12 +310,12 @@ void setup() {
   line.vectorCalc();  //ラインごとのベクトル計算
   gyro.setting();
   motor.begin();
-  UI.mode=1;
+  UI.mode = 1;
 
   //三角関数
-  for(int i=0; i<360; i++){
-    sin_d[i]=sin(radians(i));
-    cos_d[i]=cos(radians(i));
+  for (int i = 0; i < 360; i++) {
+    sin_d[i] = sin(radians(i));
+    cos_d[i] = cos(radians(i));
   }
 }
 
@@ -344,15 +348,17 @@ void loop() {
 
   ball.calcDirection();  //ボールの方向算出
 
-  ball.calc();  //動作角度算出
+  ball.calc(ball.distance);  //動作角度算出
 
   // line---------------------------------------------
-  line.read();  // I2Cでライン読み込み
-  line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
-  if (line.flag) {
-    line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
-  } else {
-    line.Move_degree = 1000;
+  if (LINE_EFFECT) {
+    line.read();  // I2Cでライン読み込み
+    line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    if (line.flag) {
+      line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+    } else {
+      line.Move_degree = 1000;
+    }
   }
 
   // UI---------------------------------------------
@@ -394,6 +400,8 @@ void loop() {
   // Motor---------------------------------------------
 
   _Mdegree = 1000;
+  motor.reference_degree = 0;
+  motor.referenceAngle = 0;
   // line.reference_degree=0//これは角度のずれを考慮したいときにコメントアウトにして
 
   if (line.Move_degree == 10000) {
@@ -401,14 +409,17 @@ void loop() {
     _Mdegree = ball.Move_degree;
   } else if (line.flag) {
     //ラインあり、ライン検知時
-    _Mdegree = line.Move_degree - line.reference_degree;
+    // _Mdegree = line.Move_degree - line.reference_degree;
+    _Mdegree=line.Move_degree;
   } else if (line.Rflag && millis() - line.OutTimer < 200) {
     //ラインあり、ラインオーバー時
-    _Mdegree = line.leftdegree - line.reference_degree;
+    // _Mdegree = line.leftdegree - line.reference_degree;
+    _Mdegree=line.leftdegree;
   } else {
     //ラインあり、ラインから距離をとる
-    if (millis() - line.OutTimer <= 40) {
-      _Mdegree = line.rdegree - line.reference_degree;
+    if (millis() - line.OutTimer <= LINEOVERTIME) {
+      // _Mdegree = line.rdegree - line.reference_degree;
+      _Mdegree=line.rdegree;
     } else {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
@@ -433,8 +444,8 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.043, 1, 0.014, 40,
-            7);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
+            0.043, 1, 0.022, 32,
+            10);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
         motor.release();
@@ -455,5 +466,10 @@ void loop() {
   //   emergency = true;
   // }
 
-  UI.SerialPrint(false);  //引数で通信切り替え
+  if (false) {
+    Serial.print(_Mdegree);
+    Serial.print(" ");
+    Serial.println(ball.Move_degree);
+  }
+  // UI.SerialPrint(true);  //引数で通信切り替え
 }

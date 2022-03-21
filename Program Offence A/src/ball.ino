@@ -211,32 +211,62 @@ void _Ball::average(void) {
   }
 }
 
-void _Ball::calc(void) {
+void _Ball::calc(int _distance) {
   //簡単な方向、距離の分割プログラム
   int _degree;
   if (max[0] == 100) {
     _degree = 1000;
   } else {
     float _plusvector[2];
-    float gain_constant = 6;
-    int max_gain = 140;
+    float gain_constant = 8;
+    int max_gain = 120;
+    int distance_constant = 300;
+    // switch (distanceLevel) {
+    //   case 3:
+    //     distance_constant = 300;
+    //     break;
+
+    //   case 2:
+    //     distance_constant = 200;
+    //     break;
+
+    //   case 1:
+    //     distance_constant = 100;
+    //     break;
+
+    //   default:
+    //     distance_constant = 100;
+    //     break;
+    // }
     int gain_degree;
 
-    if (vectortX > 0) {
-      gain_degree = map(ball.degree, 0, 180, 0, max_gain);
-      _plusvector[0] = vectortX + sin_d[degree + gain_degree] * gain_constant;
-      _plusvector[1] = vectortY + cos_d[degree + gain_degree] * gain_constant;
-      _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
-      if (_degree < 0) {
-        _degree += 360;
-      }
+    if (degree < 30 || degree > 330) {
+      _degree = degree;
     } else {
-      gain_degree = map(ball.degree, 180, 360, max_gain, 0);
-      _plusvector[0] = vectortX + sin_d[degree - gain_degree] * gain_constant;
-      _plusvector[1] = vectortY + cos_d[degree - gain_degree] * gain_constant;
-      _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
-      if (_degree < 0) {
-        _degree += 360;
+      if (vectortX > 0) {
+        gain_degree = map(ball.degree, 0, 180, 0, max_gain);
+        _plusvector[0] = vectortX + sin_d[degree + gain_degree] *
+                                        gain_constant *
+                                        (distance_constant / _distance);
+        _plusvector[1] = vectortY + cos_d[degree + gain_degree] *
+                                        gain_constant *
+                                        (distance_constant / _distance);
+        _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+        if (_degree < 0) {
+          _degree += 360;
+        }
+      } else {
+        gain_degree = map(ball.degree, 180, 360, max_gain, 0);
+        _plusvector[0] = vectortX + sin_d[degree - gain_degree] *
+                                        gain_constant *
+                                        (distance_constant / _distance);
+        _plusvector[1] = vectortY + cos_d[degree - gain_degree] *
+                                        gain_constant *
+                                        (distance_constant / _distance);
+        _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+        if (_degree < 0) {
+          _degree += 360;
+        }
       }
     }
     // _degree = degree;
@@ -256,7 +286,7 @@ void _Ball::LPF(void) {
   // LPF調整ファイト
   for (int i = 0; i < 16; i++) {
     if (abs(value[i] - LPF_value[i]) > 30) {
-      k = 0.06;  // 0.07
+      k = 0.3;  // 0.07
       if (value[i] - LPF_value[i] < -30) {
         k = 0.15;  // 0.15
       }
