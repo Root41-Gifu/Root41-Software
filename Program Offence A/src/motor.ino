@@ -133,7 +133,8 @@ void _Motor::drive(int _deg, int _power, bool _stop = false) {
       angularVelocity = 0;
     }
 
-    if (abs(direction) <= 50) integral += direction;
+    if (abs(direction) <= 50)
+      integral += direction;
 
     direction *= Kp * -1;               //比例制御
     direction -= integral * Ki;         //積分制御
@@ -222,8 +223,82 @@ void _Motor::motorCalc(int _deg, int _power, bool _stop, int _referenceAngle) {
     Motor[2] = Motor[2] * _power / _Max;
     Motor[3] = Motor[3] * _power / _Max;
 
-    for(int i=0; i<4; i++){
-      Kval[i]=Motor[i];
+    for (int i = 0; i < 4; i++) {
+      Kval[i] = Motor[i];
+    }
+  }
+}
+
+void _Motor::motorPID_drive(float Kp,
+                            float Ki,
+                            float Kd,
+                            int motor_speed,
+                            int gyro_speed) {
+  for (int j = 0; j < 1; j++) {
+    float Collection;//スピード算出値
+
+    //角度オーバー修正
+    if (gyro.deg > 180) {
+      Collection = gyro.deg - 360;
+    } else {
+      Collection = gyro.deg;
+    }
+
+    //積分用タイマー
+    if (motor.integralTimer - millis() > 25) {
+      motor.gapIntegral += Collection;
+      motor.gapIntegral = constrain(motor.gapIntegral, -1000, 1000);
+      motor.integralTimer = millis();
+    }
+
+    //P制御（比例）
+    Collection *= -Kp;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+    
+    //I制御（積分）
+    // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
+    
+    //D制御（微分）
+    Collection += gyro.differentialRead() * -Kd;  // D制御 64 0.012
+
+    for (int i = 0; i < 4; i++) {
+      //int値として代入
+      motor.val[i] = round(Collection);
+
+      //大きすぎるのを防止
+      motor.val[i] = constrain(motor.val[i], -30, 30);
+    }
+
+    //スピード調整
+
+    if (_Mdegree != 1000) {
+      if (gyro.deg <= 150 || gyro.deg >= 210) {
+        //   neko = constrain(neko, -100, 100);
+        motor.motorCalc(int(_Mdegree),gyro_speed, 0, 0);  //スピード
+        
+        int nekoK[4];
+        for (int i = 0; i < 4; i++) {
+          nekoK[i] = motor.val[i];
+          motor.val[i] =
+              (motor.val[i] + motor.Kval[i]);  // motorとジャイロの比率//0.9でも
+        }
+        // }
+        int _Max;
+        for (int i = 0; i < 4; i++) {
+          if (abs(_Max) < abs(motor.val[i])) {
+            _Max = abs(motor.val[i]);
+          }
+        }
+        for (int i = 0; i < 4; i++) {
+          motor.val[i] = motor.val[i] * motor_speed / abs(_Max);
+        }
+      } else {
+        for (int i = 0; i < 4; i++) {
+          motor.val[i] = motor.val[i] * 1.2;
+        }
+      }
+      motor.directDrive(motor.val);
+    } else {
+      motor.directDrive(motor.val);
     }
   }
 }

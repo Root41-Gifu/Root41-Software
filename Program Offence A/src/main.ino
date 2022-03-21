@@ -9,6 +9,8 @@
 
 #define voltage PC0
 
+#define LINE_EFFECT 0
+
 #define BALL_NUM 16
 #define LINE_NUM 41
 #define LINE_FRONTNUM 10
@@ -60,6 +62,8 @@ Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ800);
 HardwareSerial Serial4(A1, A0);
 HardwareSerial Serial1(PA10, PA9);
 
+float sin_d[360];
+float cos_d[360];
 float Battery;
 int MotorPower = 100;
 int degree;
@@ -110,7 +114,7 @@ class _Ball {
   void average(void);        //平均換算今使ってない
   void calcDistance(void);   //距離計算
   void calcDirection(void);  //ベクトル位置計算
-  void calc(void);           //進行方向算出
+  void calc(int);            //進行方向算出
   int adjustValue(int, int);
   void Max_calc(float*);
   void LPF(void);           //ローパスフィルタ
@@ -130,6 +134,8 @@ class _Ball {
   float vectorY[16];
   float vectortX;  //変数（算出用）
   float vectortY;
+
+  float vectorMove[2];
 
  private:
   int move[3][16];
@@ -151,6 +157,14 @@ class _Line {
 
   int Line_Where[LINE_NUM];
 
+  int mode;
+  /* modeのリスト
+  0:ライン踏んでない（!flag）
+  1:ライン踏んでまだwhitedが3以下
+  2:ライン踏んで4以上（ずれ少ない）
+  3:ライン踏んで4以上（ずれあり）
+  */
+
   bool flag;           //ラインセンサーの動きをするか
   bool Rflag;          //飛び出しリターン時のフラグ
   bool touch;          //ラインに触れているか
@@ -158,6 +172,7 @@ class _Line {
   bool check[47];      //計測されたか
   bool checkBlock[8];  //８分割ブロックの計測フラグ
   int Block;           //８分割ブロック
+  int Block_degree[8]={0,0,0,0,0,0,0,0};
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
@@ -168,6 +183,7 @@ class _Line {
 
   //----エンジェルラインセンサー
   int reference_degree;
+  int current_degree;
 
   //番号記録
   int just;  //今反応してるやつ
@@ -180,8 +196,9 @@ class _Line {
   int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
   int passed_num[8];  //８分割ブロックごとの計測数（通過後を含む）
   //その他
-  int mode;  //モード
+  // int mode;  //モード
 
+  int totaldegree;
   int leftdegree;   //ラインアウト時のライン進行方向
   int rdegree;      //ラインアウト時のリターン進行方向
   float t_vectorX;  //ベクトル換算時のベクトルＸ
@@ -203,6 +220,9 @@ class _Motor {
 
   void ultraBrake(void);
   void motorCalc(int, int, bool, int);
+  void motorPID_drive(float, float, float, int, int);
+
+  int reference_degree;
 
   int val[4];
   int Kval[4];
@@ -273,6 +293,10 @@ float block_vectorY[8];
 
 void setup() {
   delay(1000);
+
+  Serial.begin(115200);
+
+  //ピン設定
   pinMode(PB10, OUTPUT);
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
@@ -281,6 +305,7 @@ LINESENSOR_INITIALIZE:
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
   Wire.begin();
+
   Serial.begin(115200);
 
   for (int i = 0; i < 4; i++) {
@@ -297,62 +322,75 @@ LINESENSOR_INITIALIZE:
   }
 
   line.vectorCalc();
-
+  //クラスごとのセットアップ
+  line.vectorCalc();  //ラインごとのベクトル計算
   gyro.setting();
   motor.begin();
+  UI.mode = 1;
+
+  //三角関数
+  for (int i = 0; i < 360; i++) {
+    sin_d[i] = sin(radians(i));
+    cos_d[i] = cos(radians(i));
+  }
 }
 
 void loop() {
-  unsigned long STimer = millis();
-
   // Battery-check---------------------------------------------
   Battery = analogRead(voltage) * 0.01612;
 
   // Ball---------------------------------------------
   ball.SPI_read();  // SPI読み込み
+  // SPI不具合のノイズ除去
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
       ball.value[i] = 0;
       ball.dist[i] = 0;
     }
   }
+  //データ初期化
   for (int i = 0; i <= 3; i++) {
     ball.max[0] = 0;
   }
-  // 6,7はanalogpinでした..．
   ball.value[6] = 0;
   ball.value[7] = 0;
-  // for(int i=0; i<BALL_NUM; i++){
+  ball.LPF();  // LPFかける。魔法のフィルタ
 
-  //   ball.value[i]=ball.adjustValue(i,ball.value[i]);//全値に調整かける(int)で返すのでよろしく。
-  // }
-  ball.LPF();                     // LPFかける。魔法のフィルタ
-  ball.Max_calc(ball.LPF_value);  //おかしかったらここコメントアウト
-  ball.average();  //平均とる。この関数イランかも知らん
-  ball.calcDistance();
+  ball.Max_calc(ball.LPF_value);  //最大値求める
+
+  ball.average();  //平均とる。現在使っていない
+
+  ball.calcDistance();  //距離を求める
+
   ball.calcDirection();  //ボールの方向算出
-  ball.calc();           //動作角度算出
+
+  ball.calc(ball.distance);  //動作角度算出
 
   // line---------------------------------------------
-  line.read();
-  line.arrange();
-  if (line.flag) {
-    line.calc();
-  } else {
-    line.Move_degree = 1000;
+  if (LINE_EFFECT) {
+    line.read();  // I2Cでライン読み込み
+    line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    if (line.flag) {
+      line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+    } else {
+      line.Move_degree = 1000;
+    }
   }
 
   // UI---------------------------------------------
-  UI.read();
-
-  UI.touch[0] = !digitalRead(PA8);  //センサー検知
+  UI.read();  // UIの読み込み
 
   for (int i = 0; i <= 3; i++) {
-    UI.check(i);  //検知の確認
+    UI.check(i);  //検知の押す離すの確認
   }
-  UI.refrection();  //スイッチの反映
+
+  UI.refrection();  //スイッチのアルゴリズムへの反映
+
+  //緊急事態時と平常時の処理
   if (!emergency) {
+    //平常時
     if (UI.active || UI.standby) {
+      //動作時
       if (millis() - UI.updateTimer > 1000) {
         UI.LCDdisplay();  // LCD表示（重いので500msで回す）
         UI.updateTimer = millis();
@@ -361,38 +399,56 @@ void loop() {
       UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
       // }
     } else {
-      UI.LCDdisplay();  // LCD表示（重いので500msで回す）
+      //停止時
+      UI.LCDdisplay();  // LCD表示
       UI.NeoPixeldisplay(UI.mode);
     }
   } else {
+    //緊急時
     UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
   }
 
   // gyro
+
   //ジャイロの読みこみ等
+  // gyro.deg=gyro.read();//<これはモーター処理で読んでるからコメントアウトのままで良し
 
   // Motor---------------------------------------------
+
   _Mdegree = 1000;
-  // if (line.Move_degree == 10000) {
-  //   _Mdegree = ball.Move_degree;
-  // } else if (line.flag) {
-  //   _Mdegree = line.Move_degree - line.reference_degree;
-  // } else if (line.Rflag && millis() - line.OutTimer < 200) {
-  //   _Mdegree = line.leftdegree - line.reference_degree;
-  // } else {
-  //   if (millis() - line.OutTimer <= 40) {
-  //     _Mdegree = line.rdegree - line.reference_degree;
-  //   } else {
-  //     // _Mdegree = int(ball.Move_degree);
-  //     _Mdegree = ball.Move_degree;
-  //   }
-  // }
-  _Mdegree=ball.Move_degree;
+  motor.reference_degree = 0;
+  motor.referenceAngle = 0;
+  // line.reference_degree=0//これは角度のずれを考慮したいときにコメントアウトにして
+
+  if (line.Move_degree == 10000) {
+    //ラインなし、ボール反応時
+    _Mdegree = ball.Move_degree;
+  } else if (line.flag) {
+    //ラインあり、ライン検知時
+    // _Mdegree = line.Move_degree - line.reference_degree;
+    _Mdegree=line.Move_degree;
+  } else if (line.Rflag && millis() - line.OutTimer < 200) {
+    //ラインあり、ラインオーバー時
+    // _Mdegree = line.leftdegree - line.reference_degree;
+    _Mdegree=line.leftdegree;
+  } else {
+    //ラインあり、ラインから距離をとる
+    if (millis() - line.OutTimer <= LINEOVERTIME) {
+      // _Mdegree = line.rdegree - line.reference_degree;
+      _Mdegree=line.rdegree;
+    } else {
+      // _Mdegree = int(ball.Move_degree);
+      _Mdegree = ball.Move_degree;
+    }
+  }
+
+  //角度オーバーの修正
   if (_Mdegree > 360) {
     _Mdegree = _Mdegree - 360;
   } else if (_Mdegree < 0) {
     _Mdegree = _Mdegree + 360;
   }
+
   if (!emergency) {
     //進行角度の選定
     if (UI.mode == 0) {
@@ -401,109 +457,13 @@ void loop() {
       // UI.mode=1;
     } else if (UI.mode == 1 || UI.mode == 2) {
       //モードオフェンス、ディフェンスの時
-      unsigned long processTimer = millis();
       if (UI.active == true) {
-        // if (_Mdegree != 1000) {
-        //モーター駆動（角度はdegree,パワーはMotorPower）
-        for (int j = 0; j < 1; j++) {
-          float Collection;
-
-          if (gyro.deg > 180) {
-            Collection = gyro.deg - 360;
-          } else {
-            Collection = gyro.deg;
-          }
-
-          if (motor.integralTimer - millis() > 25) {
-            motor.gapIntegral += Collection;
-            motor.gapIntegral = constrain(motor.gapIntegral, -1000, 1000);
-            motor.integralTimer = millis();
-          }
-
-          Collection *=
-              -0.043;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
-          // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
-          Collection += gyro.differentialRead() * -0.014;  // D制御 64 0.012
-
-          // neko *= -0.078;                            // P制御 0.078 Mizunami
-          // 0.072(0.9) or 81(09) 0.062(0.7)<比率によって違うから neko +=
-          // gyro.differentialRead() * -0.01;
-
-          // Serial.println(motor.gapIntegral);
-
-          for (int i = 0; i < 4; i++) {
-            motor.val[i] = round(Collection);
-            motor.val[i] = constrain(motor.val[i], -30, 30);
-          }
-
-          int powerD;
-          //スピード調整
-          // if (gyro.deg < 45 || gyro.deg > 315) {
-          switch (1) {
-            case 1:
-              powerD = 45;
-              break;
-            case 2:
-              powerD = 47;
-              break;
-            case 3:
-              powerD = 49;
-              break;
-
-            default:
-              powerD = 38;
-              break;
-          }
-          // } else if (gyro.deg < 90 || gyro.deg > 270) {
-          //   powerD = 40;
-          // } else if (gyro.deg < 135 || gyro.deg > 225) {
-          //   powerD = 38;
-          // } else {
-          //   powerD = 36;
-          // }
-          if (_Mdegree != 1000) {
-            if (gyro.deg <= 150 || gyro.deg >= 210) {
-              //   neko = constrain(neko, -100, 100);
-              motor.motorCalc(int(_Mdegree), 8, 0, 0);  // 8 10
-              // if (abs(_Gap) < 5) {
-              //   for (int i = 0; i < 4; i++) {
-              //     motor.val[i] = motor.Kval[i];
-              //   }
-              // } else {
-              int nekoK[4];
-              for (int i = 0; i < 4; i++) {
-                nekoK[i] = motor.val[i];
-                motor.val[i] =
-                    (motor.val[i] +
-                     motor.Kval[i]);  // motorとジャイロの比率//0.9でも
-              }
-              // }
-              int _Max;
-              for (int i = 0; i < 4; i++) {
-                if (abs(_Max) < abs(motor.val[i])) {
-                  _Max = abs(motor.val[i]);
-                }
-              }
-              for (int i = 0; i < 4; i++) {
-                motor.val[i] = motor.val[i] * powerD / abs(_Max);
-              }
-            } else {
-              for (int i = 0; i < 4; i++) {
-                motor.val[i] = motor.val[i] * 1.2;
-              }
-            }
-            motor.directDrive(motor.val);
-          } else {
-            motor.directDrive(motor.val);
-          }
-        }
-        // } else {
-        // motor.release();
-        // }
-        // Serial.println(millis() - processTimer);
-
+        //動作中
+        motor.motorPID_drive(
+            0.043, 1, 0.022, 32,
+            10);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
-        //モーターが停止する
+        //停止中
         motor.release();
       }
     }
@@ -522,5 +482,10 @@ void loop() {
   //   emergency = true;
   // }
 
-  UI.SerialPrint(false);
+  if (false) {
+    Serial.print(_Mdegree);
+    Serial.print(" ");
+    Serial.println(ball.Move_degree);
+  }
+  // UI.SerialPrint(true);  //引数で通信切り替え
 }
