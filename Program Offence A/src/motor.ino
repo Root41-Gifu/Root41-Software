@@ -1,11 +1,13 @@
 _Motor::_Motor(void) {
   for (int i = 0; i < 359; i++) {
-    sinVal[0][i] = round(sin(radians(i - 45)));//40
+    sinVal[0][i] = round(sin(radians(i - 45)));  // 40
     sinVal[1][i] = round(sin(radians(i - 135)));
     sinVal[2][i] = round(sin(radians(i - 225)));
-    sinVal[3][i] = round(sin(radians(i - 315)));//320
+    sinVal[3][i] = round(sin(radians(i - 315)));  // 320
   }
 }
+
+int serialCounter = 0;
 
 void _Motor::directDrive(int* p) {
   int data[4] = {0, 0, 0, 0};
@@ -23,11 +25,21 @@ void _Motor::directDrive(int* p) {
     }
   }
 
-  Serial4.write(data[0]);
-  Serial1.write(data[2]);
-  gyro.deg = gyro.read();
-  Serial4.write(data[1]);
-  Serial1.write(data[3]);
+  serialCounter++;
+
+  if (serialCounter % 2 == 0) {
+    Serial4.write(data[0]);
+    Serial1.write(data[2]);
+    gyro.deg = gyro.read();
+    Serial4.write(data[1]);
+    Serial1.write(data[3]);
+  } else {
+    Serial4.write(data[1]);
+    Serial1.write(data[3]);
+    gyro.deg = gyro.read();
+    Serial4.write(data[0]);
+    Serial1.write(data[2]);
+  }
 }
 
 void _Motor::release(void) {
@@ -235,7 +247,7 @@ void _Motor::motorPID_drive(float Kp,
                             int motor_speed,
                             int gyro_speed) {
   for (int j = 0; j < 1; j++) {
-    float Collection;//スピード算出値
+    float Collection;  //スピード算出値
 
     //角度オーバー修正
     if (gyro.deg > 180) {
@@ -251,17 +263,17 @@ void _Motor::motorPID_drive(float Kp,
       motor.integralTimer = millis();
     }
 
-    //P制御（比例）
+    // P制御（比例）
     Collection *= -Kp;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
-    
-    //I制御（積分）
-    // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
-    
-    //D制御（微分）
+
+    // I制御（積分）
+    //  Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
+
+    // D制御（微分）
     Collection += gyro.differentialRead() * -Kd;  // D制御 64 0.012
 
     for (int i = 0; i < 4; i++) {
-      //int値として代入
+      // int値として代入
       motor.val[i] = round(Collection);
 
       //大きすぎるのを防止
@@ -271,10 +283,10 @@ void _Motor::motorPID_drive(float Kp,
     //スピード調整
 
     if (_Mdegree != 1000) {
-      if (gyro.deg <= 80 || gyro.deg >= 280) {
+      if (gyro.deg <= 50 || gyro.deg >= 310) {
         //   neko = constrain(neko, -100, 100);
-        motor.motorCalc(int(_Mdegree),gyro_speed, 0, 0);  //スピード
-        
+        motor.motorCalc(int(_Mdegree), gyro_speed, 0, 0);  //スピード
+
         int nekoK[4];
         for (int i = 0; i < 4; i++) {
           nekoK[i] = motor.val[i];

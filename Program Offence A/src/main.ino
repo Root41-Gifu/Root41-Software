@@ -86,7 +86,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int frash_mode=0;  //ネオピクセルのモード
+  int frash_mode=1;  //ネオピクセルのモード
   int setting;
 
   bool active;  //動作中
@@ -466,7 +466,7 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.34, 1, 0.022, 50,
+            0.38, 1, 0.022, 50,
             60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS(下げるとジャイロ重め)
       } else {
         //停止中
