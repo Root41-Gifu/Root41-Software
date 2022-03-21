@@ -150,54 +150,94 @@ void _Line::read(void) {
 }
 
 void _Line::arrange(void) {
+  //読み込み後のデータ抽出、整理
+
+  //リセット等
   touch = false;
   whiting = 0;
   for (int i = 0; i < 8; i++) {
     detect_num[i] = 0;
   }
+
+  //角度のずれ
+  if (gyro.deg < 180) {
+    current_degree = gyro.deg;
+  } else {
+    current_degree = gyro.deg - 360;
+  }
+
+  //センサーごとの整理
   for (int i = 0; i < LINE_NUM; i++) {
-    if (!value[i]) {  //数値逆転
+    if (!value[i]) {  
+      //反応してたら
       if (!check[i]) {
+        //過去に反応なし
         order[whited] = i;
         whited++;
         check[i] = true;
         passed_num[Line_Where[i]]++;
       }
-      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 2) {
+
+      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 0) {
+        //そのブロックが過去に反応なし
+        //0だと誤反応の可能性あり、増やしてもいいかも
         checkBlock[Line_Where[i]] = true;
         orderBlock[Block] = Line_Where[i];
         Block++;
       }
+
       if (!flag) {
+        //ラインフラグなし
         //   stopTimer = device.getTime();
         mode = 1;
         flag = true;
-        if(gyro.deg<180){
-          reference_degree=gyro.deg;
-        }else{
-          reference_degree=gyro.deg-360;
+
+        //角度のずれ
+        if (gyro.deg < 180) {
+          reference_degree = gyro.deg;
+        } else {
+          reference_degree = gyro.deg - 360;
         }
+
+        //オーバーシュート時にもどる
         if (millis() - OutTimer <= LINEOVERTIME) {
           rdegree = leftdegree;
         } else {
           Rflag = false;
         }
       }
-      whiting = true;
+
+      whiting++;
       touch = true;
       flag = true;
-      Rflag=false;
+      Rflag = false;
       detect_num[Line_Where[i]]++;
       OutTimer = millis();
     }
   }
+
   if (!touch) {
     flag = false;
   }
+
+  //モード振り分け
+  if (flag) {
+    if (Block <= 1) {
+      mode = 1;
+    } else if (abs(reference_degree) < 50) {
+      mode = 2;
+    } else {
+      mode = 3;
+    }
+  } else {
+    mode = 0;
+  }
+
+  //ラインオフの時
   if (!flag) {
     if (millis() - OutTimer > LINEOVERTIME) {
       Rflag = false;
-      flag=false;
+      flag = false;
       leftdegree = 1000;
       rdegree = 1000;
     } else {
@@ -212,13 +252,17 @@ void _Line::arrange(void) {
       }
 
       Block = 0;
+      whited = 0;
+      whiting = 0;
       for (int i = 0; i < LINE_NUM; i++) {
         order[i] = 100;
         check[i] = 0;
       }
+      reference_degree = 0;
+      current_degree = 0;
     }
-  }else{
-    Rflag=false;//koko
+  } else {
+    Rflag = false;
   }
 }
 
@@ -237,26 +281,71 @@ void _Line::calc(void) {
   if (flag) {
     t_vectorX = 0;
     t_vectorY = 0;
-    for (int i = 0; i < 3; i++) {
-      if (orderBlock[i] != 100) {
-        t_vectorX += block_vectorX[orderBlock[i]]*(1-i*0.3);
-        t_vectorY += block_vectorY[orderBlock[i]]*(1-i*0.3);
-      }
-    }
-    if (orderBlock[0] != 100) {
-      _degree = degrees(atan2(t_vectorX, t_vectorY));
-      if(_degree>=0){
-        _degree+=180;
+    if (mode == 1) {
+      //少数反応
+      calcDirection();
+      _degree=Block_degree[orderBlock[0]];
+    }else if (mode == 2) {
+      //ずれ少ない多数反応
+      calcDirection();
+      if(abs(orderBlock[0]-orderBlock[1])==4){
+        //連番　直線的な可能性
+        //角度修正ありにしたい＜
+        _degree=Block_degree[orderBlock[0]]-current_degree;
+      }else if(abs(orderBlock[0]-orderBlock[1])==1){
+        //横での連続
+        _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
       }else{
-        _degree+=180;
+        if(orderBlock[0]==3){
+          if(orderBlock[1]==0){
+            _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
+          }
+        }
+        if(orderBlock[0]==0){
+          if(orderBlock[1]==3){
+            _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
+          }
+        }
       }
-    } else {
-      degree = 10000;//まだ動けフラグ
+    }else if(mode==3){
+      //傾き杉
+      _degree=Block_degree[orderBlock[0]]-current_degree;
+    }else if(mode==4){
+      //オーバー　
+      calcDirection();
+      _degree=totaldegree-current_degree;
     }
+    // t_vectorX = 0;
+    // t_vectorY = 0;
+    // for (int i = 0; i < 3; i++) {
+    //   if (orderBlock[i] != 100) {
+    //     t_vectorX += block_vectorX[orderBlock[i]] * (1 - i * 0.3);
+    //     t_vectorY += block_vectorY[orderBlock[i]] * (1 - i * 0.3);
+    //   }
+    //
+    // if (orderBlock[0] != 100) {
+    //   _degree = degrees(atan2(t_vectorX, t_vectorY));
+
+    //   if (mode == 1) {
+    //     motor.reference_degree = 0;  //角度変えながら
+    //     _degree -= current_degree;   //最新のに合わせる
+    //   } else if (mode == 2) {
+    //     motor.reference_degree = reference_degree;
+    //     _degree -= current_degree;
+    //   }
+
+    //   if (_degree >= 0) {
+    //     _degree += 180;
+    //   } else {
+    //     _degree += 180;
+    //   }
+    // } else {
+    //   degree = 10000;  //まだ動けフラグ
+    // }
   }
   if (Rflag) {
     _degree = rdegree;
-    flag=false;//test
+    flag = false;  // test
   }
   Move_degree = _degree;
   leftdegree = _degree;
