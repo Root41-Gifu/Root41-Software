@@ -409,14 +409,17 @@ void loop() {
     _Mdegree = ball.Move_degree;
   } else if (line.flag) {
     //ラインあり、ライン検知時
-    _Mdegree = line.Move_degree - line.reference_degree;
+    // _Mdegree = line.Move_degree - line.reference_degree;
+    _Mdegree=line.Move_degree;
   } else if (line.Rflag && millis() - line.OutTimer < 200) {
     //ラインあり、ラインオーバー時
-    _Mdegree = line.leftdegree - line.reference_degree;
+    // _Mdegree = line.leftdegree - line.reference_degree;
+    _Mdegree=line.leftdegree;
   } else {
     //ラインあり、ラインから距離をとる
-    if (millis() - line.OutTimer <= 40) {
-      _Mdegree = line.rdegree - line.reference_degree;
+    if (millis() - line.OutTimer <= LINEOVERTIME) {
+      // _Mdegree = line.rdegree - line.reference_degree;
+      _Mdegree=line.rdegree;
     } else {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;

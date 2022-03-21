@@ -221,10 +221,27 @@ void _Ball::calc(int _distance) {
     float gain_constant = 8;
     int max_gain = 120;
     int distance_constant = 300;
+    // switch (distanceLevel) {
+    //   case 3:
+    //     distance_constant = 300;
+    //     break;
+
+    //   case 2:
+    //     distance_constant = 200;
+    //     break;
+
+    //   case 1:
+    //     distance_constant = 100;
+    //     break;
+
+    //   default:
+    //     distance_constant = 100;
+    //     break;
+    // }
     int gain_degree;
 
     if (degree < 30 || degree > 330) {
-      _degree=degree;
+      _degree = degree;
     } else {
       if (vectortX > 0) {
         gain_degree = map(ball.degree, 0, 180, 0, max_gain);

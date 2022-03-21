@@ -150,22 +150,28 @@ void _Line::read(void) {
 }
 
 void _Line::arrange(void) {
+  //読み込み後のデータ抽出、整理
+
+  //リセット等
   touch = false;
   whiting = 0;
   for (int i = 0; i < 8; i++) {
     detect_num[i] = 0;
   }
 
+  //角度のずれ
   if (gyro.deg < 180) {
     current_degree = gyro.deg;
   } else {
     current_degree = gyro.deg - 360;
   }
 
+  //センサーごとの整理
   for (int i = 0; i < LINE_NUM; i++) {
-    if (!value[i]) {  //数値逆転
-
+    if (!value[i]) {  
+      //反応してたら
       if (!check[i]) {
+        //過去に反応なし
         order[whited] = i;
         whited++;
         check[i] = true;
@@ -173,20 +179,27 @@ void _Line::arrange(void) {
       }
 
       if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 0) {
+        //そのブロックが過去に反応なし
+        //0だと誤反応の可能性あり、増やしてもいいかも
         checkBlock[Line_Where[i]] = true;
         orderBlock[Block] = Line_Where[i];
         Block++;
       }
 
       if (!flag) {
+        //ラインフラグなし
         //   stopTimer = device.getTime();
         mode = 1;
         flag = true;
+
+        //角度のずれ
         if (gyro.deg < 180) {
           reference_degree = gyro.deg;
         } else {
           reference_degree = gyro.deg - 360;
         }
+
+        //オーバーシュート時にもどる
         if (millis() - OutTimer <= LINEOVERTIME) {
           rdegree = leftdegree;
         } else {
@@ -203,6 +216,11 @@ void _Line::arrange(void) {
     }
   }
 
+  if (!touch) {
+    flag = false;
+  }
+
+  //モード振り分け
   if (flag) {
     if (Block <= 1) {
       mode = 1;
@@ -215,10 +233,7 @@ void _Line::arrange(void) {
     mode = 0;
   }
 
-  if (!touch) {
-    flag = false;
-  }
-
+  //ラインオフの時
   if (!flag) {
     if (millis() - OutTimer > LINEOVERTIME) {
       Rflag = false;
@@ -247,7 +262,7 @@ void _Line::arrange(void) {
       current_degree = 0;
     }
   } else {
-    Rflag = false;  // koko
+    Rflag = false;
   }
 }
 
@@ -293,6 +308,9 @@ void _Line::calc(void) {
         }
       }
     }else if(mode==3){
+      //傾き杉
+      _degree=Block_degree[orderBlock[0]]-current_degree;
+    }else if(mode==4){
       //オーバー　
       calcDirection();
       _degree=totaldegree-current_degree;
