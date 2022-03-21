@@ -309,7 +309,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   // line
   if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
-      unsigned long lineNeoPixelColor = front.Color(255, 0, 0);
+      unsigned long lineNeoPixelColor = front.Color(255, 255, 255);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
       if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {

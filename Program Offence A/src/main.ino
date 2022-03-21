@@ -42,18 +42,19 @@
 #define LINE_REARADDRESS 0x20
 #define LINE_LEFTADDRESS 0x10
 #define LINE_RIGHTADDRESS 0x40
+const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 130  // 50
+#define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
 #define LINEOVERTIME 120
 
 Adafruit_SSD1306 display(-1);
-Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ400);
-Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ400);
-Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ400);
-Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ400);
-Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ400);
+Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ800);
 
 //モーターのやつ
 HardwareSerial Serial4(A1, A0);
@@ -275,12 +276,25 @@ void setup() {
   pinMode(PB10, OUTPUT);
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
-
+LINESENSOR_INITIALIZE:
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
   Wire.begin();
   Serial.begin(115200);
+
+  for (int i = 0; i < 4; i++) {
+    Wire.beginTransmission(lineAddress[i]);
+    Wire.write(10);  // high
+    Wire.write(5);   // low
+
+    int result = Wire.endTransmission();
+    Serial.println(result);
+    if (result != 0) {
+      goto LINESENSOR_INITIALIZE;
+    }
+    delay(100);
+  }
 
   line.vectorCalc();
 
@@ -359,24 +373,25 @@ void loop() {
 
   // Motor---------------------------------------------
   _Mdegree = 1000;
-  if(line.Move_degree==10000){
-    _Mdegree=ball.Move_degree;
-  }else if (line.flag) {
-    _Mdegree = line.Move_degree-line.reference_degree;
-  } else if (line.Rflag && millis() - line.OutTimer < 200) {
-    _Mdegree = line.leftdegree-line.reference_degree;
-  } else {
-    if (millis() - line.OutTimer <= 40) {
-      _Mdegree = line.rdegree-line.reference_degree;
-    } else {
-      // _Mdegree = int(ball.Move_degree);
-      _Mdegree = ball.Move_degree;
-    }
-  }
-  if(_Mdegree>360){
-    _Mdegree=_Mdegree-360;
-  }else if(_Mdegree<0){
-    _Mdegree=_Mdegree+360;
+  // if (line.Move_degree == 10000) {
+  //   _Mdegree = ball.Move_degree;
+  // } else if (line.flag) {
+  //   _Mdegree = line.Move_degree - line.reference_degree;
+  // } else if (line.Rflag && millis() - line.OutTimer < 200) {
+  //   _Mdegree = line.leftdegree - line.reference_degree;
+  // } else {
+  //   if (millis() - line.OutTimer <= 40) {
+  //     _Mdegree = line.rdegree - line.reference_degree;
+  //   } else {
+  //     // _Mdegree = int(ball.Move_degree);
+  //     _Mdegree = ball.Move_degree;
+  //   }
+  // }
+  _Mdegree=ball.Move_degree;
+  if (_Mdegree > 360) {
+    _Mdegree = _Mdegree - 360;
+  } else if (_Mdegree < 0) {
+    _Mdegree = _Mdegree + 360;
   }
   if (!emergency) {
     //進行角度の選定
@@ -405,7 +420,8 @@ void loop() {
             motor.integralTimer = millis();
           }
 
-          Collection *=-0.043;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+          Collection *=
+              -0.043;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
           // Collection -= motor.gapIntegral / 400;  // I制御　上げると弱くなる
           Collection += gyro.differentialRead() * -0.014;  // D制御 64 0.012
 
