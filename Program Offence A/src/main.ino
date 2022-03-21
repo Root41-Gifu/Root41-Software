@@ -337,7 +337,7 @@ LINESENSOR_INITIALIZE:
 
 void loop() {
   // Battery-check---------------------------------------------
-  Battery = analogRead(voltage) * 0.01612;
+  Battery = analogRead(voltage) *  0.01469231;
 
   // Ball---------------------------------------------
   ball.SPI_read();  // SPI読み込み
