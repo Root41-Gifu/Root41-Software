@@ -9,7 +9,6 @@ int i2cReadWithTimeoutFunction(void);
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
 
-
 #define voltage PC0
 
 #define LINE_EFFECT 0
@@ -87,6 +86,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
+  int frash_mode=0;  //ネオピクセルのモード
   int setting;
 
   bool active;  //動作中
@@ -488,10 +488,9 @@ void loop() {
   //   emergency = true;
   // }
 
-  if (false) {
-    Serial.print(_Mdegree);
-    Serial.print(" ");
-    Serial.println(ball.Move_degree);
+  if (true) {
+    Serial.print(UI.touch[2]);
+    Serial.println(UI.mode);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え
 }

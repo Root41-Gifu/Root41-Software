@@ -8,7 +8,7 @@ void _UI::read() {
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
   Wire.requestFrom(UI_ADDRESS, 1);
   while (Wire.available()) {
-    byte readValue = i2cReadWithTimeoutFunction();
+    byte readValue = Wire.read();
     touch[2] = !(readValue & (1 << 2));
     touch[1] = !(readValue & (1 << 3));
     touch[3] = !(readValue & (1 << 4));
@@ -235,56 +235,66 @@ void _UI::NeoPixeldisplay(int _mode) {
     // if (mode == 1) {
     //   unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
     //   StripFulldisplay(BlackDawn_Color);
-    // } else 
-    if (mode == 4||mode==1) {
+    // } else
+    if (mode == 4 || mode == 1) {
       unsigned long BallDistance_Color1 = strip.Color(255, 0, 0);  // distance1
       unsigned long BallDistance_Color2 =
           strip.Color(125, 0, 125);                                // distance1
       unsigned long BallDistance_Color3 = strip.Color(0, 0, 255);  // distance1
-      int _side[2];
-      int ball_separate;
-      ball_separate=int(ball.Move_degree/22.5);
-      // _side[0] = ball.max[0] - 1;
-      // _side[1] = ball.max[0] + 1;
-      // if (ball.max[0] - 1 < 0) {
-      //   _side[0] = 15;
-      // } else if (ball.max[0] + 1 > 15) {
-      //   _side[1] = 0;
-      // }
-      _side[0] = ball_separate - 1;
-      _side[1] = ball_separate + 1;
-      if (ball_separate - 1 < 0) {
-        _side[0] = 15;
-      } else if (ball_separate + 1 > 15) {
-        _side[1] = 0;
-      }
-      
-      switch (ball.distanceLevel) {
-        case 0:
-          StripFulldisplay(BallDistance_Color3);
-          break;
-        case 3:
-          // strip.setPixelColor(ball.max[0], BallDistance_Color3);
-          strip.setPixelColor(ball_separate, BallDistance_Color3);
-          strip.setPixelColor(_side[0], BallDistance_Color3);
-          strip.setPixelColor(_side[1], BallDistance_Color3);
-          break;
-        case 2:
-          // strip.setPixelColor(ball.max[0], BallDistance_Color2);
-          strip.setPixelColor(ball_separate, BallDistance_Color2);
-          strip.setPixelColor(_side[0], BallDistance_Color2);
-          strip.setPixelColor(_side[1], BallDistance_Color2);
-          break;
+      unsigned long Line_Color1 = strip.Color(0, 255, 255);
+      if (frash_mode == 0) {
+        int _side[2];
+        int ball_separate;
+        ball_separate = int(ball.Move_degree / 22.5);
+        // _side[0] = ball.max[0] - 1;
+        // _side[1] = ball.max[0] + 1;
+        // if (ball.max[0] - 1 < 0) {
+        //   _side[0] = 15;
+        // } else if (ball.max[0] + 1 > 15) {
+        //   _side[1] = 0;
+        // }
+        _side[0] = ball_separate - 1;
+        _side[1] = ball_separate + 1;
+        if (ball_separate - 1 < 0) {
+          _side[0] = 15;
+        } else if (ball_separate + 1 > 15) {
+          _side[1] = 0;
+        }
 
-        case 1:
-          // strip.setPixelColor(ball.max[0], BallDistance_Color1);
-          strip.setPixelColor(ball_separate, BallDistance_Color1);
-          strip.setPixelColor(_side[0], BallDistance_Color1);
-          strip.setPixelColor(_side[1], BallDistance_Color1);
-          break;
+        switch (ball.distanceLevel) {
+          case 0:
+            StripFulldisplay(BallDistance_Color3);
+            break;
+          case 3:
+            // strip.setPixelColor(ball.max[0], BallDistance_Color3);
+            strip.setPixelColor(ball_separate, BallDistance_Color3);
+            strip.setPixelColor(_side[0], BallDistance_Color3);
+            strip.setPixelColor(_side[1], BallDistance_Color3);
+            break;
+          case 2:
+            // strip.setPixelColor(ball.max[0], BallDistance_Color2);
+            strip.setPixelColor(ball_separate, BallDistance_Color2);
+            strip.setPixelColor(_side[0], BallDistance_Color2);
+            strip.setPixelColor(_side[1], BallDistance_Color2);
+            break;
 
-        default:
-          break;
+          case 1:
+            // strip.setPixelColor(ball.max[0], BallDistance_Color1);
+            strip.setPixelColor(ball_separate, BallDistance_Color1);
+            strip.setPixelColor(_side[0], BallDistance_Color1);
+            strip.setPixelColor(_side[1], BallDistance_Color1);
+            break;
+
+          default:
+            break;
+        }
+      } else if (frash_mode == 1) {
+        int pixel_assign[16] = {0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0};
+        for (int i = 0; i < 15; i++) {
+          if (line.checkBlock[pixel_assign[i]]) {
+            strip.setPixelColor(i, Line_Color1);
+          }
+        }
       }
     }
   } else if (standby) {
