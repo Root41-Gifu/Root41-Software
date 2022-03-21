@@ -271,7 +271,7 @@ void _Motor::motorPID_drive(float Kp,
     //スピード調整
 
     if (_Mdegree != 1000) {
-      if (gyro.deg <= 150 || gyro.deg >= 210) {
+      if (gyro.deg <= 50 || gyro.deg >= 310) {
         //   neko = constrain(neko, -100, 100);
         motor.motorCalc(int(_Mdegree),gyro_speed, 0, 0);  //スピード
         

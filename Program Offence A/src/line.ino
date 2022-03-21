@@ -72,8 +72,8 @@ void _Line::read(void) {
 
   while (Wire.available() >= 2) {
     byte readValue[2];
-    readValue[0] = Wire.read();
-    readValue[1] = Wire.read();
+    readValue[0] = i2cReadWithTimeoutFunction();
+    readValue[1] = i2cReadWithTimeoutFunction();
     for (int i = 0; i < 3; i++) {
       value[bitSelect] = readValue[0] & (1 << i + 1);
       bitSelect++;
@@ -93,8 +93,8 @@ void _Line::read(void) {
 
   while (Wire.available() >= 2) {
     byte readValue[2];
-    readValue[0] = Wire.read();
-    readValue[1] = Wire.read();
+    readValue[0] = i2cReadWithTimeoutFunction();
+    readValue[1] = i2cReadWithTimeoutFunction();
     for (int i = 0; i < 3; i++) {
       value[bitSelect] = readValue[0] & (1 << i + 1);
       bitSelect++;
@@ -113,8 +113,8 @@ void _Line::read(void) {
   Wire.requestFrom(LINE_LEFTADDRESS, 2);  //アドレスは変えてね
   while (Wire.available() >= 2) {
     byte readValue[2];
-    readValue[0] = Wire.read();
-    readValue[1] = Wire.read();
+    readValue[0] = i2cReadWithTimeoutFunction();
+    readValue[1] = i2cReadWithTimeoutFunction();
     for (int i = 0; i < 8; i++) {
       value[bitSelect] = readValue[0] & (1 << i);
       bitSelect++;
@@ -128,8 +128,8 @@ void _Line::read(void) {
 
   while (Wire.available() >= 2) {
     byte readValue[2];
-    readValue[0] = Wire.read();
-    readValue[1] = Wire.read();
+    readValue[0] = i2cReadWithTimeoutFunction();
+    readValue[1] = i2cReadWithTimeoutFunction();
     for (int i = 0; i < 3; i++) {
       value[bitSelect] = readValue[0] & (1 << i + 1);
       bitSelect++;

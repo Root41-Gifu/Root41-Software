@@ -8,7 +8,7 @@ void _UI::read() {
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
   Wire.requestFrom(UI_ADDRESS, 1);
   while (Wire.available()) {
-    byte readValue = Wire.read();
+    byte readValue = i2cReadWithTimeoutFunction();
     touch[2] = !(readValue & (1 << 2));
     touch[1] = !(readValue & (1 << 3));
     touch[3] = !(readValue & (1 << 4));
