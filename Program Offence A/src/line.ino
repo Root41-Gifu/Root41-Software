@@ -37,28 +37,42 @@ _Line::_Line() {
       Line_Where[i] = 6;
     }
   }
-  for (int i = 0; i <= 7; i++) {
+  for (int i = 1; i <= 9; i++) {
     Line_Where[i] = 0;
   }
-  for (int i = 8; i <= 9; i++) {
-    Line_Where[i] = 1;
-  }
-  for (int i = 10; i <= 15; i++) {
-    Line_Where[i] = 2;
-  }
-  for (int i = 16; i <= 18; i++) {
-    Line_Where[i] = 3;
-  }
-  for (int i = 19; i <= 22; i++) {
+  Line_Where[1] = 1;
+  Line_Where[4] = 1;
+  Line_Where[8] = 1;
+  // for (int i = 10; i <= 15; i++) {
+  //   Line_Where[i] = 2;
+  // }
+  // for (int i = 16; i <= 18; i++) {
+  //   Line_Where[i] = 3;
+  // }
+  Line_Where[10]=2;
+  Line_Where[12]=2;
+  Line_Where[13]=2;
+  Line_Where[15]=2;
+  Line_Where[16]=2;
+  Line_Where[18]=2;
+  Line_Where[11]=3;
+  Line_Where[14]=3;
+  Line_Where[17]=3;
+  for (int i = 19; i <= 21; i++) {
     Line_Where[i] = 5;
   }
-  for (int i = 23; i <= 26; i++) {
+  Line_Where[25] = 5;
+  Line_Where[27] = 5;
+  for (int i = 22; i <= 24; i++) {
     Line_Where[i] = 4;
   }
-  for (int i = 27; i <= 31; i++) {
-    Line_Where[i] = 5;
+  Line_Where[26] = 4;
+  for (int i = 28; i <= 30; i++) {
+    Line_Where[i] = 4;
   }
-  for (int i = 32; i <= 34; i++) {
+  Line_Where[31] = 5;
+  Line_Where[32] = 4;
+  for (int i = 33; i <= 34; i++) {
     Line_Where[i] = 6;
   }
   for (int i = 35; i <= 40; i++) {

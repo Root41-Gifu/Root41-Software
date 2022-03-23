@@ -11,7 +11,7 @@ int i2cReadWithTimeoutFunction(void);
 
 #define voltage PC0
 
-#define LINE_EFFECT 0
+#define LINE_EFFECT 1
 
 #define BALL_NUM 16
 #define LINE_NUM 41
@@ -175,7 +175,7 @@ class _Line {
   bool check[47];      //計測されたか
   bool checkBlock[8];  //８分割ブロックの計測フラグ
   int Block;           //８分割ブロック
-  int Block_degree[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int Block_degree[8] = {180, 180, 0, 0, 90, 90, 270, 270};
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
@@ -425,28 +425,28 @@ void loop() {
   motor.referenceAngle = 0;
   // line.reference_degree=0//これは角度のずれを考慮したいときにコメントアウトにして
 
-  // if (line.Move_degree == 10000) {
-  //   //ラインなし、ボール反応時
-  //   _Mdegree = ball.Move_degree;
-  // } else if (line.flag) {
-  //   //ラインあり、ライン検知時
-  //   // _Mdegree = line.Move_degree - line.reference_degree;
-  //   _Mdegree=line.Move_degree;
-  // } else if (line.Rflag && millis() - line.OutTimer < 200) {
-  //   //ラインあり、ラインオーバー時
-  //   // _Mdegree = line.leftdegree - line.reference_degree;
-  //   _Mdegree=line.leftdegree;
-  // } else {
-  //   //ラインあり、ラインから距離をとる
-  //   if (millis() - line.OutTimer <= LINEOVERTIME) {
-  //     // _Mdegree = line.rdegree - line.reference_degree;
-  //     _Mdegree=line.rdegree;
-  //   } else {
-  //     // _Mdegree = int(ball.Move_degree);
-  //     _Mdegree = ball.Move_degree;
-  //   }
-  // }
-  _Mdegree = ball.Move_degree;
+  if (line.Move_degree == 10000) {
+    //ラインなし、ボール反応時
+    _Mdegree = ball.Move_degree;
+  } else if (line.flag) {
+    //ラインあり、ライン検知時
+    // _Mdegree = line.Move_degree - line.reference_degree;
+    _Mdegree=line.Move_degree;
+  } else if (line.Rflag && millis() - line.OutTimer < 200) {
+    //ラインあり、ラインオーバー時
+    // _Mdegree = line.leftdegree - line.reference_degree;
+    _Mdegree=line.leftdegree;
+  } else {
+    //ラインあり、ラインから距離をとる
+    if (millis() - line.OutTimer <= LINEOVERTIME) {
+      // _Mdegree = line.rdegree - line.reference_degree;
+      _Mdegree=line.rdegree;
+    } else {
+      // _Mdegree = int(ball.Move_degree);
+      _Mdegree = ball.Move_degree;
+    }
+  }
+  // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
   if (_Mdegree > 360) {
@@ -466,7 +466,7 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.38, 1, 0.022, 50,
+            0.48, 1, 0.022, 50,
             60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS(下げるとジャイロ重め)
       } else {
         //停止中
@@ -489,7 +489,13 @@ void loop() {
   // }
 
   if (false) {
-    Serial.print(UI.touch[2]);
+    for(int i=0; i<LINE_NUM; i++){
+      Serial.print(line.value[i]);
+    }
+    Serial.print(" ");
+    for(int i=0; i<8; i++){
+      Serial.print(line.detect_num[i]);
+    }
     Serial.println(UI.mode);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え

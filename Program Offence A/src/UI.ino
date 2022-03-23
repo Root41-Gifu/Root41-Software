@@ -289,9 +289,15 @@ void _UI::NeoPixeldisplay(int _mode) {
             break;
         }
       } else if (frash_mode == 1) {
-        int pixel_assign[16] = {0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0};
-        for (int i = 0; i < 15; i++) {
-          if (line.checkBlock[pixel_assign[i]]) {
+        int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2, 2, 2, 4, 4, 4, 4, 0, 0};
+        for (int i = 0; i < 16; i++) {
+          if (line.checkBlock[pixel_assign_out[i]]) {
+            strip.setPixelColor(i, Line_Color1);
+          }
+        }
+        int pixel_assign_in[16] = {1,1,6, 6, 6, 6,3, 3, 3, 3, 4, 5, 5, 5, 1, 1};
+        for (int i = 0; i < 16; i++) {
+          if (line.checkBlock[pixel_assign_in[i]]) {
             strip.setPixelColor(i, Line_Color1);
           }
         }
@@ -333,7 +339,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   // line
   if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
-      unsigned long lineNeoPixelColor = front.Color(255, 255, 255);
+      unsigned long lineNeoPixelColor = front.Color(220, 220, 220);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
       if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {
