@@ -49,15 +49,15 @@ _Line::_Line() {
   // for (int i = 16; i <= 18; i++) {
   //   Line_Where[i] = 3;
   // }
-  Line_Where[10]=2;
-  Line_Where[12]=2;
-  Line_Where[13]=2;
-  Line_Where[15]=2;
-  Line_Where[16]=2;
-  Line_Where[18]=2;
-  Line_Where[11]=3;
-  Line_Where[14]=3;
-  Line_Where[17]=3;
+  Line_Where[10] = 2;
+  Line_Where[12] = 2;
+  Line_Where[13] = 2;
+  Line_Where[15] = 2;
+  Line_Where[16] = 2;
+  Line_Where[18] = 2;
+  Line_Where[11] = 3;
+  Line_Where[14] = 3;
+  Line_Where[17] = 3;
   for (int i = 19; i <= 21; i++) {
     Line_Where[i] = 5;
   }
@@ -182,7 +182,7 @@ void _Line::arrange(void) {
 
   //センサーごとの整理
   for (int i = 0; i < LINE_NUM; i++) {
-    if (!value[i]) {  
+    if (!value[i]) {
       //反応してたら
       if (!check[i]) {
         //過去に反応なし
@@ -194,14 +194,14 @@ void _Line::arrange(void) {
 
       if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 0) {
         //そのブロックが過去に反応なし
-        //0だと誤反応の可能性あり、増やしてもいいかも
+        // 0だと誤反応の可能性あり、増やしてもいいかも
         checkBlock[Line_Where[i]] = true;
         orderBlock[Block] = Line_Where[i];
         Block++;
       }
 
       if (!flag) {
-        InTimer=millis();
+        InTimer = millis();
         //ラインフラグなし
         //   stopTimer = device.getTime();
         mode = 1;
@@ -216,7 +216,11 @@ void _Line::arrange(void) {
 
         //オーバーシュート時にもどる
         if (millis() - OutTimer <= LINEOVERTIME) {
-          rdegree = leftdegree;
+          if(whited>=30){
+            rdegree = leftdegree;
+          }else{
+            odegree = leftdegree;
+          }
         } else {
           Rflag = false;
         }
@@ -226,6 +230,7 @@ void _Line::arrange(void) {
       touch = true;
       flag = true;
       Rflag = false;
+      Oflag = false;
       detect_num[Line_Where[i]]++;
       OutTimer = millis();
     }
@@ -250,13 +255,25 @@ void _Line::arrange(void) {
 
   //ラインオフの時
   if (!flag) {
-    if (millis() - OutTimer > LINEOVERTIME) {
+    if (millis() - OutTimer > LINEOVERTIME && whited >= 30) {
       Rflag = false;
+      Oflag = false;
       flag = false;
       leftdegree = 1000;
       rdegree = 1000;
+      odegree=1000;
+    }else if (millis() - OutTimer > LINERETURNTIME&& whited < 30) {
+      Rflag = false;
+      Oflag = false;
+      flag = false;
+      leftdegree = 1000;
+      rdegree = 1000;
+    }else if(whited>=30){
+      Rflag=true;
+      Oflag=false;
     } else {
-      Rflag = true;
+      Rflag = false;
+      Oflag = true;
     }
     if (!Rflag) {
       for (int i = 0; i < 8; i++) {
@@ -278,6 +295,7 @@ void _Line::arrange(void) {
     }
   } else {
     Rflag = false;
+    Oflag=false;
   }
 }
 
@@ -285,10 +303,13 @@ int _Line::calcDirection(void) {
   int _degree;  //ベクトルに範囲
   t_vectorX = 0;
   t_vectorY = 0;
-  for(int i=0; i<8; i++){
-    for(int j=0; j<passed_num[i]; j++){
-      t_vectorX += block_vectorX[i];
-      t_vectorY += block_vectorY[i];
+  int count = 0;
+  for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 12; i++) {
+      if (i < whited) {
+        t_vectorX += block_vectorX[Line_Where[order[i]]];
+        t_vectorY += block_vectorY[Line_Where[order[i]]];
+      }
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
@@ -301,18 +322,18 @@ void _Line::calc(void) {
   if (flag) {
     t_vectorX = 0;
     t_vectorY = 0;
-    current_degree=0;//kese
+    current_degree = 0;  // kese
     if (mode == 1) {
       //少数反応
-      _degree=calcDirection()-current_degree;
+      _degree = calcDirection() - current_degree;
       // _degree=Block_degree[orderBlock[0]];
-    }else if (mode == 2) {
+    } else if (mode == 2) {
       //ずれ少ない多数反応
-      _degree=calcDirection()-current_degree;
+      _degree = calcDirection() - current_degree;
       // if(abs(orderBlock[0]-orderBlock[1])==4){
-        //連番　直線的な可能性
-        //角度修正ありにしたい＜
-        // _degree=Block_degree[orderBlock[0]]-current_degree;
+      //連番　直線的な可能性
+      //角度修正ありにしたい＜
+      // _degree=Block_degree[orderBlock[0]]-current_degree;
       // }
       // else if(abs(orderBlock[0]-orderBlock[1])==1){
       //   //横での連続
@@ -329,13 +350,13 @@ void _Line::calc(void) {
       //     }
       //   }
       // }
-    }else if(mode==3){
+    } else if (mode == 3) {
       //傾き杉
-      _degree=calcDirection()-current_degree;
+      _degree = calcDirection() - current_degree;
       // _degree=Block_degree[orderBlock[0]]-current_degree;
-    }else if(mode==4){
+    } else if (mode == 4) {
       //オーバー　
-      _degree=calcDirection()-current_degree;
+      _degree = calcDirection() - current_degree;
       // _degree=totaldegree-current_degree;
     }
     // t_vectorX = 0;
@@ -370,8 +391,12 @@ void _Line::calc(void) {
     _degree = rdegree;
     flag = false;  // test
   }
-  if(millis()-InTimer<=10){
-    _degree=10000;
+  if (Oflag) {
+    _degree = odegree;
+    flag = false;
+  }
+  if (millis() - InTimer <= 10) {
+    _degree = 10000;
   }
   Move_degree = _degree;
   leftdegree = _degree;

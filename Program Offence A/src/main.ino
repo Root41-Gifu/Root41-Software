@@ -51,7 +51,8 @@ const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 #define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 50
+#define LINEOVERTIME 80
+#define LINERETURNTIME 10
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -86,7 +87,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int frash_mode=1;  //ネオピクセルのモード
+  int frash_mode = 1;  //ネオピクセルのモード
   int setting;
 
   bool active;  //動作中
@@ -150,11 +151,11 @@ class _Ball {
 class _Line {
  public:
   _Line(void);
-  void read(void);           //読み込みI2C
-  void arrange(void);        //読み込み値を処理数値に変換
+  void read(void);          //読み込みI2C
+  void arrange(void);       //読み込み値を処理数値に変換
   int calcDirection(void);  //方向（現在はベクトル）を算出
-  void calc(void);           //ベクトル数値から進行方向を算出
-  void vectorCalc(void);     //センサーごとのベクトル数値計算
+  void calc(void);          //ベクトル数値から進行方向を算出
+  void vectorCalc(void);    //センサーごとのベクトル数値計算
 
   int Move_degree;  //進行方向
 
@@ -170,6 +171,7 @@ class _Line {
 
   bool flag;           //ラインセンサーの動きをするか
   bool Rflag;          //飛び出しリターン時のフラグ
+  bool Oflag;          //オーバーリターンのフラグ
   bool touch;          //ラインに触れているか
   bool value[47];      //反応値
   bool check[47];      //計測されたか
@@ -205,6 +207,7 @@ class _Line {
   int totaldegree;
   int leftdegree;   //ラインアウト時のライン進行方向
   int rdegree;      //ラインアウト時のリターン進行方向
+  int odegree;      //ラインオーバーリターン時の進行方向
   float t_vectorX;  //ベクトル換算時のベクトルＸ
   float t_vectorY;  //ベクトル換算時のベクトルＹ
 
@@ -309,7 +312,7 @@ LINESENSOR_INITIALIZE:
   Wire.setClock(10000000);
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
 
   Serial.begin(115200);
@@ -433,25 +436,24 @@ void loop() {
   } else if (line.flag) {
     //ラインあり、ライン検知時
     // _Mdegree = line.Move_degree - line.reference_degree;
-    _Mdegree=line.Move_degree;
+    _Mdegree = line.Move_degree;
   } else if (line.Rflag && millis() - line.OutTimer < 200) {
     //ラインあり、ラインオーバー時
     // _Mdegree = line.leftdegree - line.reference_degree;
-    _Mdegree=line.leftdegree;
+    _Mdegree = line.leftdegree;
   } else {
     //ラインあり、ラインから距離をとる
     if (millis() - line.OutTimer <= LINEOVERTIME) {
       // _Mdegree = line.rdegree - line.reference_degree;
-      _Mdegree=line.rdegree;
+      _Mdegree = line.rdegree;
     } else {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
     }
   }
-  // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
-  if (_Mdegree > 360) {
+  if (_Mdegree > 360 && _Mdegree != 1000) {
     _Mdegree = _Mdegree - 360;
   } else if (_Mdegree < 0) {
     _Mdegree = _Mdegree + 360;
@@ -468,7 +470,8 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.043, 1, 0.022, 60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
+            0.043, 1, 0.022,
+            60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
         motor.normalBrake();
@@ -492,7 +495,7 @@ void loop() {
   if (false) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
-    Serial.println(millis()-loopTimer);
+    Serial.println(millis() - loopTimer);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え
 }
