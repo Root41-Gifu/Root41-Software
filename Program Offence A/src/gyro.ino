@@ -99,7 +99,7 @@ int _gyro::read(void) {
     tempDeg += 360;
   }
   // while (Wire.available()) {
-  //   Wire.read();
+  //   i2cReadWithTimeoutFunction();
   // }
   // Serial.print(degrees(ypr[1]));
   // Serial.print("\t");

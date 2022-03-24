@@ -1,3 +1,6 @@
+#include <Wire.h>
+int i2cReadWithTimeoutFunction(void);
+
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_SSD1306.h>
@@ -5,11 +8,10 @@
 #include <EEPROM.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
-#include <Wire.h>
 
 #define voltage PC0
 
-#define LINE_EFFECT 0
+#define LINE_EFFECT 1
 
 #define BALL_NUM 16
 #define LINE_NUM 41
@@ -49,7 +51,7 @@ const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 #define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 120
+#define LINEOVERTIME 50
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -84,6 +86,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
+  int frash_mode=1;  //ネオピクセルのモード
   int setting;
 
   bool active;  //動作中
@@ -149,7 +152,7 @@ class _Line {
   _Line(void);
   void read(void);           //読み込みI2C
   void arrange(void);        //読み込み値を処理数値に変換
-  void calcDirection(void);  //方向（現在はベクトル）を算出
+  int calcDirection(void);  //方向（現在はベクトル）を算出
   void calc(void);           //ベクトル数値から進行方向を算出
   void vectorCalc(void);     //センサーごとのベクトル数値計算
 
@@ -172,7 +175,7 @@ class _Line {
   bool check[47];      //計測されたか
   bool checkBlock[8];  //８分割ブロックの計測フラグ
   int Block;           //８分割ブロック
-  int Block_degree[8]={0,0,0,0,0,0,0,0};
+  int Block_degree[8] = {180, 180, 0, 0, 90, 90, 270, 270};
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
@@ -191,6 +194,7 @@ class _Line {
   //タイマー
   unsigned long detectTimer[47];  //反応時間計測
   unsigned long OutTimer;         //ラインアウト時間計測
+  unsigned long InTimer;
 
   //----十字ラインセンサー
   int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
@@ -301,10 +305,12 @@ void setup() {
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
+  Wire.begin();
+  Wire.setClock(10000000);
+
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
-  Wire.begin();
 
   Serial.begin(115200);
 
@@ -338,7 +344,7 @@ LINESENSOR_INITIALIZE:
 void loop() {
   long loopTimer = millis();
   // Battery-check---------------------------------------------
-  Battery = analogRead(voltage) *  0.01469231;
+  Battery = analogRead(voltage) * 0.01469231;
 
   // Ball---------------------------------------------
   ball.SPI_read();  // SPI読み込み
@@ -442,6 +448,7 @@ void loop() {
       _Mdegree = ball.Move_degree;
     }
   }
+  // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
   if (_Mdegree > 360) {
@@ -464,7 +471,7 @@ void loop() {
             0.043, 1, 0.022, 60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
-        motor.release();
+        motor.normalBrake();
       }
     }
   } else {
@@ -488,4 +495,28 @@ void loop() {
     Serial.println(millis()-loopTimer);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え
+}
+
+int i2cReadWithTimeoutFunction(void) {
+  int cnt_to = 0;
+
+  while (1) {
+    if (digitalRead(SDA) == HIGH && digitalRead(SCL) == HIGH) {
+      break;
+    } else {
+      delay(1);
+      cnt_to++;
+
+      if (cnt_to == 100) {
+        break;
+      }
+    }
+  }
+
+  int returnValue = 0;
+  if (cnt_to != 100) {
+    returnValue = Wire.read();
+  }
+
+  return returnValue;
 }

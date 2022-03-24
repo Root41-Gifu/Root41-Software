@@ -55,13 +55,13 @@ void _UI::refrection(void) {
           mode++;
         }
       }
-      if (switchingFlag[2]) {
-        // if(select){
-        //     submode++;
-        // }else{
-        //     mode++;
-        // }
-      }
+      // if (switchingFlag[2]) {
+      //   if (select) {
+      //     submode++;
+      //   } else {
+      //     mode++;
+      //   }
+      // }
     }
     if (switchingFlag[3]) {
       if (!select) {
@@ -95,13 +95,13 @@ void _UI::refrection(void) {
           mode++;
         }
       }
-      if (switchingFlag[2]) {
-        // if(select){
-        //     submode++;
-        // }else{
-        //     mode++;
-        // }
-      }
+      // if (switchingFlag[2]) {
+      //   if (select) {
+      //     submode++;
+      //   } else {
+      //     mode++;
+      //   }
+      // }
     }
     if (switchingFlag[3]) {
       if (!select) {
@@ -132,16 +132,16 @@ void _UI::refrection(void) {
         if (select) {
           submode--;
         } else {
-          mode++;
+          mode;
         }
       }
-      if (switchingFlag[2]) {
-        // if(select){
-        //     submode++;
-        // }else{
-        //     mode++;
-        // }
-      }
+      // if (switchingFlag[2]) {
+      //   if(select){
+      //       submode++;
+      //   }else{
+      //       mode++;
+      //   }
+      // }
     } else {
       if (switchingFlag[1]) {
         MotorPower += 5;
@@ -235,56 +235,78 @@ void _UI::NeoPixeldisplay(int _mode) {
     // if (mode == 1) {
     //   unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
     //   StripFulldisplay(BlackDawn_Color);
-    // } else 
-    if (mode == 4||mode==1) {
+    // } else
+    if (mode == 4 || mode == 1) {
       unsigned long BallDistance_Color1 = strip.Color(255, 0, 0);  // distance1
       unsigned long BallDistance_Color2 =
           strip.Color(125, 0, 125);                                // distance1
       unsigned long BallDistance_Color3 = strip.Color(0, 0, 255);  // distance1
-      int _side[2];
-      int ball_separate;
-      ball_separate=int(ball.Move_degree/22.5);
-      // _side[0] = ball.max[0] - 1;
-      // _side[1] = ball.max[0] + 1;
-      // if (ball.max[0] - 1 < 0) {
-      //   _side[0] = 15;
-      // } else if (ball.max[0] + 1 > 15) {
-      //   _side[1] = 0;
-      // }
-      _side[0] = ball_separate - 1;
-      _side[1] = ball_separate + 1;
-      if (ball_separate - 1 < 0) {
-        _side[0] = 15;
-      } else if (ball_separate + 1 > 15) {
-        _side[1] = 0;
-      }
-      
-      switch (ball.distanceLevel) {
-        case 0:
-          StripFulldisplay(BallDistance_Color3);
-          break;
-        case 3:
-          // strip.setPixelColor(ball.max[0], BallDistance_Color3);
-          strip.setPixelColor(ball_separate, BallDistance_Color3);
-          strip.setPixelColor(_side[0], BallDistance_Color3);
-          strip.setPixelColor(_side[1], BallDistance_Color3);
-          break;
-        case 2:
-          // strip.setPixelColor(ball.max[0], BallDistance_Color2);
-          strip.setPixelColor(ball_separate, BallDistance_Color2);
-          strip.setPixelColor(_side[0], BallDistance_Color2);
-          strip.setPixelColor(_side[1], BallDistance_Color2);
-          break;
+      unsigned long Line_Color1 = strip.Color(0, 255, 255);
+      if (frash_mode == 0) {
+        int _side[2];
+        int ball_separate;
+        ball_separate = int(ball.Move_degree / 22.5);
+        // _side[0] = ball.max[0] - 1;
+        // _side[1] = ball.max[0] + 1;
+        // if (ball.max[0] - 1 < 0) {
+        //   _side[0] = 15;
+        // } else if (ball.max[0] + 1 > 15) {
+        //   _side[1] = 0;
+        // }
+        _side[0] = ball_separate - 1;
+        _side[1] = ball_separate + 1;
+        if (ball_separate - 1 < 0) {
+          _side[0] = 15;
+        } else if (ball_separate + 1 > 15) {
+          _side[1] = 0;
+        }
 
-        case 1:
-          // strip.setPixelColor(ball.max[0], BallDistance_Color1);
-          strip.setPixelColor(ball_separate, BallDistance_Color1);
-          strip.setPixelColor(_side[0], BallDistance_Color1);
-          strip.setPixelColor(_side[1], BallDistance_Color1);
-          break;
+        switch (ball.distanceLevel) {
+          case 0:
+            StripFulldisplay(BallDistance_Color3);
+            break;
+          case 3:
+            // strip.setPixelColor(ball.max[0], BallDistance_Color3);
+            strip.setPixelColor(ball_separate, BallDistance_Color3);
+            strip.setPixelColor(_side[0], BallDistance_Color3);
+            strip.setPixelColor(_side[1], BallDistance_Color3);
+            break;
+          case 2:
+            // strip.setPixelColor(ball.max[0], BallDistance_Color2);
+            strip.setPixelColor(ball_separate, BallDistance_Color2);
+            strip.setPixelColor(_side[0], BallDistance_Color2);
+            strip.setPixelColor(_side[1], BallDistance_Color2);
+            break;
 
-        default:
-          break;
+          case 1:
+            // strip.setPixelColor(ball.max[0], BallDistance_Color1);
+            strip.setPixelColor(ball_separate, BallDistance_Color1);
+            strip.setPixelColor(_side[0], BallDistance_Color1);
+            strip.setPixelColor(_side[1], BallDistance_Color1);
+            break;
+
+          default:
+            break;
+        }
+      } else if (frash_mode == 1) {
+        if (millis() - line.InTimer>10) {
+          int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
+                                      2, 2, 4, 4, 4, 4, 0, 0};
+          for (int i = 0; i < 16; i++) {
+            if (line.checkBlock[pixel_assign_out[i]]) {
+              strip.setPixelColor(i, Line_Color1);
+            }
+          }
+          int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
+                                     3, 3, 4, 5, 5, 5, 1, 1};
+          for (int i = 0; i < 16; i++) {
+            if (line.checkBlock[pixel_assign_in[i]]) {
+              strip.setPixelColor(i, Line_Color1);
+            }
+          }
+        }else{
+          StripFulldisplay(BallDistance_Color1);
+        }
       }
     }
   } else if (standby) {
@@ -323,7 +345,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   // line
   if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
-      unsigned long lineNeoPixelColor = front.Color(255, 255, 255);
+      unsigned long lineNeoPixelColor = front.Color(220, 220, 220);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
       if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {
