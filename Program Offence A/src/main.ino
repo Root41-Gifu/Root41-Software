@@ -86,7 +86,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int frash_mode=1;  //ネオピクセルのモード
+  int frash_mode = 1;  //ネオピクセルのモード
   int setting;
 
   bool active;  //動作中
@@ -150,11 +150,11 @@ class _Ball {
 class _Line {
  public:
   _Line(void);
-  void read(void);           //読み込みI2C
-  void arrange(void);        //読み込み値を処理数値に変換
+  void read(void);          //読み込みI2C
+  void arrange(void);       //読み込み値を処理数値に変換
   int calcDirection(void);  //方向（現在はベクトル）を算出
-  void calc(void);           //ベクトル数値から進行方向を算出
-  void vectorCalc(void);     //センサーごとのベクトル数値計算
+  void calc(void);          //ベクトル数値から進行方向を算出
+  void vectorCalc(void);    //センサーごとのベクトル数値計算
 
   int Move_degree;  //進行方向
 
@@ -309,7 +309,7 @@ LINESENSOR_INITIALIZE:
   Wire.setClock(10000000);
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
 
   Serial.begin(115200);
@@ -339,6 +339,8 @@ LINESENSOR_INITIALIZE:
     sin_d[i] = sin(radians(i));
     cos_d[i] = cos(radians(i));
   }
+
+  motor.lowBatteryCount = millis();
 }
 
 void loop() {
@@ -433,16 +435,16 @@ void loop() {
   } else if (line.flag) {
     //ラインあり、ライン検知時
     // _Mdegree = line.Move_degree - line.reference_degree;
-    _Mdegree=line.Move_degree;
+    _Mdegree = line.Move_degree;
   } else if (line.Rflag && millis() - line.OutTimer < 200) {
     //ラインあり、ラインオーバー時
     // _Mdegree = line.leftdegree - line.reference_degree;
-    _Mdegree=line.leftdegree;
+    _Mdegree = line.leftdegree;
   } else {
     //ラインあり、ラインから距離をとる
     if (millis() - line.OutTimer <= LINEOVERTIME) {
       // _Mdegree = line.rdegree - line.reference_degree;
-      _Mdegree=line.rdegree;
+      _Mdegree = line.rdegree;
     } else {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
@@ -468,10 +470,11 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.043, 1, 0.022, 60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
+            0.043, 1, 0.022,
+            60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
-        motor.normalBrake();
+        motor.release();
       }
     }
   } else {
@@ -479,20 +482,22 @@ void loop() {
     motor.release();
   }
 
-  // if (Battery < 10.5 || Battery > 12.6) {
-  //   // emergency=true;
-  // } else {
-  //   motor.lowBatteryCount = millis();
-  // }
+  Battery = 10.3;
 
-  // if (millis() - motor.lowBatteryCount >= 1000) {
-  //   emergency = true;
-  // }
+  if (Battery < 10.5 || Battery > 12.7) {
+    // emergency=true;
+  } else {
+    motor.lowBatteryCount = millis();
+  }
+
+  if (millis() - motor.lowBatteryCount >= 1000) {
+    emergency = true;
+  }
 
   if (false) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
-    Serial.println(millis()-loopTimer);
+    Serial.println(millis() - loopTimer);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え
 }

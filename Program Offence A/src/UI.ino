@@ -289,7 +289,7 @@ void _UI::NeoPixeldisplay(int _mode) {
             break;
         }
       } else if (frash_mode == 1) {
-        if (millis() - line.InTimer>10) {
+        if (millis() - line.InTimer > 10) {
           int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
                                       2, 2, 4, 4, 4, 4, 0, 0};
           for (int i = 0; i < 16; i++) {
@@ -304,7 +304,7 @@ void _UI::NeoPixeldisplay(int _mode) {
               strip.setPixelColor(i, Line_Color1);
             }
           }
-        }else{
+        } else {
           StripFulldisplay(BallDistance_Color1);
         }
       }
@@ -527,28 +527,30 @@ void _UI::LCDdisplay(void) {
 }
 
 void _UI::Errordisplay(int code) {
-  // if (code != 0) {
-  //   display.clearDisplay();
-  //   display.setTextSize(2);
-  //   display.setTextColor(WHITE);
-  //   display.setCursor(0, 0);
-  //   if (code == 1) {
-  //     display.println("EMERGENCY!");
-  //     display.setCursor(0, 17);
-  //     display.print("CODE:");
-  //     display.print(code);
-  //     for (int i = 0; i < 16; i++) {
-  //       if ((millis() / 300) % 2 > 0) {
-  //         strip.setPixelColor(i, 255, 0, 0);
-  //       } else {
-  //         strip.setPixelColor(i, 255, 255, 0);
-  //       }
-  //     }
-  //     strip.show();
-  //   }
-  //   display.drawLine(0, 15, 127, 15, WHITE);
-  // }
-  // display.display();
+  if (code != 0) {
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 0);
+    if (code == 1) {
+      display.println("EMERGENCY!");
+      display.setCursor(0, 17);
+      display.print("CODE:");
+      display.print(code);
+      strip.setBrightness(60);
+      for (int i = 0; i < 16; i++) {
+        if ((millis() / 200) % 2 > 0) {
+          strip.setPixelColor(i, 255, 0, 0);
+        } else {
+          strip.setPixelColor(i, 255, 255, 0);
+        }
+        // strip.setPixelColor(i, 255 - (millis() / 2) % 256, 0, 0);
+      }
+      strip.show();
+    }
+    display.drawLine(0, 15, 127, 15, WHITE);
+  }
+  display.display();
 }
 
 void _UI::NeoPixelReset(int brightS, int brightL) {
