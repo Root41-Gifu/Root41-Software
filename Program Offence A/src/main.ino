@@ -51,7 +51,7 @@ const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 #define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 10
+#define LINEOVERTIME 50
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -493,11 +493,11 @@ void loop() {
   //   emergency = true;
   // }
 
-  if (true) {
+  if (false) {
     for(int i=0; i<8; i++){
     //   Serial.print(i);
     //   Serial.print(":");
-      Serial.print(line.detect_num[i]);
+      Serial.print(line.passed_num[i]);
       Serial.print(" ");  
     }
     Serial.println(line.Move_degree);

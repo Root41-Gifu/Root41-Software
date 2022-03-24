@@ -286,12 +286,13 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   for(int i=0; i<8; i++){
-    for(int j=0; j<detect_num[i]; j++){
-      t_vectorX += block_vectorX[j];
-      t_vectorY += block_vectorY[j];
+    for(int j=0; j<passed_num[i]; j++){
+      t_vectorX += block_vectorX[i];
+      t_vectorY += block_vectorY[i];
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
+  Serial.print(_degree);
   return _degree;
 }
 
@@ -377,20 +378,20 @@ void _Line::calc(void) {
 }
 
 void _Line::vectorCalc(void) {
-  block_vectorX[0] = sin(radians(0));
-  block_vectorY[0] = cos(radians(0));
-  block_vectorX[1] = sin(radians(0));
-  block_vectorY[1] = cos(radians(0));
-  block_vectorX[2] = sin(radians(180));
-  block_vectorY[2] = cos(radians(180));
-  block_vectorX[3] = sin(radians(180));
-  block_vectorY[3] = cos(radians(180));
-  block_vectorX[4] = sin(radians(270));
-  block_vectorY[4] = cos(radians(270));
-  block_vectorX[5] = sin(radians(270));
-  block_vectorY[5] = cos(radians(270));
-  block_vectorX[6] = sin(radians(90));
-  block_vectorY[6] = cos(radians(90));
-  block_vectorX[7] = sin(radians(90));
-  block_vectorY[7] = cos(radians(90));
+  block_vectorX[0] = sin(radians(180));
+  block_vectorY[0] = cos(radians(180));
+  block_vectorX[1] = sin(radians(180));
+  block_vectorY[1] = cos(radians(180));
+  block_vectorX[2] = sin(radians(0));
+  block_vectorY[2] = cos(radians(0));
+  block_vectorX[3] = sin(radians(0));
+  block_vectorY[3] = cos(radians(0));
+  block_vectorX[4] = sin(radians(90));
+  block_vectorY[4] = cos(radians(90));
+  block_vectorX[5] = sin(radians(90));
+  block_vectorY[5] = cos(radians(90));
+  block_vectorX[6] = sin(radians(270));
+  block_vectorY[6] = cos(radians(270));
+  block_vectorX[7] = sin(radians(270));
+  block_vectorY[7] = cos(radians(270));
 }
