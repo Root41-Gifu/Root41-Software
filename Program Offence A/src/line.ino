@@ -237,7 +237,7 @@ void _Line::arrange(void) {
 
   //モード振り分け
   if (flag) {
-    if (Block <= 1) {
+    if (Block <= 2) {
       mode = 1;
     } else if (abs(reference_degree) < 50) {
       mode = 2;
@@ -304,11 +304,11 @@ void _Line::calc(void) {
     current_degree=0;//kese
     if (mode == 1) {
       //少数反応
-      _degree=calcDirection();
+      _degree=calcDirection()-current_degree;
       // _degree=Block_degree[orderBlock[0]];
     }else if (mode == 2) {
       //ずれ少ない多数反応
-      _degree=calcDirection();
+      _degree=calcDirection()-current_degree;
       // if(abs(orderBlock[0]-orderBlock[1])==4){
         //連番　直線的な可能性
         //角度修正ありにしたい＜
@@ -331,11 +331,11 @@ void _Line::calc(void) {
       // }
     }else if(mode==3){
       //傾き杉
-      _degree=calcDirection();
+      _degree=calcDirection()-current_degree;
       // _degree=Block_degree[orderBlock[0]]-current_degree;
     }else if(mode==4){
       //オーバー　
-      _degree=calcDirection();
+      _degree=calcDirection()-current_degree;
       // _degree=totaldegree-current_degree;
     }
     // t_vectorX = 0;
