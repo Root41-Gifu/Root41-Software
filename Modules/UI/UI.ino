@@ -30,5 +30,5 @@ void loop() {
     checkDigit += data[i];
   }
   
-  transmit = 0B11000000 + data[0] * 16 + data[1] * 8 + data[1] * 4 + checkDigit;
+  transmit = 0B11000000 + data[0] * 16 + data[1] * 8 + data[2] * 4 + checkDigit;
 }
