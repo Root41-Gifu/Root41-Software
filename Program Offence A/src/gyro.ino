@@ -111,6 +111,9 @@ int _gyro::read(void) {
   } else {
     isLift = false;
   }
+
+  while (char s = Wire.read() != -1) {
+  }
   return tempDeg % 360;
 }
 

@@ -220,7 +220,7 @@ class _Motor {
 
   void ultraBrake(void);
   void motorCalc(int, int, bool, int);
-  void motorPID_drive(float, float, float, int, int);
+  void motorPID_drive(float, float, float, int);
 
   int reference_degree;
 
@@ -302,7 +302,7 @@ void setup() {
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
   Wire.begin();
 
@@ -336,6 +336,7 @@ LINESENSOR_INITIALIZE:
 }
 
 void loop() {
+  long loopTimer = millis();
   // Battery-check---------------------------------------------
   Battery = analogRead(voltage) *  0.01469231;
 
@@ -460,8 +461,7 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.043, 1, 0.022, 32,
-            10);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
+            0.043, 1, 0.022, 60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
         motor.release();
@@ -483,9 +483,9 @@ void loop() {
   // }
 
   if (false) {
-    Serial.print(_Mdegree);
-    Serial.print(" ");
-    Serial.println(ball.Move_degree);
+    // Serial.print(_Mdegree);
+    // Serial.print(" ");
+    Serial.println(millis()-loopTimer);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え
 }
