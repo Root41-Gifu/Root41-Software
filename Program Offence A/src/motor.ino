@@ -261,52 +261,39 @@ void _Motor::motorCalc(int _deg, int _power, bool _stop, int _referenceAngle) {
   }
 }
 
-void _Motor::motorPID_drive(float Kp, float Ki, float Kd, int motor_speed) {
-  for (int j = 0; j < 6; j++) {
-    float Collection;  //スピード算出値
+void _Motor::motorPID_drive(int motor_speed) {
+  float Collection;  //スピード算出値
 
-    // gyro.deg = gyro.read();
-
-    //角度オーバー修正
-    if (gyro.deg > 180) {
-      Collection = gyro.deg - 360;
-    } else {
-      Collection = gyro.deg;
-    }
-
-    // P制御（比例）
-    Collection *= -0.24;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
-
-    // D制御（微分）
-    Collection -= gyro.differentialRead() * 0.024;  // D制御 64 0.012
-
-    for (int i = 0; i < 4; i++) {
-      // int値として代入
-      motor.val[i] = round(Collection);
-
-      //大きすぎるのを防止
-      motor.val[i] = constrain(motor.val[i], -40, 40);
-    }
-
-    //スピード調整
-
-    if (_Mdegree != 1000) {
-      if (gyro.deg <= 100 || gyro.deg >= 260) {
-        //   neko = constrain(neko, -100, 100);
-        motor.motorCalc(int(_Mdegree), motor_speed - abs(round(Collection)), 0,
-                        0);  //スピード
-        for (int i = 0; i < 4; i++) {
-          motor.val[i] += motor.Kval[i];
-        }
-
-      } else {
-        // for (int i = 0; i < 4; i++) {
-        //   motor.val[i] = motor.val[i] * 1.2;
-        // }
-      }
-      motor.directDrive(motor.val);
-    } else {
-      motor.directDrive(motor.val);
-    }
+  //角度オーバー修正
+  if (gyro.deg > 180) {
+    Collection = gyro.deg - 360;
+  } else {
+    Collection = gyro.deg;
   }
+
+  // P制御（比例）
+  Collection *= -0.43;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+
+  // D制御（微分）
+  // Collection -= gyro.differentialRead() * 0.024;  // D制御 64 0.012
+  Collection = constrain(Collection, -30, 30);
+
+  int max = 60 - abs(Collection);
+
+  // motorCalc(_Mdegree, max, false, 0);
+
+  // D制御（微分）
+  // Collection -= gyro.differentialRead() * 0.024;  // D制御 64 0.012
+
+  motor.val[0] = max * sin(radians((_Mdegree + 360 - 55) % 360));
+  motor.val[1] = max * sin(radians((_Mdegree + 360 - 135) % 360));
+  motor.val[2] = max * sin(radians((_Mdegree + 135) % 360));
+  motor.val[3] = max * sin(radians((_Mdegree + 55) % 360));
+  for (int i = 0; i < 4; i++) {
+    //大きすぎるのを防止
+    motor.val[i] += Collection;
+  }
+
+  // motor.directDrive(motor.val);
+  motor.release();
 }

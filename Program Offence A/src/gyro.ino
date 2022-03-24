@@ -69,6 +69,8 @@ RESTART:
 
 //角度取得
 int _gyro::read(void) {
+  while (char s = Wire.read() != -1) {
+  }
   int tempDeg;
 
   mpuIntStatus = false;
