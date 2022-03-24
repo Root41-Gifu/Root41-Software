@@ -201,6 +201,7 @@ void _Line::arrange(void) {
       }
 
       if (!flag) {
+        InTimer=millis();
         //ラインフラグなし
         //   stopTimer = device.getTime();
         mode = 1;
@@ -280,14 +281,18 @@ void _Line::arrange(void) {
   }
 }
 
-void _Line::calcDirection(void) {
-  int circleRange = 10;  //ベクトルに範囲
+int _Line::calcDirection(void) {
+  int _degree;  //ベクトルに範囲
   t_vectorX = 0;
   t_vectorY = 0;
-  for (int i = 0; i < circleRange; i++) {
-    t_vectorX += _vectorX[order[i]];
-    t_vectorY += _vectorY[order[i]];
+  for(int i=0; i<8; i++){
+    for(int j=0; j<detect_num[i]; j++){
+      t_vectorX += block_vectorX[j];
+      t_vectorY += block_vectorY[j];
+    }
   }
+  _degree = degrees(atan2(t_vectorX, t_vectorY));
+  return _degree;
 }
 
 void _Line::calc(void) {
@@ -295,39 +300,42 @@ void _Line::calc(void) {
   if (flag) {
     t_vectorX = 0;
     t_vectorY = 0;
+    current_degree=0;//kese
     if (mode == 1) {
       //少数反応
-      calcDirection();
-      _degree=Block_degree[orderBlock[0]];
+      _degree=calcDirection();
+      // _degree=Block_degree[orderBlock[0]];
     }else if (mode == 2) {
       //ずれ少ない多数反応
-      calcDirection();
-      if(abs(orderBlock[0]-orderBlock[1])==4){
+      _degree=calcDirection();
+      // if(abs(orderBlock[0]-orderBlock[1])==4){
         //連番　直線的な可能性
         //角度修正ありにしたい＜
-        _degree=Block_degree[orderBlock[0]]-current_degree;
-      }else if(abs(orderBlock[0]-orderBlock[1])==1){
-        //横での連続
-        _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
-      }else{
-        if(orderBlock[0]==3){
-          if(orderBlock[1]==0){
-            _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
-          }
-        }
-        if(orderBlock[0]==0){
-          if(orderBlock[1]==3){
-            _degree=(Block_degree[orderBlock[0]]+Block_degree[orderBlock[1]])/2-current_degree;
-          }
-        }
-      }
+        // _degree=Block_degree[orderBlock[0]]-current_degree;
+      // }
+      // else if(abs(orderBlock[0]-orderBlock[1])==1){
+      //   //横での連続
+      //   _degree=(Block_degree[orderBlock[0]]*2+Block_degree[orderBlock[1]])/2-current_degree;
+      // }else{
+      //   if(orderBlock[0]==3){
+      //     if(orderBlock[1]==0){
+      //       _degree=(Block_degree[orderBlock[0]]*2+Block_degree[orderBlock[1]])/2-current_degree;
+      //     }
+      //   }
+      //   if(orderBlock[0]==0){
+      //     if(orderBlock[1]==3){
+      //       _degree=(Block_degree[orderBlock[0]]*2+Block_degree[orderBlock[1]])/2-current_degree;
+      //     }
+      //   }
+      // }
     }else if(mode==3){
       //傾き杉
-      _degree=Block_degree[orderBlock[0]]-current_degree;
+      _degree=calcDirection();
+      // _degree=Block_degree[orderBlock[0]]-current_degree;
     }else if(mode==4){
       //オーバー　
-      calcDirection();
-      _degree=totaldegree-current_degree;
+      _degree=calcDirection();
+      // _degree=totaldegree-current_degree;
     }
     // t_vectorX = 0;
     // t_vectorY = 0;
@@ -360,6 +368,9 @@ void _Line::calc(void) {
   if (Rflag) {
     _degree = rdegree;
     flag = false;  // test
+  }
+  if(millis()-InTimer<=10){
+    _degree=10000;
   }
   Move_degree = _degree;
   leftdegree = _degree;

@@ -51,7 +51,7 @@ const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 #define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 120
+#define LINEOVERTIME 10
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -152,7 +152,7 @@ class _Line {
   _Line(void);
   void read(void);           //読み込みI2C
   void arrange(void);        //読み込み値を処理数値に変換
-  void calcDirection(void);  //方向（現在はベクトル）を算出
+  int calcDirection(void);  //方向（現在はベクトル）を算出
   void calc(void);           //ベクトル数値から進行方向を算出
   void vectorCalc(void);     //センサーごとのベクトル数値計算
 
@@ -194,6 +194,7 @@ class _Line {
   //タイマー
   unsigned long detectTimer[47];  //反応時間計測
   unsigned long OutTimer;         //ラインアウト時間計測
+  unsigned long InTimer;
 
   //----十字ラインセンサー
   int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
@@ -465,12 +466,16 @@ void loop() {
       //モードオフェンス、ディフェンスの時
       if (UI.active == true) {
         //動作中
-        motor.motorPID_drive(
+        if(_Mdegree!=10000){
+          motor.motorPID_drive(
             0.48, 1, 0.022, 50,
             60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS(下げるとジャイロ重め)
+        }else{
+          motor.normalBrake();
+        }
       } else {
         //停止中
-        motor.release();
+        motor.normalBrake();
       }
     }
   } else {
@@ -488,15 +493,14 @@ void loop() {
   //   emergency = true;
   // }
 
-  if (false) {
-    for(int i=0; i<LINE_NUM; i++){
-      Serial.print(line.value[i]);
-    }
-    Serial.print(" ");
+  if (true) {
     for(int i=0; i<8; i++){
+    //   Serial.print(i);
+    //   Serial.print(":");
       Serial.print(line.detect_num[i]);
+      Serial.print(" ");  
     }
-    Serial.println(UI.mode);
+    Serial.println(line.Move_degree);
   }
   // UI.SerialPrint(true);  //引数で通信切り替え
 }

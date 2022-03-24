@@ -289,17 +289,23 @@ void _UI::NeoPixeldisplay(int _mode) {
             break;
         }
       } else if (frash_mode == 1) {
-        int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2, 2, 2, 4, 4, 4, 4, 0, 0};
-        for (int i = 0; i < 16; i++) {
-          if (line.checkBlock[pixel_assign_out[i]]) {
-            strip.setPixelColor(i, Line_Color1);
+        if (millis() - line.InTimer>10) {
+          int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
+                                      2, 2, 4, 4, 4, 4, 0, 0};
+          for (int i = 0; i < 16; i++) {
+            if (line.checkBlock[pixel_assign_out[i]]) {
+              strip.setPixelColor(i, Line_Color1);
+            }
           }
-        }
-        int pixel_assign_in[16] = {1,1,6, 6, 6, 6,3, 3, 3, 3, 4, 5, 5, 5, 1, 1};
-        for (int i = 0; i < 16; i++) {
-          if (line.checkBlock[pixel_assign_in[i]]) {
-            strip.setPixelColor(i, Line_Color1);
+          int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
+                                     3, 3, 4, 5, 5, 5, 1, 1};
+          for (int i = 0; i < 16; i++) {
+            if (line.checkBlock[pixel_assign_in[i]]) {
+              strip.setPixelColor(i, Line_Color1);
+            }
           }
+        }else{
+          StripFulldisplay(BallDistance_Color1);
         }
       }
     }
