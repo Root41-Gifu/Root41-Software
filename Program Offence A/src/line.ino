@@ -89,14 +89,19 @@ void _Line::read(void) {
   for (int i = 0; i < 4; i++) {
     if (nekoCounter == i) {
       Wire.requestFrom(lineAddress[i], 2);
-      // delay(1);
       if (Wire.available() >= 2) {
         readValue[0] = Wire.read();
         readValue[1] = Wire.read();
+      } else {
+        UI.errorCode = 2;
       }
-      Wire.flush();
+
+      while (Wire.available()) {
+        char s = Wire.read();
+      }
     }
   }
+  // }
   value[41] = true;
   value[42] = true;
 }

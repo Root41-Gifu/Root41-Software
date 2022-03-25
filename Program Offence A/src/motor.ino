@@ -272,11 +272,11 @@ void _Motor::motorPID_drive(int motor_speed) {
   }
 
   // P制御（比例）
-  Collection *= -0.43;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+  Collection *= -0.53;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
 
   // D制御（微分）
   // Collection -= gyro.differentialRead() * 0.024;  // D制御 64 0.012
-  Collection = constrain(Collection, -30, 30);
+  // Collection = constrain(Collection, -30, 30);
 
   int max = 60 - abs(Collection);
 
@@ -291,9 +291,9 @@ void _Motor::motorPID_drive(int motor_speed) {
   motor.val[3] = max * sin(radians((_Mdegree + 55) % 360));
   for (int i = 0; i < 4; i++) {
     //大きすぎるのを防止
-    motor.val[i] += Collection;
+    motor.val[i] = Collection;
   }
 
-  // motor.directDrive(motor.val);
-  motor.release();
+  motor.directDrive(motor.val);
+  // motor.release();
 }

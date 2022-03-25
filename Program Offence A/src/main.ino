@@ -88,6 +88,7 @@ class _UI {
   int submode;  //サブモード、キャリブレーションとかの時に帰る
   int frash_mode = 1;  //ネオピクセルのモード
   int setting;
+  int errorCode = 0;
 
   bool active;  //動作中
   bool standby;
@@ -100,6 +101,7 @@ class _UI {
   bool touchFlag[4];
   bool longpressFlag[4];
   bool touch[4];
+  bool bottomUIFlag = false;
   int counter[4];
   unsigned long longpressTimer[4];  //長押しタイマー
   unsigned long updateTimer;        // UI表示スパン
@@ -307,7 +309,7 @@ void setup() {
 LINESENSOR_INITIALIZE:
 
   Wire.begin();
-  // Wire.setClock(1000000);
+  // Wire.setClock(4000000);
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -377,15 +379,15 @@ void loop() {
   ball.calc(ball.distance);  //動作角度算出
 
   // line---------------------------------------------
-  // if (LINE_EFFECT) {
-  //   line.read();  // I2Cでライン読み込み
-  //   line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
-  //   if (line.flag) {
-  //     line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
-  //   } else {
-  //     line.Move_degree = 1000;
-  //   }
-  // }
+  if (LINE_EFFECT) {
+    line.read();  // I2Cでライン読み込み
+    line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    if (line.flag) {
+      line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+    } else {
+      line.Move_degree = 1000;
+    }
+  }
 
   // UI---------------------------------------------
   UI.read();  // UIの読み込み
@@ -397,26 +399,26 @@ void loop() {
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
   // //緊急事態時と平常時の処理
-  // if (!emergency) {
-  //   //平常時
-  //   if (UI.active || UI.standby) {
-  //     //動作時
-  //     if (millis() - UI.updateTimer > 1000) {
-  //       UI.LCDdisplay();  // LCD表示（重いので500msで回す）
-  //       UI.updateTimer = millis();
-  //     }
-  //     // if (UI.mode != 1||UI.standby) {             //消灯します
-  //     UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
-  //     // }
-  //   } else {
-  //     //停止時
-  //     UI.LCDdisplay();  // LCD表示
-  //     UI.NeoPixeldisplay(UI.mode);
-  //   }
-  // } else {
-  //   //緊急時
-  //   UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
-  // }
+  if (!emergency) {
+    //平常時
+    if (UI.active || UI.standby) {
+      //動作時
+      // if (millis() - UI.updateTimer > 1000) {
+      //   UI.LCDdisplay();  // LCD表示（重いので500msで回す）
+      //   UI.updateTimer = millis();
+      // }
+      // if (UI.mode != 1 || UI.standby) {  //消灯します
+      UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
+      // }
+    } else {
+      //停止時
+      UI.LCDdisplay();  // LCD表示
+      UI.NeoPixeldisplay(UI.mode);
+    }
+  } else {
+    //緊急時
+    UI.Errordisplay(UI.errorCode);  // Error表示用、点滅するンゴ。
+  }
 
   // gyro
 
@@ -473,15 +475,18 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(60);
+        UI.bottomUIFlag = true;
 
         //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
         motor.release();
+        UI.bottomUIFlag = false;
       }
     }
   } else {
     //緊急事態時の行動
+    UI.bottomUIFlag = false;
     motor.release();
   }
 
@@ -495,6 +500,7 @@ void loop() {
 
   if (millis() - motor.lowBatteryCount >= 1000) {
     emergency = true;
+    UI.errorCode = 1;
   }
 
   // if (true) {

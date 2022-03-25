@@ -408,10 +408,12 @@ void _UI::NeoPixeldisplay(int _mode) {
     }
   }
   strip.show();
-  front.show();
-  rear.show();
-  left.show();
-  right.show();
+  if (bottomUIFlag == false) {
+    front.show();
+    rear.show();
+    left.show();
+    right.show();
+  }
 }
 
 void _UI::StripFulldisplay(unsigned long color) {
@@ -423,107 +425,107 @@ void _UI::StripFulldisplay(unsigned long color) {
 }
 
 void _UI::LCDdisplay(void) {
-  // display.clearDisplay();
-  // display.setTextSize(2);
-  // display.setTextColor(WHITE);
-  // display.setCursor(0, 0);
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
 
-  // if (active) {
-  //   display.print("R:");
-  // } else {
-  //   display.print("S:");
-  // }
-  // if (UI.mode == 0) {
-  //   if (!active) {
-  //     display.println("Starting");
-  //   } else {
-  //     display.println("Starting");
-  //   }
-  //   display.setCursor(0, 17);
-  //   display.setTextSize(1);
-  // } else if (UI.mode == 1) {
-  //   display.println("Offence");
-  // } else if (UI.mode == 2) {
-  //   display.println("Defence");
-  // } else if (UI.mode == 3) {
-  //   if (!select) {
-  //     display.print("Gyro ");
-  //     if ((millis() / LCD_INTERVAL) % 2 == 0) {
-  //       display.println(">");
-  //     } else if ((millis() / 300) % 2 == 1) {
-  //       display.println(" ");
-  //     }
-  //   } else {
-  //     if (!active) {
-  //       if ((millis() / LCD_INTERVAL) % 2 == 0) {
-  //         display.print("G>");
-  //       } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
-  //         display.print("G ");
-  //       }
-  //     }
-  //     if (submode == 0) {
-  //       display.println("Front");
-  //     } else if (submode == 1) {
-  //       display.println("Calb");
-  //     }
-  //   }
-  //   display.setCursor(0, 17);
-  //   display.setTextSize(1);
-  // } else if (UI.mode == 4) {
-  //   display.println("Ball");
-  // } else if (UI.mode == 5) {
-  //   display.println("Line");
-  // } else if (UI.mode == 6) {
-  //   if (!select) {
-  //     display.print("Motor ");
-  //     if ((millis() / LCD_INTERVAL) % 2 == 0) {
-  //       display.println(">");
-  //     } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
-  //       display.println(" ");
-  //     }
-  //   } else {
-  //     if (!active) {
-  //       if ((millis() / LCD_INTERVAL) % 2 == 0) {
-  //         display.print("M>");
-  //       } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
-  //         display.print("M ");
-  //       }
-  //     }
-  //     if (submode == 0) {
-  //       display.println("Test");
-  //     } else if (submode == 1) {
-  //       if (active) {
-  //         if ((millis() / LCD_INTERVAL) % 2 == 0) {
-  //           display.print("P>");
-  //         } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
-  //           display.print("P ");
-  //         }
-  //         display.print(MotorPower);
-  //       } else {
-  //         display.println("Power");
-  //       }
-  //     }
-  //   }
-  //   display.setCursor(0, 17);
-  //   display.setTextSize(1);
-  // } else if (UI.mode == 7) {
-  //   display.println("Camera");
-  // }
-  // display.setCursor(0, 17);
-  // display.setTextSize(1);
-  // display.print("Battery: ");
-  // display.print(Battery);
-  // display.println(" V");
-  // display.print(line.flag);
-  // display.print(" ");
-  // display.print(ball.max[0]);
-  // display.print(" ");
-  // display.print(_Mdegree);
-  // // display.print(motor.val[3]);
-  // // display.print(gyro.deg);
-  // display.drawLine(0, 15, 127, 15, WHITE);
-  // // 描画バッファの内容を画面に表示
-  // display.display();
+  if (active) {
+    display.print("R:");
+  } else {
+    display.print("S:");
+  }
+  if (UI.mode == 0) {
+    if (!active) {
+      display.println("Starting");
+    } else {
+      display.println("Starting");
+    }
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+  } else if (UI.mode == 1) {
+    display.println("Offence");
+  } else if (UI.mode == 2) {
+    display.println("Defence");
+  } else if (UI.mode == 3) {
+    if (!select) {
+      display.print("Gyro ");
+      if ((millis() / LCD_INTERVAL) % 2 == 0) {
+        display.println(">");
+      } else if ((millis() / 300) % 2 == 1) {
+        display.println(" ");
+      }
+    } else {
+      if (!active) {
+        if ((millis() / LCD_INTERVAL) % 2 == 0) {
+          display.print("G>");
+        } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
+          display.print("G ");
+        }
+      }
+      if (submode == 0) {
+        display.println("Front");
+      } else if (submode == 1) {
+        display.println("Calb");
+      }
+    }
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+  } else if (UI.mode == 4) {
+    display.println("Ball");
+  } else if (UI.mode == 5) {
+    display.println("Line");
+  } else if (UI.mode == 6) {
+    if (!select) {
+      display.print("Motor ");
+      if ((millis() / LCD_INTERVAL) % 2 == 0) {
+        display.println(">");
+      } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
+        display.println(" ");
+      }
+    } else {
+      if (!active) {
+        if ((millis() / LCD_INTERVAL) % 2 == 0) {
+          display.print("M>");
+        } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
+          display.print("M ");
+        }
+      }
+      if (submode == 0) {
+        display.println("Test");
+      } else if (submode == 1) {
+        if (active) {
+          if ((millis() / LCD_INTERVAL) % 2 == 0) {
+            display.print("P>");
+          } else if ((millis() / LCD_INTERVAL) % 2 == 1) {
+            display.print("P ");
+          }
+          display.print(MotorPower);
+        } else {
+          display.println("Power");
+        }
+      }
+    }
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+  } else if (UI.mode == 7) {
+    display.println("Camera");
+  }
+  display.setCursor(0, 17);
+  display.setTextSize(1);
+  display.print("Battery: ");
+  display.print(Battery);
+  display.println(" V");
+  display.print(line.flag);
+  display.print(" ");
+  display.print(ball.max[0]);
+  display.print(" ");
+  display.print(_Mdegree);
+  // display.print(motor.val[3]);
+  // display.print(gyro.deg);
+  display.drawLine(0, 15, 127, 15, WHITE);
+  // 描画バッファの内容を画面に表示
+  display.display();
 }
 
 void _UI::Errordisplay(int code) {
