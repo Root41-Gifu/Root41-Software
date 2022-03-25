@@ -503,7 +503,7 @@ void loop() {
   if (false) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
-    Serial.println(millis() - loopTimer);
+    Serial.println(millis() - loopTimerA);
   }
 
   // if (true) {
