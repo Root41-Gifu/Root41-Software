@@ -48,12 +48,12 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 25  // 50
+#define LINE_BRIGHTNESS 35  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERNUM 20
+#define LINEOVERNUM 25
 #define LINEOVERTIME 500
-#define LINERETURNTIME 300
+#define LINERETURNTIME 500
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -72,6 +72,8 @@ float Battery;
 int MotorPower = 100;
 int degree;
 bool emergency;  //緊急用のフラグ（やばいとき上げて）
+
+int readCounter = 0;
 
 class _UI {
  public:
@@ -185,6 +187,8 @@ class _Line {
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
+  
+  int bitSelect;
 
   //カウンター
   int whited;   //反応した数
@@ -461,7 +465,6 @@ void loop() {
       _Mdegree = ball.Move_degree;
     }
   }
-  _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
   if (_Mdegree > 360 && _Mdegree != 1000) {

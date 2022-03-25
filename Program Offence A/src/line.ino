@@ -80,12 +80,13 @@ _Line::_Line() {
   }
 }
 
-int readCounter = 0;
-
 void _Line::read(void) {
   readCounter++;
-  readCounter =readCounter&4;
-  int bitSelect;
+  readCounter = readCounter % 4;
+
+  if(readCounter==0){
+    bitSelect=0;
+  }
 
   if (readCounter == 0) {
     Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
