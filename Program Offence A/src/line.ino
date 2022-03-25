@@ -84,8 +84,8 @@ void _Line::read(void) {
   readCounter++;
   readCounter = readCounter % 4;
 
-  if(readCounter==0){
-    bitSelect=0;
+  if (readCounter == 0) {
+    bitSelect = 0;
   }
 
   if (readCounter == 0) {
@@ -315,16 +315,13 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < 8; i++) {
-    for (int i = 0; i < 12; i++) {
-      if (i < whited) {
-        t_vectorX += block_vectorX[Line_Where[order[i]]];
-        t_vectorY += block_vectorY[Line_Where[order[i]]];
-      }
+  for (int i = 0; i < LINEOVERNUM; i++) {
+    if (i < whited) {
+      t_vectorX += block_vectorX[Line_Where[order[i]]];
+      t_vectorY += block_vectorY[Line_Where[order[i]]];
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
-  Serial.print(_degree);
   return _degree;
 }
 
