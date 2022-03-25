@@ -312,7 +312,7 @@ LINESENSOR_INITIALIZE:
   // Wire.setClock(4000000);
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
 
   Serial.begin(115200);
@@ -412,7 +412,7 @@ void loop() {
       // }
     } else {
       //停止時
-      UI.LCDdisplay();  // LCD表示
+      // UI.LCDdisplay();  // LCD表示
       UI.NeoPixeldisplay(UI.mode);
     }
   } else {
