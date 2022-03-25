@@ -90,6 +90,7 @@ class _UI {
   int submode;  //サブモード、キャリブレーションとかの時に帰る
   int frash_mode = 1;  //ネオピクセルのモード
   int setting;
+  int errorCode = 0;
 
   bool active;  //動作中
   bool standby;
@@ -102,6 +103,7 @@ class _UI {
   bool touchFlag[4];
   bool longpressFlag[4];
   bool touch[4];
+  bool bottomUIFlag = false;
   int counter[4];
   unsigned long longpressTimer[4];  //長押しタイマー
   unsigned long updateTimer;        // UI表示スパン
@@ -228,7 +230,7 @@ class _Motor {
 
   void ultraBrake(void);
   void motorCalc(int, int, bool, int);
-  void motorPID_drive(float, float, float, int);
+  void motorPID_drive(int);
 
   int reference_degree;
 
@@ -309,8 +311,9 @@ void setup() {
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
+
   Wire.begin();
-  Wire.setClock(10000000);
+  // Wire.setClock(4000000);
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -343,10 +346,12 @@ LINESENSOR_INITIALIZE:
     sin_d[i] = sin(radians(i));
     cos_d[i] = cos(radians(i));
   }
+
+  motor.lowBatteryCount = millis();
 }
 
 void loop() {
-  long loopTimer = millis();
+  long loopTimerA = micros();
   // Battery-check---------------------------------------------
   Battery = analogRead(voltage) * 0.01469231;
 
@@ -397,16 +402,16 @@ void loop() {
 
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
-  //緊急事態時と平常時の処理
+  // //緊急事態時と平常時の処理
   if (!emergency) {
     //平常時
     if (UI.active || UI.standby) {
       //動作時
-      if (millis() - UI.updateTimer > 1000) {
-        UI.LCDdisplay();  // LCD表示（重いので500msで回す）
-        UI.updateTimer = millis();
-      }
-      // if (UI.mode != 1||UI.standby) {             //消灯します
+      // if (millis() - UI.updateTimer > 1000) {
+      //   UI.LCDdisplay();  // LCD表示（重いので500msで回す）
+      //   UI.updateTimer = millis();
+      // }
+      // if (UI.mode != 1 || UI.standby) {  //消灯します
       UI.NeoPixeldisplay(UI.mode);  // NeoPixel表示
       // }
     } else {
@@ -416,7 +421,7 @@ void loop() {
     }
   } else {
     //緊急時
-    UI.Errordisplay(emergency);  // Error表示用、点滅するンゴ。
+    UI.Errordisplay(UI.errorCode);  // Error表示用、点滅するンゴ。
   }
 
   // gyro
@@ -424,12 +429,14 @@ void loop() {
   //ジャイロの読みこみ等
   // gyro.deg=gyro.read();//<これはモーター処理で読んでるからコメントアウトのままで良し
 
-  // Motor---------------------------------------------
+  // Motor-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -s
 
   _Mdegree = 1000;
   motor.reference_degree = 0;
   motor.referenceAngle = 0;
-  // line.reference_degree=0//これは角度のずれを考慮したいときにコメントアウトにして
+  //
+  line.reference_degree =
+      0;  //これは角度のずれを考慮したいときにコメントアウトにして
 
   if (line.Move_degree == 10000) {
     //ラインなし、ボール反応時
@@ -470,57 +477,63 @@ void loop() {
       //モードオフェンス、ディフェンスの時
       if (UI.active == true) {
         //動作中
-        motor.motorPID_drive(
-            0.053, 1, 0.022,
-            60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
+        motor.motorPID_drive(60);
+        UI.bottomUIFlag = true;
+
+        //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
-        motor.normalBrake();
+        motor.release();
+        UI.bottomUIFlag = false;
       }
     }
   } else {
     //緊急事態時の行動
+    UI.bottomUIFlag = false;
     motor.release();
   }
 
-  // if (Battery < 10.5 || Battery > 12.6) {
-  //   // emergency=true;
-  // } else {
-  //   motor.lowBatteryCount = millis();
-  // }
+  // Battery = 10.3;
 
-  // if (millis() - motor.lowBatteryCount >= 1000) {
-  //   emergency = true;
-  // }
-
+  if (Battery < 10.5 || Battery > 12.7) {
+    // emergency=true;
+  } else {
+    motor.lowBatteryCount = millis();
+  }
   if (false) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
     Serial.println(millis() - loopTimer);
   }
+
+  // if (true) {
+  //   // Serial.print(_Mdegree);
+  //   // Serial.print(" ");
+  Serial.println(micros() - loopTimerA, 10);
+  // }
   // UI.SerialPrint(true);  //引数で通信切り替え
 }
 
 int i2cReadWithTimeoutFunction(void) {
-  int cnt_to = 0;
+  // int cnt_to = 0;
 
-  while (1) {
-    if (digitalRead(SDA) == HIGH && digitalRead(SCL) == HIGH) {
-      break;
-    } else {
-      delay(1);
-      cnt_to++;
+  // while (1) {
+  //   if (digitalRead(SDA) == HIGH || digitalRead(SCL) == HIGH) {
+  //     break;
+  //   } else {
+  //     delay(1);
+  //     cnt_to++;
 
-      if (cnt_to == 100) {
-        break;
-      }
-    }
-  }
+  //     if (cnt_to == 10) {
+  //       break;
+  //     }
+  //   }
+  // }
 
   int returnValue = 0;
-  if (cnt_to != 100) {
-    returnValue = Wire.read();
-  }
+  // if (cnt_to != 10) {
+  returnValue = Wire.read();
+  // }
 
   return returnValue;
 }

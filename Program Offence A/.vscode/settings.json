@@ -21,6 +21,7 @@
         "initializer_list": "cpp",
         "*.tcc": "cpp",
         "iterator": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "streambuf": "cpp"
     }
 }

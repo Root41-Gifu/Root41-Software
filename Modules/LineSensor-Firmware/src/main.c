@@ -91,6 +91,7 @@ void setPinMux(int a, int b, int c, int d) {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
   }
 }
+
 int val = 0;
 char transmitdata[2];
 
@@ -129,7 +130,6 @@ int main(void) {
   MX_ADC_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
   int sensorRead[13];
 
   while (val == 0) {
@@ -144,6 +144,14 @@ int main(void) {
     }
   }
 
+  //	while (val == 0) {
+  //		if (HAL_I2C_Slave_Receive(&hi2c1, (uint8_t*) cutoffValue, 2,
+  //1000)
+  //				== HAL_OK) {
+  //			val = cutoffValue[1] * 256 + cutoffValue[1];
+  //		}
+  //	}
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -154,7 +162,7 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
 
-    HAL_SYSTICK_Config(SystemCoreClock / (10000U / uwTickFreq));
+    HAL_SYSTICK_Config(SystemCoreClock / (100000U / uwTickFreq));
     int number = 0;
     setPinMux(0, 0, 0, 0);
     HAL_Delay(1);
@@ -354,7 +362,7 @@ int main(void) {
     checkDegit %= 8;
     transmitdata[1] += checkDegit;
 
-    HAL_SYSTICK_Config(SystemCoreClock / (10000U / uwTickFreq));
+    //		HAL_SYSTICK_Config(SystemCoreClock / (10000U / uwTickFreq));
 
     HAL_I2C_Slave_Transmit(&hi2c1, (uint8_t *)transmitdata, 2, 1);
   }
@@ -376,10 +384,9 @@ void SystemClock_Config(void) {
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
    */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSICalibrationValue = 0;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
@@ -388,8 +395,8 @@ void SystemClock_Config(void) {
    */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
                                 RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
@@ -423,7 +430,7 @@ static void MX_ADC_Init(void) {
    */
   hadc.Instance = ADC1;
   hadc.Init.OversamplingMode = DISABLE;
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
   hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
@@ -436,7 +443,7 @@ static void MX_ADC_Init(void) {
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc.Init.LowPowerAutoWait = DISABLE;
-  hadc.Init.LowPowerFrequencyMode = ENABLE;
+  hadc.Init.LowPowerFrequencyMode = DISABLE;
   hadc.Init.LowPowerAutoPowerOff = DISABLE;
   if (HAL_ADC_Init(&hadc) != HAL_OK) {
     Error_Handler();
@@ -467,8 +474,8 @@ static void MX_I2C1_Init(void) {
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00000708;
-  hi2c1.Init.OwnAddress1 = 0x08 << 1;  // left:0x10(7bit) right:0x40 rear:0x20 front:0x08
+  hi2c1.Init.Timing = 0x0000020B;
+  hi2c1.Init.OwnAddress1 = 0x40 << 1;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -510,7 +517,7 @@ static void MX_TIM2_Init(void) {
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 16;
+  htim2.Init.Prescaler = 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 16;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

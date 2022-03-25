@@ -79,86 +79,29 @@ _Line::_Line() {
     Line_Where[i] = 7;
   }
 }
-
+int nekoCounter = 0;
 void _Line::read(void) {
   int bitSelect;
-  Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
+  nekoCounter++;
+  nekoCounter %= 4;
 
-  while (Wire.available() >= 2) {
-    byte readValue[2];
-    readValue[0] = i2cReadWithTimeoutFunction();
-    readValue[1] = i2cReadWithTimeoutFunction();
-    for (int i = 0; i < 3; i++) {
-      value[bitSelect] = readValue[0] & (1 << i + 1);
-      bitSelect++;
-    }
-    for (int i = 0; i < 3; i++) {
-      value[bitSelect] = readValue[0] & (1 << i + 5);
-      bitSelect++;
-    }
-    value[bitSelect] = readValue[1] & (1 << 3);
-    bitSelect++;
-    for (int i = 0; i < 3; i++) {
-      value[bitSelect] = readValue[1] & (1 << i + 5);
-      bitSelect++;
-    }
-  }
-  Wire.requestFrom(LINE_REARADDRESS, 2);  //アドレスは変えてね
+  char readValue[2];
+  for (int i = 0; i < 4; i++) {
+    if (nekoCounter == i) {
+      Wire.requestFrom(lineAddress[i], 2);
+      if (Wire.available() >= 2) {
+        readValue[0] = Wire.read();
+        readValue[1] = Wire.read();
+      } else {
+        UI.errorCode = 2;
+      }
 
-  while (Wire.available() >= 2) {
-    byte readValue[2];
-    readValue[0] = i2cReadWithTimeoutFunction();
-    readValue[1] = i2cReadWithTimeoutFunction();
-    for (int i = 0; i < 3; i++) {
-      value[bitSelect] = readValue[0] & (1 << i + 1);
-      bitSelect++;
-    }
-    value[bitSelect] = readValue[0] & (1 << 5);
-    bitSelect++;
-    for (int i = 0; i < 2; i++) {
-      value[bitSelect] = readValue[1] & (1 << i + 2);
-      bitSelect++;
-    }
-    for (int i = 0; i < 3; i++) {
-      value[bitSelect] = readValue[1] & (1 << i + 5);
-      bitSelect++;
+      while (Wire.available()) {
+        char s = Wire.read();
+      }
     }
   }
-  Wire.requestFrom(LINE_LEFTADDRESS, 2);  //アドレスは変えてね
-  while (Wire.available() >= 2) {
-    byte readValue[2];
-    readValue[0] = i2cReadWithTimeoutFunction();
-    readValue[1] = i2cReadWithTimeoutFunction();
-    for (int i = 0; i < 8; i++) {
-      value[bitSelect] = readValue[0] & (1 << i);
-      bitSelect++;
-    }
-    for (int i = 0; i < 6; i++) {
-      value[bitSelect] = readValue[1] & (1 << i + 2);
-      bitSelect++;
-    }
-  }
-  Wire.requestFrom(LINE_RIGHTADDRESS, 2);  //アドレスは変えてね
-
-  while (Wire.available() >= 2) {
-    byte readValue[2];
-    readValue[0] = i2cReadWithTimeoutFunction();
-    readValue[1] = i2cReadWithTimeoutFunction();
-    for (int i = 0; i < 3; i++) {
-      value[bitSelect] = readValue[0] & (1 << i + 1);
-      bitSelect++;
-    }
-    value[bitSelect] = readValue[0] & (1 << 5);
-    bitSelect++;
-    value[bitSelect] = readValue[0] & (1 << 7);
-    bitSelect++;
-    value[bitSelect] = readValue[1] & (1 << 3);
-    bitSelect++;
-    value[bitSelect] = readValue[1] & (1 << 5);
-    bitSelect++;
-    value[bitSelect] = readValue[1] & (1 << 7);
-    bitSelect++;
-  }
+  // }
   value[41] = true;
   value[42] = true;
 }
@@ -313,7 +256,7 @@ int _Line::calcDirection(void) {
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
-  Serial.print(_degree);
+  // Serial.print(_degree);
   return _degree;
 }
 
