@@ -51,7 +51,9 @@ const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 #define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 50
+#define LINEOVERNUM 20
+#define LINEOVERTIME 500
+#define LINERETURNTIME 300
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -172,6 +174,7 @@ class _Line {
 
   bool flag;           //ラインセンサーの動きをするか
   bool Rflag;          //飛び出しリターン時のフラグ
+  bool Oflag;          //オーバーリターンのフラグ
   bool touch;          //ラインに触れているか
   bool value[47];      //反応値
   bool check[47];      //計測されたか
@@ -207,6 +210,7 @@ class _Line {
   int totaldegree;
   int leftdegree;   //ラインアウト時のライン進行方向
   int rdegree;      //ラインアウト時のリターン進行方向
+  int odegree;      //ラインオーバーリターン時の進行方向
   float t_vectorX;  //ベクトル換算時のベクトルＸ
   float t_vectorY;  //ベクトル換算時のベクトルＹ
 
@@ -455,10 +459,9 @@ void loop() {
       _Mdegree = ball.Move_degree;
     }
   }
-  // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
-  if (_Mdegree > 360) {
+  if (_Mdegree > 360 && _Mdegree != 1000) {
     _Mdegree = _Mdegree - 360;
   } else if (_Mdegree < 0) {
     _Mdegree = _Mdegree + 360;
@@ -497,10 +500,10 @@ void loop() {
   } else {
     motor.lowBatteryCount = millis();
   }
-
-  if (millis() - motor.lowBatteryCount >= 1000) {
-    emergency = true;
-    UI.errorCode = 1;
+  if (false) {
+    // Serial.print(_Mdegree);
+    // Serial.print(" ");
+    Serial.println(millis() - loopTimerA);
   }
 
   // if (true) {
