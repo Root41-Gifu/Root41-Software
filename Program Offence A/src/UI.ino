@@ -289,7 +289,11 @@ void _UI::NeoPixeldisplay(int _mode) {
             break;
         }
       } else if (frash_mode == 1) {
-        if (millis() - line.InTimer > 10) {
+        if (line.Rflag) {
+          StripFulldisplay(BallDistance_Color1);
+        }else if(line.Oflag){
+          StripFulldisplay(BallDistance_Color2);
+        }else{
           int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
                                       2, 2, 4, 4, 4, 4, 0, 0};
           for (int i = 0; i < 16; i++) {
@@ -304,8 +308,6 @@ void _UI::NeoPixeldisplay(int _mode) {
               strip.setPixelColor(i, Line_Color1);
             }
           }
-        } else {
-          StripFulldisplay(BallDistance_Color1);
         }
       }
     }

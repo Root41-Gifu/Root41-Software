@@ -157,18 +157,23 @@ void _Line::arrange(void) {
           reference_degree = gyro.deg - 360;
         }
 
-        // //オーバーシュート時にもどる
-        // if (millis() - OutTimer <= LINEOVERTIME) {
-        //   rdegree = leftdegree;
-        // } else {
-        //   Rflag = false;
-        // }
+        //オーバーシュート時にもどる
+        if (millis() - OutTimer <= LINEOVERTIME) {
+          if(whited>LINEOVERNUM){
+            rdegree = leftdegree;
+          }else{
+            odegree = leftdegree;
+          }
+        } else {
+          Rflag = false;
+        }
       }
 
       whiting++;
       touch = true;
       flag = true;
       Rflag = false;
+      Oflag = false;
       detect_num[Line_Where[i]]++;
       OutTimer = millis();
     }
@@ -193,14 +198,26 @@ void _Line::arrange(void) {
 
   //ラインオフの時
   if (!flag) {
-    // if (millis() - OutTimer > LINEOVERTIME) {
-    //   Rflag = false;
-    //   flag = false;
-    //   leftdegree = 1000;
-    //   rdegree = 1000;
-    // } else {
-    //   Rflag = true;
-    // }
+    if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
+      Rflag = false;
+      Oflag = false;
+      flag = false;
+      leftdegree = 1000;
+      rdegree = 1000;
+      odegree=1000;
+    }else if (millis() - OutTimer > LINERETURNTIME&& whited < LINEOVERNUM) {
+      Rflag = false;
+      Oflag = false;
+      flag = false;
+      leftdegree = 1000;
+      rdegree = 1000;
+    }else if(whited>=LINEOVERNUM){
+      Rflag=true;
+      Oflag=false;
+    } else {
+      Rflag = false;
+      Oflag = true;
+    }
     if (!Rflag) {
       for (int i = 0; i < 8; i++) {
         orderBlock[i] = 100;
@@ -221,6 +238,7 @@ void _Line::arrange(void) {
     }
   } else {
     Rflag = false;
+    Oflag=false;
   }
 }
 
@@ -228,10 +246,13 @@ int _Line::calcDirection(void) {
   int _degree;  //ベクトルに範囲
   t_vectorX = 0;
   t_vectorY = 0;
+  int count = 0;
   for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < passed_num[i]; j++) {
-      t_vectorX += block_vectorX[i];
-      t_vectorY += block_vectorY[i];
+    for (int i = 0; i < 12; i++) {
+      if (i < whited) {
+        t_vectorX += block_vectorX[Line_Where[order[i]]];
+        t_vectorY += block_vectorY[Line_Where[order[i]]];
+      }
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
@@ -312,6 +333,10 @@ void _Line::calc(void) {
   if (Rflag) {
     _degree = rdegree;
     flag = false;  // test
+  }
+  if (Oflag) {
+    _degree = odegree;
+    flag = false;
   }
   if (millis() - InTimer <= 10) {
     _degree = 10000;
