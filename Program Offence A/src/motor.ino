@@ -166,7 +166,8 @@ void _Motor::drive(int _deg, int _power, bool _stop = false) {
       angularVelocity = 0;
     }
 
-    if (abs(direction) <= 50) integral += direction;
+    if (abs(direction) <= 50)
+      integral += direction;
 
     direction *= Kp * -1;               //比例制御
     direction -= integral * Ki;         //積分制御
@@ -291,7 +292,8 @@ void _Motor::motorPID_drive(int motor_speed) {
   motor.val[3] = max * sin(radians((_Mdegree + 55) % 360));
   for (int i = 0; i < 4; i++) {
     //大きすぎるのを防止
-    motor.val[i] = Collection;
+    motor.val[i] += Collection * 0.7;
+    motor.val[i] = constrain(motor.val[i], -60, 60);
   }
 
   motor.directDrive(motor.val);

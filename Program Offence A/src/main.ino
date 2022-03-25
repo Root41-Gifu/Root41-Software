@@ -172,14 +172,15 @@ class _Line {
   3:ライン踏んで4以上（ずれあり）
   */
 
-  bool flag;           //ラインセンサーの動きをするか
-  bool Rflag;          //飛び出しリターン時のフラグ
-  bool Oflag;          //オーバーリターンのフラグ
-  bool touch;          //ラインに触れているか
-  bool value[47];      //反応値
-  bool check[47];      //計測されたか
-  bool checkBlock[8];  //８分割ブロックの計測フラグ
-  int Block;           //８分割ブロック
+  bool flag;             //ラインセンサーの動きをするか
+  bool Rflag;            //飛び出しリターン時のフラグ
+  bool Oflag;            //オーバーリターンのフラグ
+  bool touch;            //ラインに触れているか
+  bool value[47];        //反応値
+  bool value_stock[47];  //反応値
+  bool check[47];        //計測されたか
+  bool checkBlock[8];    //８分割ブロックの計測フラグ
+  int Block;             //８分割ブロック
   int Block_degree[8] = {180, 180, 0, 0, 90, 90, 270, 270};
   int Edge;
   int order[47];      //反応した順番
