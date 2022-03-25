@@ -216,7 +216,7 @@ void _Line::arrange(void) {
 
         //オーバーシュート時にもどる
         if (millis() - OutTimer <= LINEOVERTIME) {
-          if(whited>=30){
+          if(whited>LINEOVERNUM){
             rdegree = leftdegree;
           }else{
             odegree = leftdegree;
@@ -255,20 +255,20 @@ void _Line::arrange(void) {
 
   //ラインオフの時
   if (!flag) {
-    if (millis() - OutTimer > LINEOVERTIME && whited >= 30) {
+    if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
       Rflag = false;
       Oflag = false;
       flag = false;
       leftdegree = 1000;
       rdegree = 1000;
       odegree=1000;
-    }else if (millis() - OutTimer > LINERETURNTIME&& whited < 30) {
+    }else if (millis() - OutTimer > LINERETURNTIME&& whited < LINEOVERNUM) {
       Rflag = false;
       Oflag = false;
       flag = false;
       leftdegree = 1000;
       rdegree = 1000;
-    }else if(whited>=30){
+    }else if(whited>=LINEOVERNUM){
       Rflag=true;
       Oflag=false;
     } else {

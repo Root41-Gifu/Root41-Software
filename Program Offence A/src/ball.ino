@@ -218,7 +218,7 @@ void _Ball::calc(int _distance) {
     _degree = 1000;
   } else {
     float _plusvector[2];
-    float gain_constant = 8;      //閾値
+    float gain_constant = 9;      //閾値
     int max_gain = 120;           //上限
     int distance_constant = 300;  //距離定数
     // switch (distanceLevel) {

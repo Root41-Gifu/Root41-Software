@@ -51,8 +51,9 @@ const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 #define LINE_BRIGHTNESS 25  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERTIME 80
-#define LINERETURNTIME 10
+#define LINEOVERNUM 20
+#define LINEOVERTIME 500
+#define LINERETURNTIME 300
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -470,7 +471,7 @@ void loop() {
       if (UI.active == true) {
         //動作中
         motor.motorPID_drive(
-            0.043, 1, 0.022,
+            0.053, 1, 0.022,
             60);  //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
         //停止中
