@@ -84,7 +84,7 @@ int readCounter = 0;
 
 void _Line::read(void) {
   readCounter++;
-  readCounter %= 4;
+  readCounter =readCounter&4;
   int bitSelect;
 
   if (readCounter == 0) {
@@ -95,17 +95,17 @@ void _Line::read(void) {
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
-        value_stock[bitSelect] = readValue[0] & (1 << i + 1);
+        value[bitSelect] = readValue[0] & (1 << i + 1);
         bitSelect++;
       }
       for (int i = 0; i < 3; i++) {
-        value_stock[bitSelect] = readValue[0] & (1 << i + 5);
+        value[bitSelect] = readValue[0] & (1 << i + 5);
         bitSelect++;
       }
-      value_stock[bitSelect] = readValue[1] & (1 << 3);
+      value[bitSelect] = readValue[1] & (1 << 3);
       bitSelect++;
       for (int i = 0; i < 3; i++) {
-        value_stock[bitSelect] = readValue[1] & (1 << i + 5);
+        value[bitSelect] = readValue[1] & (1 << i + 5);
         bitSelect++;
       }
     }
@@ -117,17 +117,17 @@ void _Line::read(void) {
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
-        value_stock[bitSelect] = readValue[0] & (1 << i + 1);
+        value[bitSelect] = readValue[0] & (1 << i + 1);
         bitSelect++;
       }
-      value_stock[bitSelect] = readValue[0] & (1 << 5);
+      value[bitSelect] = readValue[0] & (1 << 5);
       bitSelect++;
       for (int i = 0; i < 2; i++) {
-        value_stock[bitSelect] = readValue[1] & (1 << i + 2);
+        value[bitSelect] = readValue[1] & (1 << i + 2);
         bitSelect++;
       }
       for (int i = 0; i < 3; i++) {
-        value_stock[bitSelect] = readValue[1] & (1 << i + 5);
+        value[bitSelect] = readValue[1] & (1 << i + 5);
         bitSelect++;
       }
     }
@@ -138,11 +138,11 @@ void _Line::read(void) {
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 8; i++) {
-        value_stock[bitSelect] = readValue[0] & (1 << i);
+        value[bitSelect] = readValue[0] & (1 << i);
         bitSelect++;
       }
       for (int i = 0; i < 6; i++) {
-        value_stock[bitSelect] = readValue[1] & (1 << i + 2);
+        value[bitSelect] = readValue[1] & (1 << i + 2);
         bitSelect++;
       }
     }
@@ -154,24 +154,19 @@ void _Line::read(void) {
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
-        value_stock[bitSelect] = readValue[0] & (1 << i + 1);
+        value[bitSelect] = readValue[0] & (1 << i + 1);
         bitSelect++;
       }
-      value_stock[bitSelect] = readValue[0] & (1 << 5);
+      value[bitSelect] = readValue[0] & (1 << 5);
       bitSelect++;
-      value_stock[bitSelect] = readValue[0] & (1 << 7);
+      value[bitSelect] = readValue[0] & (1 << 7);
       bitSelect++;
-      value_stock[bitSelect] = readValue[1] & (1 << 3);
+      value[bitSelect] = readValue[1] & (1 << 3);
       bitSelect++;
-      value_stock[bitSelect] = readValue[1] & (1 << 5);
+      value[bitSelect] = readValue[1] & (1 << 5);
       bitSelect++;
-      value_stock[bitSelect] = readValue[1] & (1 << 7);
+      value[bitSelect] = readValue[1] & (1 << 7);
       bitSelect++;
-    }
-  }
-  if(readCounter==3){
-    for(int i=0; i<LINE_NUM; i++){
-      value[i]=value_stock[i];
     }
   }
   value[41] = true;

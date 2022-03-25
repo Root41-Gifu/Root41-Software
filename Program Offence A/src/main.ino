@@ -303,7 +303,7 @@ float block_vectorX[8];
 float block_vectorY[8];
 
 void setup() {
-  delay(1000);
+  // delay(1000);
 
   Serial.begin(115200);
 
@@ -314,7 +314,8 @@ void setup() {
 LINESENSOR_INITIALIZE:
 
   Wire.begin();
-  // Wire.setClock(4000000);
+  gyro.setting();
+  // Wire.setClock(10000);
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -332,13 +333,13 @@ LINESENSOR_INITIALIZE:
     if (result != 0) {
       goto LINESENSOR_INITIALIZE;
     }
-    delay(100);
+    delay(50);
   }
 
   line.vectorCalc();
   //クラスごとのセットアップ
   line.vectorCalc();  //ラインごとのベクトル計算
-  gyro.setting();
+
   motor.begin();
   UI.mode = 1;
 
@@ -400,7 +401,7 @@ void loop() {
   for (int i = 0; i <= 3; i++) {
     UI.check(i);  //検知の押す離すの確認
   }
-
+  // gyro.deg = gyro.read();
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
   // //緊急事態時と平常時の処理
@@ -460,6 +461,7 @@ void loop() {
       _Mdegree = ball.Move_degree;
     }
   }
+  _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
   if (_Mdegree > 360 && _Mdegree != 1000) {
@@ -501,18 +503,14 @@ void loop() {
   } else {
     motor.lowBatteryCount = millis();
   }
-  if (false) {
+  if (true) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
-    Serial.println(millis() - loopTimerA);
+    for(int i=0; i<LINE_NUM; i++){
+      Serial.print(line.value[i]);
+    }
+    Serial.println(" ");
   }
-
-  // if (true) {
-  //   // Serial.print(_Mdegree);
-  //   // Serial.print(" ");
-  Serial.println(micros() - loopTimerA, 10);
-  // }
-  // UI.SerialPrint(true);  //引数で通信切り替え
 }
 
 int i2cReadWithTimeoutFunction(void) {
