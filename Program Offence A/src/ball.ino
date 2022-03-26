@@ -218,8 +218,8 @@ void _Ball::calc(int _distance) {
     _degree = 1000;
   } else {
     float _plusvector[2];
-    float gain_constant = 9;      //閾値
-    int max_gain = 120;           //上限
+    float gain_constant = 8;      //閾値
+    int max_gain = 130;           //上限
     int distance_constant = 300;  //距離定数
     // switch (distanceLevel) {
     //   case 3:
@@ -250,7 +250,7 @@ void _Ball::calc(int _distance) {
       //   }
       //   _degree += gain_degree;
     } else {
-      if (_distance > 100000000000) {
+      if (_distance < 130) {
         _degree=degree;
       } else {
         if (vectortX > 0) {

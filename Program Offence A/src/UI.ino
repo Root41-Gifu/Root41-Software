@@ -73,6 +73,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -113,6 +114,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -160,6 +162,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -190,6 +193,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }

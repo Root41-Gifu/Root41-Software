@@ -32,13 +32,15 @@ void _Motor::directDrive(int* p) {
   if (serialCounter % 2 == 0) {
     Serial4.write(data[0]);
     Serial1.write(data[2]);
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write(data[1]);
     Serial1.write(data[3]);
   } else {
     Serial4.write(data[1]);
     Serial1.write(data[3]);
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write(data[0]);
     Serial1.write(data[2]);
   }
@@ -68,13 +70,15 @@ void _Motor::normalBrake(void) {
   if (serialCounter % 2 == 0) {
     Serial4.write((0B01111111));
     Serial1.write((0B01111111));
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write((0B11111111));
     Serial1.write((0B11111111));
   } else {
     Serial4.write((0B11111111));
     Serial1.write((0B11111111));
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write((0B01111111));
     Serial1.write((0B01111111));
   }
@@ -83,7 +87,8 @@ void _Motor::normalBrake(void) {
 void _Motor::ultraBrake(void) {
   Serial4.write((0B01111111));
   Serial1.write((0B01111111));
-  gyro.deg = gyro.read();
+  // gyro.deg = gyro.read();
+  delay(1);
   Serial4.write((0B11111111));
   Serial1.write((0B11111111));
 }

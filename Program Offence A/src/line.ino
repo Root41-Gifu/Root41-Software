@@ -441,9 +441,9 @@ void _Line::calc(void) {
   if (Oflag) {
     _degree = odegree;
   }
-  // if (millis() - InTimer <= 30) {
-  //   _degree = 10000;
-  // }
+  if (millis() - InTimer <= 30) {
+    _degree = 10000;
+  }
   Move_degree = _degree;
   leftdegree = _degree;
 }

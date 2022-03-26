@@ -292,6 +292,7 @@ class _gyro {
   int differentialRead(void);
 
   int deg;
+  int reference_deg;
   int eeprom[6];
 
   bool isLift = false;
@@ -320,9 +321,12 @@ void setup() {
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
 
+  Wire.setClock(400000);
   Wire.begin();
-  gyro.setting();
-  // Wire.setClock(10000);
+  Wire.setClock(400000);
+  for (int i = 0; i < 5; i++) {
+    gyro.setting();
+  }
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -363,7 +367,7 @@ void loop() {
   long loopTimerA = micros();
 
   // if (!line.flag && !line.Rflag && !line.Oflag) {
-  //   if (millis() - gyroReset_Timer > 500) {
+  //   if (millis() - gyroReset_Timer > 1000) {
   //     if (UI.active) {
   //       gyroReset_Timer = millis();
   //       UI.active = false;
@@ -451,7 +455,14 @@ void loop() {
   // gyro
 
   //ジャイロの読みこみ等
-  gyro.deg=gyro.read();//<これはモーター処理で読んでるからコメントアウトのままで良し
+  // if(!UI.active&&!reset_flag){
+    
+  // }
+  gyro.deg=360;//360
+  gyro.deg+=gyro.read();//
+  gyro.deg-=gyro.reference_deg;
+  gyro.deg%=360;
+
 
   // Motor-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -s
 
@@ -461,11 +472,7 @@ void loop() {
   //
   line.reference_degree =
       0;  //これは角度のずれを考慮したいときにコメントアウトにして
-
-  if (line.Move_degree == 10000) {
-    //ラインなし、ボール反応時
-    _Mdegree = ball.Move_degree;
-  } else if (line.flag) {
+  if (line.flag) {
     //ラインあり、ライン検知時
     // _Mdegree = line.Move_degree - line.reference_degree;
     _Mdegree = line.Move_degree;
@@ -477,14 +484,14 @@ void loop() {
     _Mdegree = line.odegree;
   } else {
     //ラインあり、ラインから距離をとる
-      // _Mdegree = int(ball.Move_degree);
-      _Mdegree = ball.Move_degree;
+    // _Mdegree = int(ball.Move_degree);
+    _Mdegree = ball.Move_degree;
   }
   // _Mdegree = ball.Move_degree;
   // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
-  if (_Mdegree > 360 && _Mdegree != 1000) {
+  if (_Mdegree > 360 && _Mdegree != 1000 && _Mdegree != 10000) {
     _Mdegree = _Mdegree - 360;
   } else if (_Mdegree < 0) {
     _Mdegree = _Mdegree + 360;
@@ -500,8 +507,14 @@ void loop() {
       //モードオフェンス、ディフェンスの時
       if (UI.active == true) {
         //動作中
-        motor.motorPID_drive(60);
-        UI.bottomUIFlag = true;
+        if (_Mdegree != 10000) {
+          motor.motorPID_drive(60);
+
+          // motor.release();
+          UI.bottomUIFlag = true;
+        } else {
+          motor.normalBrake();
+        }
 
         //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
@@ -532,12 +545,12 @@ void loop() {
     //     Serial.print(" ");
     //   }
     // }
-    Serial.print(line.Oflag);
-    Serial.print(line.Rflag);
+    // Serial.print(line.Oflag);
+    // Serial.print(line.Rflag);
     // for(int i=0; i<8; i++){
     //   Serial.print(line.checkBlock[i]);
     // }
-    Serial.print(line.leftdegree);
+    Serial.print(ball.distance);
     Serial.print(" ");
     Serial.print(line.rdegree);
     Serial.print(" ");
