@@ -243,15 +243,15 @@ void _Line::arrange(void) {
         }
 
         //オーバーシュート時にもどる
-        if (millis() - OutTimer <= LINEOVERTIME) {
-          if (whited > LINEOVERNUM) {
-            rdegree = leftdegree;
-          } else {
-            odegree = leftdegree;
-          }
-        } else {
-          Rflag = false;
-        }
+        // if (millis() - OutTimer <= LINEOVERTIME) {
+        //   if (whited > LINEOVERNUM) {
+        //     rdegree = leftdegree;
+        //   } else {
+        //     odegree = leftdegree;
+        //   }
+        // } else {
+        //   Rflag = false;
+        // }
       }
 
       whiting++;
@@ -283,26 +283,41 @@ void _Line::arrange(void) {
 
   //ラインオフの時
   if (!flag) {
-    if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
-      Rflag = false;
-      Oflag = false;
-      flag = false;
-      leftdegree = 1000;
-      rdegree = 1000;
-      odegree = 1000;
-    } else if (millis() - OutTimer > LINERETURNTIME && whited < LINEOVERNUM) {
-      Rflag = false;
-      Oflag = false;
-      flag = false;
-      leftdegree = 1000;
-      rdegree = 1000;
-    } else if (whited >= LINEOVERNUM) {
-      Rflag = true;
-      Oflag = false;
-    } else {
-      Rflag = false;
-      Oflag = true;
+    if(Rflag){
+      if(millis()-OutTimer>LINERETURNTIME){
+        Rflag=false;
+      }
+    }else if(Oflag){
+      if(millis()-OutTimer>LINEOVERTIME){
+        Oflag=false;
+      }
+    }else if(whited>=LINEOVERNUM&&millis()-OutTimer<=LINERETURNTIME){
+      Rflag=true;
+      rdegree=leftdegree;
+    }else if(whited<LINE_OVERNUM&&millis()-OutTimer<=LINEOVERTIME){
+      Oflag=true;
+      odegree=leftdegree;
     }
+    // if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
+    //   Rflag = false;
+    //   Oflag = false;
+    //   flag = false;
+    //   leftdegree = 1000;
+    //   rdegree = 1000;
+    //   odegree = 1000;
+    // } else if (millis() - OutTimer > LINERETURNTIME && whited < LINEOVERNUM) {
+    //   Rflag = false;
+    //   Oflag = false;
+    //   flag = false;
+    //   leftdegree = 1000;
+    //   rdegree = 1000;
+    // } else if (whited >= LINEOVERNUM) {
+    //   Rflag = true;
+    //   Oflag = false;
+    // } else {
+    //   Rflag = false;
+    //   Oflag = true;
+    // }
     if (!Rflag&&!Oflag) {
       for (int i = 0; i < 8; i++) {
         orderBlock[i] = 100;
@@ -318,6 +333,8 @@ void _Line::arrange(void) {
         order[i] = 100;
         check[i] = 0;
       }
+      rdegree=0;
+      odegree=0;
       reference_degree = 0;
       current_degree = 0;
     }
@@ -414,13 +431,11 @@ void _Line::calc(void) {
   }
   if (Rflag) {
     _degree = rdegree;
-    flag = false;  // test
   }
   if (Oflag) {
     _degree = odegree;
-    flag = false;
   }
-  if (millis() - InTimer <= 10) {
+  if (millis() - InTimer <= 30) {
     _degree = 10000;
   }
   Move_degree = _degree;
