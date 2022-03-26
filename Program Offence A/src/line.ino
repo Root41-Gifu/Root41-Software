@@ -187,6 +187,10 @@ void _Line::read(void) {
 
     }
   }
+  value[19]=true;
+  value[23]=true;
+  value[27]=true;
+  value[29]=true;
   value[41] = true;
   value[42] = true;
 }
@@ -291,11 +295,13 @@ void _Line::arrange(void) {
       if(millis()-OutTimer>LINEOVERTIME){
         Oflag=false;
       }
-    }else if(whited>=LINEOVERNUM&&millis()-OutTimer<=LINERETURNTIME){
+    }else if(whited<LINEOVERNUM&&millis()-OutTimer<=LINERETURNTIME){
       Rflag=true;
+      rdegree=1000;
       rdegree=leftdegree;
-    }else if(whited<LINE_OVERNUM&&millis()-OutTimer<=LINEOVERTIME){
+    }else if(whited>=LINEOVERNUM&&millis()-OutTimer<=LINEOVERTIME){
       Oflag=true;
+      odegree=1000;
       odegree=leftdegree;
     }
     // if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
@@ -349,7 +355,7 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < LINEOVERNUM; i++) {
+  for (int i = 0; i < 6; i++) {
     if (i < whited) {
       t_vectorX += block_vectorX[Line_Where[order[i]]];
       t_vectorY += block_vectorY[Line_Where[order[i]]];
@@ -364,14 +370,14 @@ void _Line::calc(void) {
   if (flag) {
     t_vectorX = 0;
     t_vectorY = 0;
-    current_degree = 0;  // kese
+    current_degree = gyro.deg;  // kese
     if (mode == 1) {
       //少数反応
-      _degree = calcDirection() - current_degree;
-      // _degree=Block_degree[orderBlock[0]];
+      // _degree = calcDirection() - current_degree;
+      _degree=Block_degree[orderBlock[0]];
     } else if (mode == 2) {
       //ずれ少ない多数反応
-      _degree = calcDirection() - current_degree;
+      _degree = calcDirection() ;
       // if(abs(orderBlock[0]-orderBlock[1])==4){
       //連番　直線的な可能性
       //角度修正ありにしたい＜
@@ -435,9 +441,9 @@ void _Line::calc(void) {
   if (Oflag) {
     _degree = odegree;
   }
-  if (millis() - InTimer <= 30) {
-    _degree = 10000;
-  }
+  // if (millis() - InTimer <= 30) {
+  //   _degree = 10000;
+  // }
   Move_degree = _degree;
   leftdegree = _degree;
 }

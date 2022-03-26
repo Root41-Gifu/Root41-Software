@@ -48,12 +48,12 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 30  // 50
+#define LINE_BRIGHTNESS 15  // 50
 #define NEOPIXEL_BRIGHTNESS 20
-#define LIGHTLIMIT 1
+#define LIGHTLIMIT 0
 #define LINEOVERNUM 25
 #define LINEOVERTIME 500
-#define LINERETURNTIME 500
+#define LINERETURNTIME 300
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -72,6 +72,9 @@ float Battery;
 int MotorPower = 100;
 int degree;
 bool emergency;  //緊急用のフラグ（やばいとき上げて）
+
+unsigned long gyroReset_Timer;
+bool reset_flag;
 
 int readCounter = 0;
 
@@ -187,7 +190,7 @@ class _Line {
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
-  
+
   int bitSelect;
 
   //カウンター
@@ -358,6 +361,21 @@ LINESENSOR_INITIALIZE:
 
 void loop() {
   long loopTimerA = micros();
+
+  // if (!line.flag && !line.Rflag && !line.Oflag) {
+  //   if (millis() - gyroReset_Timer > 500) {
+  //     if (UI.active) {
+  //       gyroReset_Timer = millis();
+  //       UI.active = false;
+  //       reset_flag = true;
+  //     }
+  //   }
+  // }
+  // if (reset_flag) {
+  //   UI.active = true;
+  //   reset_flag = false;
+  // }
+
   // Battery-check---------------------------------------------
   Battery = analogRead(voltage) * 0.01469231;
 
@@ -433,7 +451,7 @@ void loop() {
   // gyro
 
   //ジャイロの読みこみ等
-  // gyro.deg=gyro.read();//<これはモーター処理で読んでるからコメントアウトのままで良し
+  gyro.deg=gyro.read();//<これはモーター処理で読んでるからコメントアウトのままで良し
 
   // Motor-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -s
 
@@ -451,20 +469,18 @@ void loop() {
     //ラインあり、ライン検知時
     // _Mdegree = line.Move_degree - line.reference_degree;
     _Mdegree = line.Move_degree;
-  } else if (line.Rflag && millis() - line.OutTimer < 200) {
+  } else if (line.Rflag) {
     //ラインあり、ラインオーバー時
     // _Mdegree = line.leftdegree - line.reference_degree;
-    _Mdegree = line.leftdegree;
+    _Mdegree = line.rdegree;
+  } else if (line.Oflag) {
+    _Mdegree = line.odegree;
   } else {
     //ラインあり、ラインから距離をとる
-    if (millis() - line.OutTimer <= LINEOVERTIME) {
-      // _Mdegree = line.rdegree - line.reference_degree;
-      _Mdegree = line.rdegree;
-    } else {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
-    }
   }
+  // _Mdegree = ball.Move_degree;
   // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
@@ -510,12 +526,22 @@ void loop() {
   if (true) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
-    for(int i=0; i<LINE_NUM; i++){
-      if(line.value[i]==0){
-        Serial.print(i);
-      }
-    }
+    // for (int i = 0; i < LINE_NUM; i++) {
+    //   if (line.value[i] == 0) {
+    //     Serial.print(i);
+    //     Serial.print(" ");
+    //   }
+    // }
     Serial.print(line.Oflag);
+    Serial.print(line.Rflag);
+    // for(int i=0; i<8; i++){
+    //   Serial.print(line.checkBlock[i]);
+    // }
+    Serial.print(line.leftdegree);
+    Serial.print(" ");
+    Serial.print(line.rdegree);
+    Serial.print(" ");
+    Serial.print(_Mdegree);
     Serial.println(" ");
   }
 }
