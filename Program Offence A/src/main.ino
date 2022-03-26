@@ -48,9 +48,9 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 35  // 50
+#define LINE_BRIGHTNESS 30  // 50
 #define NEOPIXEL_BRIGHTNESS 20
-#define LIGHTLIMIT 0
+#define LIGHTLIMIT 1
 #define LINEOVERNUM 25
 #define LINEOVERTIME 500
 #define LINERETURNTIME 500
@@ -465,6 +465,7 @@ void loop() {
       _Mdegree = ball.Move_degree;
     }
   }
+  // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
   if (_Mdegree > 360 && _Mdegree != 1000) {
@@ -510,8 +511,11 @@ void loop() {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
     for(int i=0; i<LINE_NUM; i++){
-      Serial.print(line.value[i]);
+      if(line.value[i]==0){
+        Serial.print(i);
+      }
     }
+    Serial.print(line.Oflag);
     Serial.println(" ");
   }
 }

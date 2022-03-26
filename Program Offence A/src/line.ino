@@ -97,16 +97,20 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 1);
+
         bitSelect++;
       }
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 5);
+
         bitSelect++;
       }
       value[bitSelect] = readValue[1] & (1 << 3);
+
       bitSelect++;
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 5);
+
         bitSelect++;
       }
     }
@@ -119,16 +123,20 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 1);
+
         bitSelect++;
       }
       value[bitSelect] = readValue[0] & (1 << 5);
+
       bitSelect++;
       for (int i = 0; i < 2; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 2);
+
         bitSelect++;
       }
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 5);
+
         bitSelect++;
       }
     }
@@ -140,10 +148,12 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 8; i++) {
         value[bitSelect] = readValue[0] & (1 << i);
+
         bitSelect++;
       }
       for (int i = 0; i < 6; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 2);
+
         bitSelect++;
       }
     }
@@ -156,18 +166,25 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 1);
+
         bitSelect++;
       }
       value[bitSelect] = readValue[0] & (1 << 5);
+
       bitSelect++;
       value[bitSelect] = readValue[0] & (1 << 7);
+
       bitSelect++;
       value[bitSelect] = readValue[1] & (1 << 3);
+
       bitSelect++;
       value[bitSelect] = readValue[1] & (1 << 5);
+
       bitSelect++;
       value[bitSelect] = readValue[1] & (1 << 7);
+
       bitSelect++;
+
     }
   }
   value[41] = true;
@@ -286,7 +303,7 @@ void _Line::arrange(void) {
       Rflag = false;
       Oflag = true;
     }
-    if (!Rflag) {
+    if (!Rflag&&!Oflag) {
       for (int i = 0; i < 8; i++) {
         orderBlock[i] = 100;
         checkBlock[i] = 0;
