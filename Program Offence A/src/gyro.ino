@@ -24,50 +24,50 @@ void dmpDataReady() { mpuInterrupt = true; }
 
 //初期化
 void _gyro::setting(void) {
-#ifndef BNO055
-RESTART:
+  // #ifndef BNO055
+  // RESTART:
 
-  // gyro.eeprom[0] = (EEPROM[1] * 256) + EEPROM[2];
-  // gyro.eeprom[1] = (EEPROM[3] * 256) + EEPROM[4];
-  // gyro.eeprom[2] = (EEPROM[5] * 256) + EEPROM[6];
-  // gyro.eeprom[3] = (EEPROM[7] * 256) + EEPROM[8];
-  // gyro.eeprom[4] = (EEPROM[9] * 256) + EEPROM[10];
-  // gyro.eeprom[5] = (EEPROM[11] * 256) + EEPROM[12];
+  //   // gyro.eeprom[0] = (EEPROM[1] * 256) + EEPROM[2];
+  //   // gyro.eeprom[1] = (EEPROM[3] * 256) + EEPROM[4];
+  //   // gyro.eeprom[2] = (EEPROM[5] * 256) + EEPROM[6];
+  //   // gyro.eeprom[3] = (EEPROM[7] * 256) + EEPROM[8];
+  //   // gyro.eeprom[4] = (EEPROM[9] * 256) + EEPROM[10];
+  //   // gyro.eeprom[5] = (EEPROM[11] * 256) + EEPROM[12];
 
-  mpu.initialize();
-  if (mpu.testConnection() != true) {
-    goto RESTART;  //接続失敗
-  }
-  devStatus = mpu.dmpInitialize();
-  if (devStatus != 0) {
-    goto RESTART;  //初期化失敗
-  }
+  //   mpu.initialize();
+  //   if (mpu.testConnection() != true) {
+  //     goto RESTART;  //接続失敗
+  //   }
+  //   devStatus = mpu.dmpInitialize();
+  //   if (devStatus != 0) {
+  //     goto RESTART;  //初期化失敗
+  //   }
 
-  // -4781	-2019	5343	-41	5	30
-  mpu.setXGyroOffset(70);
-  mpu.setYGyroOffset(54);
-  mpu.setZGyroOffset(-43);
-  mpu.setXAccelOffset(-468);
-  mpu.setYAccelOffset(-644);
-  mpu.setZAccelOffset(3515);
-  // mpu.setXGyroOffset(eeprom[0]);
-  // mpu.setYGyroOffset(eeprom[1]);
-  // mpu.setZGyroOffset(eeprom[2]);
-  // mpu.setXAccelOffset(eeprom[3]);
-  // mpu.setYAccelOffset(eeprom[4]);
-  // mpu.setZAccelOffset(eeprom[5]);
-  mpu.setDMPEnabled(true);
+  //   // -4781	-2019	5343	-41	5	30
+  //   mpu.setXGyroOffset(70);
+  //   mpu.setYGyroOffset(54);
+  //   mpu.setZGyroOffset(-43);
+  //   mpu.setXAccelOffset(-468);
+  //   mpu.setYAccelOffset(-644);
+  //   mpu.setZAccelOffset(3515);
+  //   // mpu.setXGyroOffset(eeprom[0]);
+  //   // mpu.setYGyroOffset(eeprom[1]);
+  //   // mpu.setZGyroOffset(eeprom[2]);
+  //   // mpu.setXAccelOffset(eeprom[3]);
+  //   // mpu.setYAccelOffset(eeprom[4]);
+  //   // mpu.setZAccelOffset(eeprom[5]);
+  //   mpu.setDMPEnabled(true);
 
-  // attachInterrupt(0, dmpDataReady, RISING);
-  mpuIntStatus = mpu.getIntStatus();
+  //   // attachInterrupt(0, dmpDataReady, RISING);
+  //   mpuIntStatus = mpu.getIntStatus();
 
-  dmpReady = true;
+  //   dmpReady = true;
 
-  packetSize = mpu.dmpGetFIFOPacketSize();
+  //   packetSize = mpu.dmpGetFIFOPacketSize();
 
-  offsetVal = 0;
-#else
-
+  //   offsetVal = 0;
+  // #else
+  delay(1000);
   Serial.println("Orientation Sensor Test");
   Serial.println("");
 
@@ -80,65 +80,65 @@ RESTART:
       ;
   }
 
-  delay(1000);
+  delay(100);
 
   bno.setExtCrystalUse(true);
-#endif
+  // #endif
 }
 
 //角度取得
 int _gyro::read(void) {
-#ifndef BNO055
-  while (Wire.available()) {
-    char s = Wire.read();
-  }
-  int tempDeg;
+  // #ifndef BNO055
+  //   while (Wire.available()) {
+  //     char s = Wire.read();
+  //   }
+  //   int tempDeg;
 
-  mpuIntStatus = false;
-  mpuIntStatus = mpu.getIntStatus();
-  fifoCount = mpu.getFIFOCount();
-  if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-    mpu.resetFIFO();
-  } else if (mpuIntStatus & 0x02) {
-    while (fifoCount < packetSize) {
-      fifoCount = mpu.getFIFOCount();
-    }
-    mpu.getFIFOBytes(fifoBuffer, packetSize);
-    fifoCount -= packetSize;
-    mpu.dmpGetQuaternion(&q, fifoBuffer);
-    mpu.dmpGetGravity(&gravity, &q);
-    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-    // if (!line.flag)
-    mpu.dmpGetGyro(&dmpgyro, fifoBuffer);
-    Gyro_Now = degrees(ypr[0]);  // + 180;
-    Gyro = Gyro_Now;
-    while (Gyro <= 0) {
-      Gyro += 360;
-    }
-    Gyro %= 360;
-  }
-  tempDeg = ((360 - Gyro) % 360 - offsetVal + 720) % 360;
-  while (tempDeg < 0) {
-    tempDeg += 360;
-  }
-  // while (Wire.available()) {
-  //   i2cReadWithTimeoutFunction();
-  // }
-  // Serial.print(degrees(ypr[1]));
-  // Serial.print("\t");
-  // Serial.println(degrees(ypr[2]));
-  if (degrees(ypr[2]) <= 165 && degrees(ypr[2]) >= -165) {
-    isLift = true;
-  } else if (degrees(ypr[1]) <= 165 && degrees(ypr[1]) >= -165) {
-    isLift = true;
-  } else {
-    isLift = false;
-  }
+  //   mpuIntStatus = false;
+  //   mpuIntStatus = mpu.getIntStatus();
+  //   fifoCount = mpu.getFIFOCount();
+  //   if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+  //     mpu.resetFIFO();
+  //   } else if (mpuIntStatus & 0x02) {
+  //     while (fifoCount < packetSize) {
+  //       fifoCount = mpu.getFIFOCount();
+  //     }
+  //     mpu.getFIFOBytes(fifoBuffer, packetSize);
+  //     fifoCount -= packetSize;
+  //     mpu.dmpGetQuaternion(&q, fifoBuffer);
+  //     mpu.dmpGetGravity(&gravity, &q);
+  //     mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+  //     // if (!line.flag)
+  //     mpu.dmpGetGyro(&dmpgyro, fifoBuffer);
+  //     Gyro_Now = degrees(ypr[0]);  // + 180;
+  //     Gyro = Gyro_Now;
+  //     while (Gyro <= 0) {
+  //       Gyro += 360;
+  //     }
+  //     Gyro %= 360;
+  //   }
+  //   tempDeg = ((360 - Gyro) % 360 - offsetVal + 720) % 360;
+  //   while (tempDeg < 0) {
+  //     tempDeg += 360;
+  //   }
+  //   // while (Wire.available()) {
+  //   //   i2cReadWithTimeoutFunction();
+  //   // }
+  //   // Serial.print(degrees(ypr[1]));
+  //   // Serial.print("\t");
+  //   // Serial.println(degrees(ypr[2]));
+  //   if (degrees(ypr[2]) <= 165 && degrees(ypr[2]) >= -165) {
+  //     isLift = true;
+  //   } else if (degrees(ypr[1]) <= 165 && degrees(ypr[1]) >= -165) {
+  //     isLift = true;
+  //   } else {
+  //     isLift = false;
+  //   }
 
-  while (char s = Wire.read() != -1) {
-  }
-  return tempDeg % 360;
-#else
+  //   while (char s = Wire.read() != -1) {
+  //   }
+  //   return tempDeg % 360;
+  // #else
   sensors_event_t event;
   bno.getEvent(&event);
 
@@ -150,7 +150,7 @@ int _gyro::read(void) {
   // Serial.print("\tZ: ");
   // Serial.println(event.orientation.x);
   return constrain(round(event.orientation.x), 0, 360);
-#endif
+  // #endif
 }
 
 //角速度取得

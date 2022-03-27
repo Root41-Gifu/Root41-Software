@@ -329,9 +329,9 @@ LINESENSOR_INITIALIZE:
   Wire.setClock(400000);
   Wire.begin();
   Wire.setClock(400000);
-  for (int i = 0; i < 5; i++) {
-    gyro.setting();
-  }
+  // for (int i = 0; i < 5; i++) {
+  gyro.setting();
+  // }
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -461,13 +461,12 @@ void loop() {
 
   //ジャイロの読みこみ等
   // if(!UI.active&&!reset_flag){
-    
-  // }
-  gyro.deg=360;//360
-  gyro.deg+=gyro.read();//
-  gyro.deg-=gyro.reference_deg;
-  gyro.deg%=360;
 
+  // }
+  gyro.deg = 360;           // 360
+  gyro.deg += gyro.read();  //
+  gyro.deg -= gyro.reference_deg;
+  gyro.deg %= 360;
 
   // Motor-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -s
 
