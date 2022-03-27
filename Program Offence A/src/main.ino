@@ -9,6 +9,10 @@ int i2cReadWithTimeoutFunction(void);
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
 
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+
 #define voltage PC0
 
 #define LINE_EFFECT 1
@@ -61,6 +65,7 @@ Adafruit_NeoPixel front(LED_FRONT, LED_PIN_F, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel rear(LED_REAR, LED_PIN_B, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel left(LED_LEFT, LED_PIN_L, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel right(LED_RIGHT, LED_PIN_R, NEO_GRB + NEO_KHZ800);
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 //モーターのやつ
 HardwareSerial Serial4(A1, A0);
@@ -427,7 +432,7 @@ void loop() {
   for (int i = 0; i <= 3; i++) {
     UI.check(i);  //検知の押す離すの確認
   }
-  // gyro.deg = gyro.read();
+
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
   // //緊急事態時と平常時の処理
@@ -539,6 +544,7 @@ void loop() {
   if (true) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
+
     // for (int i = 0; i < LINE_NUM; i++) {
     //   if (line.value[i] == 0) {
     //     Serial.print(i);

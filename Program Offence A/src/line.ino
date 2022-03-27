@@ -362,6 +362,7 @@ int _Line::calcDirection(void) {
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
+
   return _degree;
 }
 
