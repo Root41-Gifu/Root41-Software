@@ -1,4 +1,4 @@
-
+#define BNO055
 MPU6050 mpu;
 static uint8_t mpuIntStatus;
 static bool dmpReady = false;
@@ -24,6 +24,7 @@ void dmpDataReady() { mpuInterrupt = true; }
 
 //初期化
 void _gyro::setting(void) {
+#ifndef BNO055
 RESTART:
 
   // gyro.eeprom[0] = (EEPROM[1] * 256) + EEPROM[2];
@@ -65,10 +66,29 @@ RESTART:
   packetSize = mpu.dmpGetFIFOPacketSize();
 
   offsetVal = 0;
+#else
+
+  Serial.println("Orientation Sensor Test");
+  Serial.println("");
+
+  /* Initialise the sensor */
+  if (!bno.begin()) {
+    /* There was a problem detecting the BNO055 ... check your connections */
+    Serial.print(
+        "Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    while (1)
+      ;
+  }
+
+  delay(1000);
+
+  bno.setExtCrystalUse(true);
+#endif
 }
 
 //角度取得
 int _gyro::read(void) {
+#ifndef BNO055
   while (Wire.available()) {
     char s = Wire.read();
   }
@@ -118,6 +138,19 @@ int _gyro::read(void) {
   while (char s = Wire.read() != -1) {
   }
   return tempDeg % 360;
+#else
+  sensors_event_t event;
+  bno.getEvent(&event);
+
+  // /* Display the floating point data */
+  // Serial.print("X: ");
+  // Serial.print(event.orientation.x, 4);
+  // Serial.print("\tY: ");
+  // Serial.print(event.orientation.y, 4);
+  // Serial.print("\tZ: ");
+  // Serial.println(event.orientation.x);
+  return constrain(round(event.orientation.x), 0, 360);
+#endif
 }
 
 //角速度取得

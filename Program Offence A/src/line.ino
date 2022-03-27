@@ -323,7 +323,7 @@ int _Line::calcDirection(void) {
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
-  Serial.print(_degree);
+  // Serial.print(_degree);
   return _degree;
 }
 
