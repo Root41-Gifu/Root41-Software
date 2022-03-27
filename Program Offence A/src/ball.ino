@@ -218,8 +218,8 @@ void _Ball::calc(int _distance) {
     _degree = 1000;
   } else {
     float _plusvector[2];
-    float gain_constant = 9;      //閾値
-    int max_gain = 120;           //上限
+    float gain_constant = 8;      //閾値
+    int max_gain = 130;           //上限
     int distance_constant = 300;  //距離定数
     // switch (distanceLevel) {
     //   case 3:
@@ -240,43 +240,48 @@ void _Ball::calc(int _distance) {
     // }
     int gain_degree;
 
-    if (degree < 50 || degree > 310) {
+    if (degree < 40 || degree > 320) {
       _degree = degree;
-    // } else if (degree < 90 || degree > 270) {
-    //   if (degree < 90) {
-    //     int gain_degree = map(degree, 0, 90, 0, 90);
-    //   } else {
-    //     int gain_degree = map(degree, 180, 360, -90, 0);
-    //   }
-    //   _degree += gain_degree;
+      // } else if (degree < 90 || degree > 270) {
+      //   if (degree < 90) {
+      //     int gain_degree = map(degree, 0, 90, 0, 90);
+      //   } else {
+      //     int gain_degree = map(degree, 180, 360, -90, 0);
+      //   }
+      //   _degree += gain_degree;
     } else {
-      if (vectortX > 0) {
-        //右側
-        gain_degree = map(ball.degree, 0, 180, 0, max_gain);  //加える角度を設定
-        _plusvector[0] =
-            vectortX + sin_d[degree + gain_degree] * gain_constant *
-                           (distance_constant /
-                            _distance);  //距離、角度からのベクトルをたす
-        //比率は1:ゲイン*距離定数/距離
-        _plusvector[1] = vectortY + cos_d[degree + gain_degree] *
-                                        gain_constant *
-                                        (distance_constant / _distance);
-        _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
-        if (_degree < 0) {
-          _degree += 360;
-        }
+      if (_distance < 130) {
+        _degree=degree;
       } else {
-        //左側
-        gain_degree = map(ball.degree, 180, 360, max_gain, 0);
-        _plusvector[0] = vectortX + sin_d[degree - gain_degree] *
-                                        gain_constant *
-                                        (distance_constant / _distance);
-        _plusvector[1] = vectortY + cos_d[degree - gain_degree] *
-                                        gain_constant *
-                                        (distance_constant / _distance);
-        _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
-        if (_degree < 0) {
-          _degree += 360;
+        if (vectortX > 0) {
+          //右側
+          gain_degree =
+              map(ball.degree, 0, 180, 0, max_gain);  //加える角度を設定
+          _plusvector[0] =
+              vectortX + sin_d[degree + gain_degree] * gain_constant *
+                             (distance_constant /
+                              _distance);  //距離、角度からのベクトルをたす
+          //比率は1:ゲイン*距離定数/距離
+          _plusvector[1] = vectortY + cos_d[degree + gain_degree] *
+                                          gain_constant *
+                                          (distance_constant / _distance);
+          _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+          if (_degree < 0) {
+            _degree += 360;
+          }
+        } else {
+          //左側
+          gain_degree = map(ball.degree, 180, 360, max_gain, 0);
+          _plusvector[0] = vectortX + sin_d[degree - gain_degree] *
+                                          gain_constant *
+                                          (distance_constant / _distance);
+          _plusvector[1] = vectortY + cos_d[degree - gain_degree] *
+                                          gain_constant *
+                                          (distance_constant / _distance);
+          _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+          if (_degree < 0) {
+            _degree += 360;
+          }
         }
       }
     }
