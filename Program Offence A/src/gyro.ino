@@ -44,12 +44,12 @@ RESTART:
   }
 
   // -4781	-2019	5343	-41	5	30
-  mpu.setXGyroOffset(-41);
-  mpu.setYGyroOffset(5);
-  mpu.setZGyroOffset(30);
-  mpu.setXAccelOffset(-4781);
-  mpu.setYAccelOffset(-2019);
-  mpu.setZAccelOffset(5343);
+  mpu.setXGyroOffset(70);
+  mpu.setYGyroOffset(54);
+  mpu.setZGyroOffset(-43);
+  mpu.setXAccelOffset(-468);
+  mpu.setYAccelOffset(-644);
+  mpu.setZAccelOffset(3515);
   // mpu.setXGyroOffset(eeprom[0]);
   // mpu.setYGyroOffset(eeprom[1]);
   // mpu.setZGyroOffset(eeprom[2]);

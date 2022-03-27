@@ -73,6 +73,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -113,6 +114,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -160,6 +162,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -190,6 +193,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
+        gyro.reference_deg=gyro.read();//350
         standby = false;
       }
     }
@@ -290,9 +294,9 @@ void _UI::NeoPixeldisplay(int _mode) {
         }
       } else if (frash_mode == 1) {
         if (line.Rflag) {
-          StripFulldisplay(BallDistance_Color1);
-        }else if(line.Oflag){
           StripFulldisplay(BallDistance_Color2);
+        }else if(line.Oflag){
+          StripFulldisplay(BallDistance_Color1);
         }else{
           int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
                                       2, 2, 4, 4, 4, 4, 0, 0};
@@ -347,7 +351,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   // line
   if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
-      unsigned long lineNeoPixelColor = front.Color(220, 220, 220);
+      unsigned long lineNeoPixelColor = front.Color(255,255,255);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
       if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {

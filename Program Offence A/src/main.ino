@@ -52,10 +52,10 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 25  // 50
+#define LINE_BRIGHTNESS 15  // 50
 #define NEOPIXEL_BRIGHTNESS 20
 #define LIGHTLIMIT 0
-#define LINEOVERNUM 20
+#define LINEOVERNUM 25
 #define LINEOVERTIME 500
 #define LINERETURNTIME 300
 
@@ -77,6 +77,11 @@ float Battery;
 int MotorPower = 100;
 int degree;
 bool emergency;  //緊急用のフラグ（やばいとき上げて）
+
+unsigned long gyroReset_Timer;
+bool reset_flag;
+
+int readCounter = 0;
 
 class _UI {
  public:
@@ -177,18 +182,21 @@ class _Line {
   3:ライン踏んで4以上（ずれあり）
   */
 
-  bool flag;           //ラインセンサーの動きをするか
-  bool Rflag;          //飛び出しリターン時のフラグ
-  bool Oflag;          //オーバーリターンのフラグ
-  bool touch;          //ラインに触れているか
-  bool value[47];      //反応値
-  bool check[47];      //計測されたか
-  bool checkBlock[8];  //８分割ブロックの計測フラグ
-  int Block;           //８分割ブロック
+  bool flag;             //ラインセンサーの動きをするか
+  bool Rflag;            //飛び出しリターン時のフラグ
+  bool Oflag;            //オーバーリターンのフラグ
+  bool touch;            //ラインに触れているか
+  bool value[47];        //反応値
+  bool value_stock[47];  //反応値
+  bool check[47];        //計測されたか
+  bool checkBlock[8];    //８分割ブロックの計測フラグ
+  int Block;             //８分割ブロック
   int Block_degree[8] = {180, 180, 0, 0, 90, 90, 270, 270};
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
+
+  int bitSelect;
 
   //カウンター
   int whited;   //反応した数
@@ -289,6 +297,7 @@ class _gyro {
   int differentialRead(void);
 
   int deg;
+  int reference_deg;
   int eeprom[6];
 
   bool isLift = false;
@@ -307,7 +316,7 @@ float block_vectorX[8];
 float block_vectorY[8];
 
 void setup() {
-  delay(1000);
+  // delay(1000);
 
   Serial.begin(115200);
 
@@ -317,8 +326,12 @@ void setup() {
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
 
+  Wire.setClock(400000);
   Wire.begin();
-  // Wire.setClock(4000000);
+  Wire.setClock(400000);
+  for (int i = 0; i < 5; i++) {
+    gyro.setting();
+  }
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -336,13 +349,13 @@ LINESENSOR_INITIALIZE:
     if (result != 0) {
       goto LINESENSOR_INITIALIZE;
     }
-    delay(100);
+    delay(50);
   }
 
   line.vectorCalc();
   //クラスごとのセットアップ
   line.vectorCalc();  //ラインごとのベクトル計算
-  gyro.setting();
+
   motor.begin();
   UI.mode = 1;
 
@@ -357,6 +370,21 @@ LINESENSOR_INITIALIZE:
 
 void loop() {
   long loopTimerA = micros();
+
+  // if (!line.flag && !line.Rflag && !line.Oflag) {
+  //   if (millis() - gyroReset_Timer > 1000) {
+  //     if (UI.active) {
+  //       gyroReset_Timer = millis();
+  //       UI.active = false;
+  //       reset_flag = true;
+  //     }
+  //   }
+  // }
+  // if (reset_flag) {
+  //   UI.active = true;
+  //   reset_flag = false;
+  // }
+
   // Battery-check---------------------------------------------
   Battery = analogRead(voltage) * 0.01469231;
 
@@ -405,7 +433,6 @@ void loop() {
     UI.check(i);  //検知の押す離すの確認
   }
 
-  gyro.deg = gyro.read();
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
   // //緊急事態時と平常時の処理
@@ -433,7 +460,14 @@ void loop() {
   // gyro
 
   //ジャイロの読みこみ等
-  // gyro.deg=gyro.read();//<これはモーター処理で読んでるからコメントアウトのままで良し
+  // if(!UI.active&&!reset_flag){
+    
+  // }
+  gyro.deg=360;//360
+  gyro.deg+=gyro.read();//
+  gyro.deg-=gyro.reference_deg;
+  gyro.deg%=360;
+
 
   // Motor-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -s
 
@@ -443,31 +477,26 @@ void loop() {
   //
   line.reference_degree =
       0;  //これは角度のずれを考慮したいときにコメントアウトにして
-
-  if (line.Move_degree == 10000) {
-    //ラインなし、ボール反応時
-    _Mdegree = ball.Move_degree;
-  } else if (line.flag) {
+  if (line.flag) {
     //ラインあり、ライン検知時
     // _Mdegree = line.Move_degree - line.reference_degree;
     _Mdegree = line.Move_degree;
-  } else if (line.Rflag && millis() - line.OutTimer < 200) {
+  } else if (line.Rflag) {
     //ラインあり、ラインオーバー時
     // _Mdegree = line.leftdegree - line.reference_degree;
-    _Mdegree = line.leftdegree;
+    _Mdegree = line.rdegree;
+  } else if (line.Oflag) {
+    _Mdegree = line.odegree;
   } else {
     //ラインあり、ラインから距離をとる
-    if (millis() - line.OutTimer <= LINEOVERTIME) {
-      // _Mdegree = line.rdegree - line.reference_degree;
-      _Mdegree = line.rdegree;
-    } else {
-      // _Mdegree = int(ball.Move_degree);
-      _Mdegree = ball.Move_degree;
-    }
+    // _Mdegree = int(ball.Move_degree);
+    _Mdegree = ball.Move_degree;
   }
+  // _Mdegree = ball.Move_degree;
+  // _Mdegree = ball.Move_degree;
 
   //角度オーバーの修正
-  if (_Mdegree > 360 && _Mdegree != 1000) {
+  if (_Mdegree > 360 && _Mdegree != 1000 && _Mdegree != 10000) {
     _Mdegree = _Mdegree - 360;
   } else if (_Mdegree < 0) {
     _Mdegree = _Mdegree + 360;
@@ -483,8 +512,14 @@ void loop() {
       //モードオフェンス、ディフェンスの時
       if (UI.active == true) {
         //動作中
-        motor.motorPID_drive(60);
-        UI.bottomUIFlag = true;
+        if (_Mdegree != 10000) {
+          motor.motorPID_drive(60);
+
+          // motor.release();
+          UI.bottomUIFlag = true;
+        } else {
+          motor.normalBrake();
+        }
 
         //比例定数,積分定数,微分定数,モーターS,ジャイロS
       } else {
@@ -506,18 +541,28 @@ void loop() {
   } else {
     motor.lowBatteryCount = millis();
   }
-  if (false) {
+  if (true) {
     // Serial.print(_Mdegree);
     // Serial.print(" ");
-    // Serial.println(millis() - loopTimerA);
-  }
 
-  // if (true) {
-  //   // Serial.print(_Mdegree);
-  //   // Serial.print(" ");
-  // Serial.println(micros() - loopTimerA, 10);
-  // }
-  // UI.SerialPrint(true);  //引数で通信切り替え
+    // for (int i = 0; i < LINE_NUM; i++) {
+    //   if (line.value[i] == 0) {
+    //     Serial.print(i);
+    //     Serial.print(" ");
+    //   }
+    // }
+    // Serial.print(line.Oflag);
+    // Serial.print(line.Rflag);
+    // for(int i=0; i<8; i++){
+    //   Serial.print(line.checkBlock[i]);
+    // }
+    Serial.print(ball.distance);
+    Serial.print(" ");
+    Serial.print(line.rdegree);
+    Serial.print(" ");
+    Serial.print(_Mdegree);
+    Serial.println(" ");
+  }
 }
 
 int i2cReadWithTimeoutFunction(void) {

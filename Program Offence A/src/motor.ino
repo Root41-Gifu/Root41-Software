@@ -32,13 +32,15 @@ void _Motor::directDrive(int* p) {
   if (serialCounter % 2 == 0) {
     Serial4.write(data[0]);
     Serial1.write(data[2]);
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write(data[1]);
     Serial1.write(data[3]);
   } else {
     Serial4.write(data[1]);
     Serial1.write(data[3]);
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write(data[0]);
     Serial1.write(data[2]);
   }
@@ -68,13 +70,15 @@ void _Motor::normalBrake(void) {
   if (serialCounter % 2 == 0) {
     Serial4.write((0B01111111));
     Serial1.write((0B01111111));
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write((0B11111111));
     Serial1.write((0B11111111));
   } else {
     Serial4.write((0B11111111));
     Serial1.write((0B11111111));
-    gyro.deg = gyro.read();
+    // gyro.deg = gyro.read();
+    delay(1);
     Serial4.write((0B01111111));
     Serial1.write((0B01111111));
   }
@@ -83,7 +87,8 @@ void _Motor::normalBrake(void) {
 void _Motor::ultraBrake(void) {
   Serial4.write((0B01111111));
   Serial1.write((0B01111111));
-  gyro.deg = gyro.read();
+  // gyro.deg = gyro.read();
+  delay(1);
   Serial4.write((0B11111111));
   Serial1.write((0B11111111));
 }
@@ -166,7 +171,8 @@ void _Motor::drive(int _deg, int _power, bool _stop = false) {
       angularVelocity = 0;
     }
 
-    if (abs(direction) <= 50) integral += direction;
+    if (abs(direction) <= 50)
+      integral += direction;
 
     direction *= Kp * -1;               //比例制御
     direction -= integral * Ki;         //積分制御
@@ -291,7 +297,8 @@ void _Motor::motorPID_drive(int motor_speed) {
   motor.val[3] = max * sin(radians((_Mdegree + 55) % 360));
   for (int i = 0; i < 4; i++) {
     //大きすぎるのを防止
-    motor.val[i] = Collection;
+    motor.val[i] += Collection * 0.7;
+    motor.val[i] = constrain(motor.val[i], -60, 60);
   }
 
   motor.directDrive(motor.val);

@@ -80,12 +80,13 @@ _Line::_Line() {
   }
 }
 
-int readCounter = 0;
-
 void _Line::read(void) {
   readCounter++;
-  readCounter %= 4;
-  int bitSelect;
+  readCounter = readCounter % 4;
+
+  if (readCounter == 0) {
+    bitSelect = 0;
+  }
 
   if (readCounter == 0) {
     Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
@@ -96,16 +97,20 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 1);
+
         bitSelect++;
       }
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 5);
+
         bitSelect++;
       }
       value[bitSelect] = readValue[1] & (1 << 3);
+
       bitSelect++;
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 5);
+
         bitSelect++;
       }
     }
@@ -118,16 +123,20 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 1);
+
         bitSelect++;
       }
       value[bitSelect] = readValue[0] & (1 << 5);
+
       bitSelect++;
       for (int i = 0; i < 2; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 2);
+
         bitSelect++;
       }
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 5);
+
         bitSelect++;
       }
     }
@@ -139,10 +148,12 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 8; i++) {
         value[bitSelect] = readValue[0] & (1 << i);
+
         bitSelect++;
       }
       for (int i = 0; i < 6; i++) {
         value[bitSelect] = readValue[1] & (1 << i + 2);
+
         bitSelect++;
       }
     }
@@ -155,20 +166,31 @@ void _Line::read(void) {
       readValue[1] = i2cReadWithTimeoutFunction();
       for (int i = 0; i < 3; i++) {
         value[bitSelect] = readValue[0] & (1 << i + 1);
+
         bitSelect++;
       }
       value[bitSelect] = readValue[0] & (1 << 5);
+
       bitSelect++;
       value[bitSelect] = readValue[0] & (1 << 7);
+
       bitSelect++;
       value[bitSelect] = readValue[1] & (1 << 3);
+
       bitSelect++;
       value[bitSelect] = readValue[1] & (1 << 5);
+
       bitSelect++;
       value[bitSelect] = readValue[1] & (1 << 7);
+
       bitSelect++;
+
     }
   }
+  value[19]=true;
+  value[23]=true;
+  value[27]=true;
+  value[29]=true;
   value[41] = true;
   value[42] = true;
 }
@@ -225,15 +247,15 @@ void _Line::arrange(void) {
         }
 
         //オーバーシュート時にもどる
-        if (millis() - OutTimer <= LINEOVERTIME) {
-          if (whited > LINEOVERNUM) {
-            rdegree = leftdegree;
-          } else {
-            odegree = leftdegree;
-          }
-        } else {
-          Rflag = false;
-        }
+        // if (millis() - OutTimer <= LINEOVERTIME) {
+        //   if (whited > LINEOVERNUM) {
+        //     rdegree = leftdegree;
+        //   } else {
+        //     odegree = leftdegree;
+        //   }
+        // } else {
+        //   Rflag = false;
+        // }
       }
 
       whiting++;
@@ -265,27 +287,44 @@ void _Line::arrange(void) {
 
   //ラインオフの時
   if (!flag) {
-    if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
-      Rflag = false;
-      Oflag = false;
-      flag = false;
-      leftdegree = 1000;
-      rdegree = 1000;
-      odegree = 1000;
-    } else if (millis() - OutTimer > LINERETURNTIME && whited < LINEOVERNUM) {
-      Rflag = false;
-      Oflag = false;
-      flag = false;
-      leftdegree = 1000;
-      rdegree = 1000;
-    } else if (whited >= LINEOVERNUM) {
-      Rflag = true;
-      Oflag = false;
-    } else {
-      Rflag = false;
-      Oflag = true;
+    if(Rflag){
+      if(millis()-OutTimer>LINERETURNTIME){
+        Rflag=false;
+      }
+    }else if(Oflag){
+      if(millis()-OutTimer>LINEOVERTIME){
+        Oflag=false;
+      }
+    }else if(whited<LINEOVERNUM&&millis()-OutTimer<=LINERETURNTIME){
+      Rflag=true;
+      rdegree=1000;
+      rdegree=leftdegree;
+    }else if(whited>=LINEOVERNUM&&millis()-OutTimer<=LINEOVERTIME){
+      Oflag=true;
+      odegree=1000;
+      odegree=leftdegree;
     }
-    if (!Rflag) {
+    // if (millis() - OutTimer > LINEOVERTIME && whited >= LINEOVERNUM) {
+    //   Rflag = false;
+    //   Oflag = false;
+    //   flag = false;
+    //   leftdegree = 1000;
+    //   rdegree = 1000;
+    //   odegree = 1000;
+    // } else if (millis() - OutTimer > LINERETURNTIME && whited < LINEOVERNUM) {
+    //   Rflag = false;
+    //   Oflag = false;
+    //   flag = false;
+    //   leftdegree = 1000;
+    //   rdegree = 1000;
+    // } else if (whited >= LINEOVERNUM) {
+    //   Rflag = true;
+    //   Oflag = false;
+    // } else {
+    //   Rflag = false;
+    //   Oflag = true;
+    // }
+    if (!Rflag&&!Oflag) {
       for (int i = 0; i < 8; i++) {
         orderBlock[i] = 100;
         checkBlock[i] = 0;
@@ -300,6 +339,8 @@ void _Line::arrange(void) {
         order[i] = 100;
         check[i] = 0;
       }
+      rdegree=0;
+      odegree=0;
       reference_degree = 0;
       current_degree = 0;
     }
@@ -314,16 +355,14 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < 8; i++) {
-    for (int i = 0; i < 12; i++) {
-      if (i < whited) {
-        t_vectorX += block_vectorX[Line_Where[order[i]]];
-        t_vectorY += block_vectorY[Line_Where[order[i]]];
-      }
+  for (int i = 0; i < 6; i++) {
+    if (i < whited) {
+      t_vectorX += block_vectorX[Line_Where[order[i]]];
+      t_vectorY += block_vectorY[Line_Where[order[i]]];
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
-  // Serial.print(_degree);
+
   return _degree;
 }
 
@@ -332,14 +371,14 @@ void _Line::calc(void) {
   if (flag) {
     t_vectorX = 0;
     t_vectorY = 0;
-    current_degree = 0;  // kese
+    current_degree = gyro.deg;  // kese
     if (mode == 1) {
       //少数反応
-      _degree = calcDirection() - current_degree;
-      // _degree=Block_degree[orderBlock[0]];
+      // _degree = calcDirection() - current_degree;
+      _degree=Block_degree[orderBlock[0]];
     } else if (mode == 2) {
       //ずれ少ない多数反応
-      _degree = calcDirection() - current_degree;
+      _degree = calcDirection() ;
       // if(abs(orderBlock[0]-orderBlock[1])==4){
       //連番　直線的な可能性
       //角度修正ありにしたい＜
@@ -399,13 +438,11 @@ void _Line::calc(void) {
   }
   if (Rflag) {
     _degree = rdegree;
-    flag = false;  // test
   }
   if (Oflag) {
     _degree = odegree;
-    flag = false;
   }
-  if (millis() - InTimer <= 10) {
+  if (millis() - InTimer <= 30) {
     _degree = 10000;
   }
   Move_degree = _degree;
