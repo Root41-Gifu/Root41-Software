@@ -355,7 +355,7 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 9; i++) {
     if (i < whited) {
       t_vectorX += block_vectorX[Line_Where[order[i]]];
       t_vectorY += block_vectorY[Line_Where[order[i]]];
@@ -442,7 +442,7 @@ void _Line::calc(void) {
   if (Oflag) {
     _degree = odegree;
   }
-  if (millis() - InTimer <= 30) {
+  if (millis() - InTimer <= 20) {
     _degree = 10000;
   }
   Move_degree = _degree;

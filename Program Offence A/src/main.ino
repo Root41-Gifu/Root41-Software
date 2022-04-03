@@ -53,11 +53,11 @@ int i2cReadWithTimeoutFunction(void);
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
 #define LINE_BRIGHTNESS 15  // 50
-#define NEOPIXEL_BRIGHTNESS 20
+#define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 25
-#define LINEOVERTIME 500
-#define LINERETURNTIME 300
+#define LINEOVERTIME 300
+#define LINERETURNTIME 80
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -326,15 +326,16 @@ void setup() {
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
 
-  Wire.setClock(400000);
+  // Wire.setClock(400000);
   Wire.begin();
-  Wire.setClock(400000);
+  // Wire.setClock(400000);
   // for (int i = 0; i < 5; i++) {
+    delay(1000);
   gyro.setting();
   // }
 
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
 
   Serial.begin(115200);
@@ -449,7 +450,7 @@ void loop() {
       // }
     } else {
       //停止時
-      // UI.LCDdisplay();  // LCD表示
+      UI.LCDdisplay();  // LCD表示
       UI.NeoPixeldisplay(UI.mode);
     }
   } else {
