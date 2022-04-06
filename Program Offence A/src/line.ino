@@ -355,12 +355,14 @@ void _Line::keeper_arrange(void){
   whiting=0;
   for(int i=0; i<8; i++){
     detect_num[i]=0;
+    checkBlock[i]=false;
   }
   for(int i=0; i<LINE_NUM; i++){
     if(!value[i]){
       touch=true;
       flag=true;
       detect_num[Line_Where[i]]++;
+      checkBlock[Line_Where[i]]=true;
       whiting++;
       Last_Block=Line_Where[i];
     }
