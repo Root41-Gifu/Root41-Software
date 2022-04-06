@@ -73,7 +73,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
-        gyro.reference_deg=gyro.read();//350
+        gyro.reference_deg = gyro.read();  // 350
         standby = false;
       }
     }
@@ -114,7 +114,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
-        gyro.reference_deg=gyro.read();//350
+        gyro.reference_deg = gyro.read();  // 350
         standby = false;
       }
     }
@@ -162,7 +162,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
-        gyro.reference_deg=gyro.read();//350
+        gyro.reference_deg = gyro.read();  // 350
         standby = false;
       }
     }
@@ -193,7 +193,7 @@ void _UI::refrection(void) {
     } else {
       if (standby && !touch[3]) {
         active = true;
-        gyro.reference_deg=gyro.read();//350
+        gyro.reference_deg = gyro.read();  // 350
         standby = false;
       }
     }
@@ -240,7 +240,7 @@ void _UI::NeoPixeldisplay(int _mode) {
     //   unsigned long BlackDawn_Color = strip.Color(0, 0, 0);
     //   StripFulldisplay(BlackDawn_Color);
     // } else
-    if (mode == 4 || mode == 1) {
+    if (mode == 4 || mode == 1 || mode == 2) {
       unsigned long BallDistance_Color1 = strip.Color(255, 0, 0);  // distance1
       unsigned long BallDistance_Color2 =
           strip.Color(125, 0, 125);                                // distance1
@@ -293,25 +293,42 @@ void _UI::NeoPixeldisplay(int _mode) {
             break;
         }
       } else if (frash_mode == 1) {
-        if (line.Rflag) {
-          StripFulldisplay(BallDistance_Color2);
-        }else if(line.Oflag){
-          StripFulldisplay(BallDistance_Color1);
-        }else{
+        if (UI.mode == 1) {
+          if (line.Rflag) {
+            StripFulldisplay(BallDistance_Color2);
+          } else if (line.Oflag) {
+            StripFulldisplay(BallDistance_Color1);
+          } else {
+            int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
+                                        2, 2, 4, 4, 4, 4, 0, 0};
+            for (int i = 0; i < 16; i++) {
+              if (line.checkBlock[pixel_assign_out[i]]) {
+                strip.setPixelColor(i, Line_Color1);
+              }
+            }
+            int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
+                                       3, 3, 4, 5, 5, 5, 1, 1};
+            for (int i = 0; i < 16; i++) {
+              if (line.checkBlock[pixel_assign_in[i]]) {
+                strip.setPixelColor(i, Line_Color1);
+              }
+            }
+          }
+        } else if (UI.mode == 2) {
           int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
-                                      2, 2, 4, 4, 4, 4, 0, 0};
-          for (int i = 0; i < 16; i++) {
-            if (line.checkBlock[pixel_assign_out[i]]) {
-              strip.setPixelColor(i, Line_Color1);
+                                        2, 2, 4, 4, 4, 4, 0, 0};
+            for (int i = 0; i < 16; i++) {
+              if (pixel_assign_out[i]==line.Last_Block) {
+                strip.setPixelColor(i, Line_Color1);
+              }
             }
-          }
-          int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
-                                     3, 3, 4, 5, 5, 5, 1, 1};
-          for (int i = 0; i < 16; i++) {
-            if (line.checkBlock[pixel_assign_in[i]]) {
-              strip.setPixelColor(i, Line_Color1);
+            int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
+                                       3, 3, 4, 5, 5, 5, 1, 1};
+            for (int i = 0; i < 16; i++) {
+              if (pixel_assign_out[i]==line.Last_Block) {
+                strip.setPixelColor(i, Line_Color1);
+              }
             }
-          }
         }
       }
     }
@@ -351,7 +368,7 @@ void _UI::NeoPixeldisplay(int _mode) {
   // line
   if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
-      unsigned long lineNeoPixelColor = front.Color(255,255,255);
+      unsigned long lineNeoPixelColor = front.Color(255, 255, 255);
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
       if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {

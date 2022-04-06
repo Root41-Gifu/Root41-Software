@@ -9,8 +9,8 @@ int i2cReadWithTimeoutFunction(void);
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
 
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
 #define voltage PC0
@@ -164,8 +164,9 @@ class _Ball {
 class _Line {
  public:
   _Line(void);
-  void read(void);          //読み込みI2C
-  void arrange(void);       //読み込み値を処理数値に変換
+  void read(void);     //読み込みI2C
+  void arrange(void);  //読み込み値を処理数値に変換
+  void keeper_arrange(void);
   int calcDirection(void);  //方向（現在はベクトル）を算出
   void calc(void);          //ベクトル数値から進行方向を算出
   void vectorCalc(void);    //センサーごとのベクトル数値計算
@@ -227,10 +228,37 @@ class _Line {
   float t_vectorX;  //ベクトル換算時のベクトルＸ
   float t_vectorY;  //ベクトル換算時のベクトルＹ
 
+  //キーパー関係
+  int Last_Block;
+  bool awayFlag;
+  unsigned long awayTimer;
+
  private:
   float _vectorX[47];
   float _vectorY[47];
 } line;
+
+class _Keeper {
+ public:
+  _Keeper(void);
+  void analyze(void);
+  void calc(void);
+
+  int mode;
+  /*
+  0:デフォルト
+  1:正常に入ってる（前）
+  2:正常に入ってる（横）
+  3:飛び出している（前）
+  4:飛び出している（後）
+  5:飛び出している（横）*/
+  int x_position;
+  int y_position;
+  int line_position;
+  int Move_degree;
+
+ private:
+} keeper;
 
 class _Motor {
  public:
@@ -330,7 +358,7 @@ LINESENSOR_INITIALIZE:
   Wire.begin();
   // Wire.setClock(400000);
   // for (int i = 0; i < 5; i++) {
-    delay(1000);
+  delay(1000);
   gyro.setting();
   // }
 
@@ -419,9 +447,16 @@ void loop() {
   // line---------------------------------------------
   if (LINE_EFFECT) {
     line.read();  // I2Cでライン読み込み
-    line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    if (UI.mode == 1 || UI.mode == 5) {
+      line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    } else if (UI.mode == 2) {
+      line.keeper_arrange();
+    }
     if (line.flag) {
-      line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+      if (UI.mode == 1) {
+        line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+      } else if (UI.mode == 2) {
+      }
     } else {
       line.Move_degree = 1000;
     }
@@ -458,6 +493,12 @@ void loop() {
     UI.Errordisplay(UI.errorCode);  // Error表示用、点滅するンゴ。
   }
 
+  // keeper
+  if (UI.mode == 2) {
+    keeper.analyze();
+    keeper.calc();
+  }
+
   // gyro
 
   //ジャイロの読みこみ等
@@ -477,20 +518,26 @@ void loop() {
   //
   line.reference_degree =
       0;  //これは角度のずれを考慮したいときにコメントアウトにして
-  if (line.flag) {
-    //ラインあり、ライン検知時
-    // _Mdegree = line.Move_degree - line.reference_degree;
-    _Mdegree = line.Move_degree;
-  } else if (line.Rflag) {
-    //ラインあり、ラインオーバー時
-    // _Mdegree = line.leftdegree - line.reference_degree;
-    _Mdegree = line.rdegree;
-  } else if (line.Oflag) {
-    _Mdegree = line.odegree;
+  if (UI.mode == 1) {
+    if (line.flag) {
+      //ラインあり、ライン検知時
+      // _Mdegree = line.Move_degree - line.reference_degree;
+      _Mdegree = line.Move_degree;
+    } else if (line.Rflag) {
+      //ラインあり、ラインオーバー時
+      // _Mdegree = line.leftdegree - line.reference_degree;
+      _Mdegree = line.rdegree;
+    } else if (line.Oflag) {
+      _Mdegree = line.odegree;
+    } else {
+      //ラインあり、ラインから距離をとる
+      // _Mdegree = int(ball.Move_degree);
+      _Mdegree = ball.Move_degree;
+    }
+  } else if (UI.mode == 2) {
+    _Mdegree = keeper.Move_degree;
   } else {
-    //ラインあり、ラインから距離をとる
-    // _Mdegree = int(ball.Move_degree);
-    _Mdegree = ball.Move_degree;
+    _Mdegree = 1000;
   }
   // _Mdegree = ball.Move_degree;
   // _Mdegree = ball.Move_degree;
@@ -556,11 +603,17 @@ void loop() {
     // for(int i=0; i<8; i++){
     //   Serial.print(line.checkBlock[i]);
     // }
-    Serial.print(ball.distance);
+    Serial.print(line.whiting);
     Serial.print(" ");
-    Serial.print(line.rdegree);
+    for (int i = 0; i < 8; i++) {
+      Serial.print(line.detect_num[i]);
+      Serial.print(" ");
+    }
+    Serial.print(line.Last_Block);
     Serial.print(" ");
-    Serial.print(_Mdegree);
+    Serial.print(keeper.mode);
+    Serial.print(" ");
+    Serial.print(keeper.Move_degree);
     Serial.println(" ");
   }
 }
