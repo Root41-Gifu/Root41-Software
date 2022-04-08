@@ -15,7 +15,7 @@ int i2cReadWithTimeoutFunction(void);
 
 #define voltage PC0
 
-#define LINE_EFFECT 1
+#define LINE_EFFECT 0
 
 #define BALL_NUM 16
 #define LINE_NUM 41
@@ -98,7 +98,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int frash_mode = 1;  //ネオピクセルのモード
+  int frash_mode = 0;  //ネオピクセルのモード
   int setting;
   int errorCode = 0;
 
@@ -138,9 +138,12 @@ class _Ball {
   unsigned long value[16];  //読み込み値
   float LPF_value[16];      // LPF補正値
   float LastLPF[16];        //前回のLPF補正値
-  int dist[16];             //距離
+  float dist[16];             //距離
+  float LPF_dist[16];
+  float Last_disLPF[16];
   int distance;             //距離
   int distanceLevel;        //距離（０～３）
+  int LevelCounter[4];
   int max[3];               //最大値（のポート番号）
   int max_average[3];       //最大値の平均
   int averageCounter[17];
@@ -153,6 +156,8 @@ class _Ball {
   float vectortY;
 
   float vectorMove[2];
+
+  unsigned long distTimer;
 
  private:
   int move[3][16];
@@ -230,6 +235,7 @@ class _Line {
 
   //キーパー関係
   int Last_Block;
+  int Last_second_Block;
   bool awayFlag;
   unsigned long awayTimer;
 
@@ -589,32 +595,9 @@ void loop() {
     motor.lowBatteryCount = millis();
   }
   if (true) {
-    // Serial.print(_Mdegree);
-    // Serial.print(" ");
-
-    // for (int i = 0; i < LINE_NUM; i++) {
-    //   if (line.value[i] == 0) {
-    //     Serial.print(i);
-    //     Serial.print(" ");
-    //   }
-    // }
-    // Serial.print(line.Oflag);
-    // Serial.print(line.Rflag);
-    // for(int i=0; i<8; i++){
-    //   Serial.print(line.checkBlock[i]);
-    // }
-    Serial.print(line.whiting);
-    Serial.print(" ");
-    for (int i = 0; i < 8; i++) {
-      Serial.print(line.detect_num[i]);
-      Serial.print(" ");
-    }
-    Serial.print(line.Last_Block);
-    Serial.print(" ");
-    Serial.print(keeper.mode);
-    Serial.print(" ");
-    Serial.print(keeper.Move_degree);
+    Serial.print(ball.distanceLevel);
     Serial.println(" ");
+    //0 
   }
 }
 

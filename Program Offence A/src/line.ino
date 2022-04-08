@@ -352,6 +352,7 @@ void _Line::arrange(void) {
 
 void _Line::keeper_arrange(void){
   int touch=false;
+  Block=false;
   whiting=0;
   for(int i=0; i<8; i++){
     detect_num[i]=0;
@@ -362,6 +363,9 @@ void _Line::keeper_arrange(void){
       touch=true;
       flag=true;
       detect_num[Line_Where[i]]++;
+      if(!checkBlock[Line_Where[i]]){
+        Block++;
+      }
       checkBlock[Line_Where[i]]=true;
       whiting++;
       Last_Block=Line_Where[i];

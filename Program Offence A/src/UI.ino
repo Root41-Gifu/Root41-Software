@@ -249,7 +249,7 @@ void _UI::NeoPixeldisplay(int _mode) {
       if (frash_mode == 0) {
         int _side[2];
         int ball_separate;
-        ball_separate = int(ball.Move_degree / 22.5);
+        ball_separate = int(ball.degree / 22.5);
         // _side[0] = ball.max[0] - 1;
         // _side[1] = ball.max[0] + 1;
         // if (ball.max[0] - 1 < 0) {
@@ -292,6 +292,9 @@ void _UI::NeoPixeldisplay(int _mode) {
           default:
             break;
         }
+        // strip.setPixelColor(ball_separate, BallDistance_Color1);
+        //     strip.setPixelColor(_side[0], BallDistance_Color1);
+        //     strip.setPixelColor(_side[1], BallDistance_Color1);
       } else if (frash_mode == 1) {
         if (UI.mode == 1) {
           if (line.Rflag) {
