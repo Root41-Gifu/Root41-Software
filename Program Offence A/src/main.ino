@@ -45,6 +45,8 @@ int i2cReadWithTimeoutFunction(void);
 
 #define LCD_INTERVAL 300
 
+#define CAMERA_PIN 0x0A
+
 #define UI_ADDRESS 0x04
 #define LINE_FRONTADDRESS 0x08
 #define LINE_REARADDRESS 0x20
@@ -138,14 +140,14 @@ class _Ball {
   unsigned long value[16];  //読み込み値
   float LPF_value[16];      // LPF補正値
   float LastLPF[16];        //前回のLPF補正値
-  float dist[16];             //距離
+  float dist[16];           //距離
   float LPF_dist[16];
   float Last_disLPF[16];
-  int distance;             //距離
-  int distanceLevel;        //距離（０～３）
+  int distance;       //距離
+  int distanceLevel;  //距離（０～３）
   int LevelCounter[4];
-  int max[3];               //最大値（のポート番号）
-  int max_average[3];       //最大値の平均
+  int max[3];          //最大値（のポート番号）
+  int max_average[3];  //最大値の平均
   int averageCounter[17];
   int degree;       //ボールの角度
   int Move_degree;  //進行角度
@@ -317,7 +319,14 @@ int gyrodeg;
 
 class _Camera {
  public:
-  // _Camera(void);
+  _Camera(void);
+  void read();
+  void calc();
+
+  int mode;
+  int o_goal_X[2];
+  bool right_found;
+  bool left_found;
 
  private:
 } camera;
@@ -358,6 +367,7 @@ void setup() {
   pinMode(PB10, OUTPUT);
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
+  pinMode(CAMERA_PIN, OUTPUT);
 LINESENSOR_INITIALIZE:
 
   // Wire.setClock(400000);
@@ -368,6 +378,14 @@ LINESENSOR_INITIALIZE:
   gyro.setting();
   // }
 
+  // Camera setting
+  Serial.begin(19200);
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setClockDivider(SPI_CLOCK_DIV16);
+  SPI.setDataMode(SPI_MODE0);
+
+  // UI setting
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
@@ -466,6 +484,13 @@ void loop() {
     } else {
       line.Move_degree = 1000;
     }
+  }
+
+  //camera
+  if(camera.mode==0){
+    camera.o_goal_X[0]=1000;
+  }else if(camera.mode==1){
+    camera.read();
   }
 
   // UI---------------------------------------------
@@ -597,7 +622,7 @@ void loop() {
   if (true) {
     Serial.print(ball.distanceLevel);
     Serial.println(" ");
-    //0 
+    // 0
   }
 }
 
