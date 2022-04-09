@@ -9,8 +9,8 @@ int i2cReadWithTimeoutFunction(void);
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
 
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
 #define voltage PC0
@@ -325,20 +325,7 @@ void setup() {
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
 LINESENSOR_INITIALIZE:
-
-  // Wire.setClock(400000);
   Wire.begin();
-  // Wire.setClock(400000);
-  // for (int i = 0; i < 5; i++) {
-    delay(1000);
-  gyro.setting();
-  // }
-
-  UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  SPI.beginTransaction(MAX6675Setting);
-
-  Serial.begin(115200);
 
   for (int i = 0; i < 4; i++) {
     Wire.beginTransmission(lineAddress[i]);
@@ -352,6 +339,17 @@ LINESENSOR_INITIALIZE:
     }
     delay(50);
   }
+  // Wire.setClock(400000);
+  // for (int i = 0; i < 5; i++) {
+  delay(100);
+  gyro.setting();
+  // }
+
+  UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  SPI.beginTransaction(MAX6675Setting);
+
+  Serial.begin(115200);
 
   line.vectorCalc();
   //クラスごとのセットアップ
@@ -418,6 +416,7 @@ void loop() {
 
   // line---------------------------------------------
   if (LINE_EFFECT) {
+    // Wire.setClock(400000);
     line.read();  // I2Cでライン読み込み
     line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
     if (line.flag) {
