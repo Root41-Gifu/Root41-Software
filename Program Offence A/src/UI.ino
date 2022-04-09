@@ -7,7 +7,7 @@ _UI::_UI() {
 void _UI::read() {
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
   Wire.requestFrom(UI_ADDRESS, 1);
-  if (Wire.available()) {
+  while (Wire.available()) {
     byte readValue = Wire.read();
     touch[2] = !(readValue & (1 << 2));
     touch[1] = !(readValue & (1 << 3));

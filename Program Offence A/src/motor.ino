@@ -278,7 +278,8 @@ void _Motor::motorPID_drive(int motor_speed) {
   }
 
   // P制御（比例）
-  Collection *= -0.53;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+  Collection *= -0.55;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+  //0.53
 
   // D制御（微分）
   // Collection -= gyro.differentialRead() * 0.024;  // D制御 64 0.012

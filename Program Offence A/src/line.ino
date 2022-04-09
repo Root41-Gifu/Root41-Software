@@ -81,9 +81,9 @@ _Line::_Line() {
 }
 
 void _Line::read(void) {
-  // Wire.end();
-  // Wire.begin();
-  // Wire.setClock(400000);
+  Wire.end();
+  Wire.begin();
+  Wire.setClock(400000);
   readCounter++;
   readCounter = readCounter % 4;
 
@@ -94,7 +94,7 @@ void _Line::read(void) {
   if (readCounter == 0) {
     Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
 
-    if (Wire.available() >= 2) {
+    while (Wire.available() >= 2) {
       byte readValue[2];
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
@@ -120,7 +120,7 @@ void _Line::read(void) {
   } else if (readCounter == 1) {
     Wire.requestFrom(LINE_REARADDRESS, 2);  //アドレスは変えてね
 
-    if (Wire.available() >= 2) {
+    while (Wire.available() >= 2) {
       byte readValue[2];
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
@@ -145,7 +145,7 @@ void _Line::read(void) {
     }
   } else if (readCounter == 2) {
     Wire.requestFrom(LINE_LEFTADDRESS, 2);  //アドレスは変えてね
-    if (Wire.available() >= 2) {
+    while (Wire.available() >= 2) {
       byte readValue[2];
       readValue[0] = i2cReadWithTimeoutFunction();
       readValue[1] = i2cReadWithTimeoutFunction();
@@ -189,10 +189,14 @@ void _Line::read(void) {
       bitSelect++;
     }
   }
+
+  value[10] = true;
   value[19] = true;
+  value[20] = true;
   value[23] = true;
   value[27] = true;
   value[29] = true;
+  value[33] = true;
   value[41] = true;
   value[42] = true;
   Wire.end();
@@ -355,36 +359,36 @@ void _Line::arrange(void) {
   }
 }
 
-void _Line::keeper_arrange(void){
-  int touch=false;
-  Block=false;
-  whiting=0;
-  for(int i=0; i<8; i++){
-    detect_num[i]=0;
-    checkBlock[i]=false;
+void _Line::keeper_arrange(void) {
+  int touch = false;
+  Block = false;
+  whiting = 0;
+  for (int i = 0; i < 8; i++) {
+    detect_num[i] = 0;
+    checkBlock[i] = false;
   }
-  for(int i=0; i<LINE_NUM; i++){
-    if(!value[i]){
-      touch=true;
-      flag=true;
+  for (int i = 0; i < LINE_NUM; i++) {
+    if (!value[i]) {
+      touch = true;
+      flag = true;
       detect_num[Line_Where[i]]++;
-      if(!checkBlock[Line_Where[i]]){
+      if (!checkBlock[Line_Where[i]]) {
         Block++;
       }
-      checkBlock[Line_Where[i]]=true;
+      checkBlock[Line_Where[i]] = true;
       whiting++;
-      Last_Block=Line_Where[i];
+      Last_Block = Line_Where[i];
     }
   }
-  if(!touch){
-    if(flag){
-      awayFlag=true;
-      awayTimer=millis();
-      flag=false;
+  if (!touch) {
+    if (flag) {
+      awayFlag = true;
+      awayTimer = millis();
+      flag = false;
     }
-    if(awayFlag){
-      if(millis()-awayTimer>20){
-        awayFlag=false;
+    if (awayFlag) {
+      if (millis() - awayTimer > 20) {
+        awayFlag = false;
       }
     }
   }
@@ -395,7 +399,7 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < 6; i++) {
     if (i < whited) {
       t_vectorX += block_vectorX[Line_Where[order[i]]];
       t_vectorY += block_vectorY[Line_Where[order[i]]];
@@ -482,7 +486,7 @@ void _Line::calc(void) {
   if (Oflag) {
     _degree = odegree;
   }
-  if (millis() - InTimer <= 20) {
+  if (millis() - InTimer <= 100) {
     _degree = 10000;
   }
   Move_degree = _degree;

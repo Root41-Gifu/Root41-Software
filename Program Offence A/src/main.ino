@@ -15,7 +15,7 @@ int i2cReadWithTimeoutFunction(void);
 
 #define voltage PC0
 
-#define LINE_EFFECT 0
+#define LINE_EFFECT 1
 
 #define BALL_NUM 16
 #define LINE_NUM 41
@@ -54,12 +54,12 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 15  // 50
+#define LINE_BRIGHTNESS 16  // 50
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 25
 #define LINEOVERTIME 300
-#define LINERETURNTIME 80
+#define LINERETURNTIME 150
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -204,6 +204,8 @@ class _Line {
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
 
+  int MoveLock;
+
   int bitSelect;
 
   //カウンター
@@ -221,6 +223,7 @@ class _Line {
   unsigned long detectTimer[47];  //反応時間計測
   unsigned long OutTimer;         //ラインアウト時間計測
   unsigned long InTimer;
+  unsigned long MovelockTimer;
 
   //----十字ラインセンサー
   int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
@@ -494,14 +497,27 @@ void loop() {
     } else {
       line.Move_degree = 1000;
     }
+    if (line.flag) {
+      if (line.Move_degree != 10000 && line.Move_degree != 1000) {
+        if (line.Move_degree > 45 && line.Move_degree < 135) {
+          line.MoveLock = 4;
+        } else if (line.Move_degree > 225 && line.Move_degree < 315) {
+          line.MoveLock = 2;
+        }
+      }
+      line.MovelockTimer = millis();
+    }
+    if (millis() - line.MovelockTimer > 800) {
+      line.MoveLock = 0;
+    }
   }
 
-  //camera
-  if(camera.mode==0){
-    camera.o_goal_X[0]=1000;
-  }else if(camera.mode==1){
-    camera.read();
-  }
+  // camera
+  //  if(camera.mode==0){
+  //    camera.o_goal_X[0]=1000;
+  //  }else if(camera.mode==1){
+  //    camera.read();
+  //  }
 
   // UI---------------------------------------------
   UI.read();  // UIの読み込み
@@ -511,6 +527,12 @@ void loop() {
   }
 
   UI.refrection();  //スイッチのアルゴリズムへの反映
+
+  if (line.flag || line.Rflag || line.Oflag) {
+    UI.frash_mode = 1;
+  } else {
+    UI.frash_mode = 0;
+  }
 
   // //緊急事態時と平常時の処理
   if (!emergency) {
@@ -574,6 +596,15 @@ void loop() {
       //ラインあり、ラインから距離をとる
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
+      if (line.MoveLock == 2) {
+        if (_Mdegree < 180) {
+          _Mdegree = 1000;
+        }
+      } else if (line.MoveLock == 4) {
+        if (_Mdegree > 180) {
+          _Mdegree = 1000;
+        }
+      }
     }
   } else if (UI.mode == 2) {
     _Mdegree = keeper.Move_degree;
@@ -630,7 +661,17 @@ void loop() {
     motor.lowBatteryCount = millis();
   }
   if (true) {
-    Serial.print(ball.distanceLevel);
+    for (int i = 0; i < LINE_NUM; i++) {
+      Serial.print(line.value[i]);
+      Serial.print(" ");
+    }
+    Serial.print(line.touch);
+    Serial.print(" ");
+    Serial.print(line.flag);
+    Serial.print(" ");
+    Serial.print(line.Rflag);
+    Serial.print(" ");
+    Serial.print(line.Oflag);
     Serial.println(" ");
     // 0
   }
