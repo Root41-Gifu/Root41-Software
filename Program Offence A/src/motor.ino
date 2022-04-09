@@ -290,11 +290,16 @@ void _Motor::motorPID_drive(int motor_speed) {
 
   // D制御（微分）
   // Collection -= gyro.differentialRead() * 0.024;  // D制御 64 0.012
-
+  if(_Mdegree!=1000){
   motor.val[0] = max * sin(radians((_Mdegree + 360 - 55) % 360));
   motor.val[1] = max * sin(radians((_Mdegree + 360 - 135) % 360));
   motor.val[2] = max * sin(radians((_Mdegree + 135) % 360));
   motor.val[3] = max * sin(radians((_Mdegree + 55) % 360));
+  }else{
+    for(int i=0; i<4; i++){
+      motor.val[i]=0;
+    }
+  }
   for (int i = 0; i < 4; i++) {
     //大きすぎるのを防止
     motor.val[i] += Collection * 0.7;

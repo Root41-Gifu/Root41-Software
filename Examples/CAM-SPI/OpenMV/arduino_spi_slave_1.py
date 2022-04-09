@@ -1,7 +1,8 @@
-import pyb, ustruct, time
+import pyb,struct, ustruct, time
 
-text = "Hello World!\n"
-data = ustruct.pack("<bi%ds" % len(text), 85, len(text), text) # 85 is a sync char.
+text = 1
+#data = ustruct.pack("<bi%ds" % len(text), 85, len(text), text) # 85 is a sync char.
+data =  struct.pack('l',text)
 
 spi = pyb.SPI(2, pyb.SPI.SLAVE, polarity=0, phase=0)
 

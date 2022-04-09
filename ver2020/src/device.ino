@@ -6,9 +6,9 @@ void _device::initialize(void) {
   TCCR4B = (TCCR4B & 0b11111000) | 0x04;
 
   LED.RED = RGBLED.Color(255, 0, 0);
-  LED.BLUE = RGBLED.Color(0, 0, 255);
+  LED.BLUE = RGBLED.Color(0, 0, 0);
   LED.GREEN = RGBLED.Color(0, 255, 0);
-  LED.YELLOW = RGBLED.Color(255, 255, 0);
+  LED.YELLOW = RGBLED.Color(0, 255, 0);
   LED.WHITE = RGBLED.Color(255, 255, 255);
   LED.PURPLE = RGBLED.Color(255, 0, 200);
   LED.ORANGE = RGBLED.Color(255, 100, 0);

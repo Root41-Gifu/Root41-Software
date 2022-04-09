@@ -25,7 +25,7 @@ void setup() {
 void loop() {
   checkDigit = 0;
   for (int i = 0; i < 3; i++) {
-    data[i] = digitalRead(pin[i]);
+    data[i] = constrain(digitalRead(pin[i]),0,1);
 
     checkDigit += data[i];
   }
