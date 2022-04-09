@@ -9,13 +9,13 @@ int i2cReadWithTimeoutFunction(void);
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <SPI.h>
 
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
 #define voltage PC0
 
-#define LINE_EFFECT 1
+#define LINE_EFFECT 0
 
 #define BALL_NUM 16
 #define LINE_NUM 41
@@ -44,6 +44,8 @@ int i2cReadWithTimeoutFunction(void);
 #define LED_PIN_R PB1
 
 #define LCD_INTERVAL 300
+
+#define CAMERA_PIN 0x0A
 
 #define UI_ADDRESS 0x04
 #define LINE_FRONTADDRESS 0x08
@@ -98,7 +100,7 @@ class _UI {
 
   int mode;  //メインモード
   int submode;  //サブモード、キャリブレーションとかの時に帰る
-  int frash_mode = 1;  //ネオピクセルのモード
+  int frash_mode = 0;  //ネオピクセルのモード
   int setting;
   int errorCode = 0;
 
@@ -138,11 +140,14 @@ class _Ball {
   unsigned long value[16];  //読み込み値
   float LPF_value[16];      // LPF補正値
   float LastLPF[16];        //前回のLPF補正値
-  int dist[16];             //距離
-  int distance;             //距離
-  int distanceLevel;        //距離（０～３）
-  int max[3];               //最大値（のポート番号）
-  int max_average[3];       //最大値の平均
+  float dist[16];           //距離
+  float LPF_dist[16];
+  float Last_disLPF[16];
+  int distance;       //距離
+  int distanceLevel;  //距離（０～３）
+  int LevelCounter[4];
+  int max[3];          //最大値（のポート番号）
+  int max_average[3];  //最大値の平均
   int averageCounter[17];
   int degree;       //ボールの角度
   int Move_degree;  //進行角度
@@ -154,6 +159,8 @@ class _Ball {
 
   float vectorMove[2];
 
+  unsigned long distTimer;
+
  private:
   int move[3][16];
   int readp;
@@ -164,8 +171,9 @@ class _Ball {
 class _Line {
  public:
   _Line(void);
-  void read(void);          //読み込みI2C
-  void arrange(void);       //読み込み値を処理数値に変換
+  void read(void);     //読み込みI2C
+  void arrange(void);  //読み込み値を処理数値に変換
+  void keeper_arrange(void);
   int calcDirection(void);  //方向（現在はベクトル）を算出
   void calc(void);          //ベクトル数値から進行方向を算出
   void vectorCalc(void);    //センサーごとのベクトル数値計算
@@ -227,10 +235,38 @@ class _Line {
   float t_vectorX;  //ベクトル換算時のベクトルＸ
   float t_vectorY;  //ベクトル換算時のベクトルＹ
 
+  //キーパー関係
+  int Last_Block;
+  int Last_second_Block;
+  bool awayFlag;
+  unsigned long awayTimer;
+
  private:
   float _vectorX[47];
   float _vectorY[47];
 } line;
+
+class _Keeper {
+ public:
+  _Keeper(void);
+  void analyze(void);
+  void calc(void);
+
+  int mode;
+  /*
+  0:デフォルト
+  1:正常に入ってる（前）
+  2:正常に入ってる（横）
+  3:飛び出している（前）
+  4:飛び出している（後）
+  5:飛び出している（横）*/
+  int x_position;
+  int y_position;
+  int line_position;
+  int Move_degree;
+
+ private:
+} keeper;
 
 class _Motor {
  public:
@@ -283,7 +319,14 @@ int gyrodeg;
 
 class _Camera {
  public:
-  // _Camera(void);
+  _Camera(void);
+  void read();
+  void calc();
+
+  int mode;
+  int o_goal_X[2];
+  bool right_found;
+  bool left_found;
 
  private:
 } camera;
@@ -324,16 +367,25 @@ void setup() {
   pinMode(PB10, OUTPUT);
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
+  pinMode(CAMERA_PIN, OUTPUT);
 LINESENSOR_INITIALIZE:
 
   // Wire.setClock(400000);
   Wire.begin();
   // Wire.setClock(400000);
   // for (int i = 0; i < 5; i++) {
-    delay(1000);
+  delay(1000);
   gyro.setting();
   // }
 
+  // Camera setting
+  Serial.begin(19200);
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setClockDivider(SPI_CLOCK_DIV16);
+  SPI.setDataMode(SPI_MODE0);
+
+  // UI setting
   UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
@@ -419,12 +471,26 @@ void loop() {
   // line---------------------------------------------
   if (LINE_EFFECT) {
     line.read();  // I2Cでライン読み込み
-    line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    if (UI.mode == 1 || UI.mode == 5) {
+      line.arrange();  //ラインの順番、ブロック分け、タイムなどの算出
+    } else if (UI.mode == 2) {
+      line.keeper_arrange();
+    }
     if (line.flag) {
-      line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+      if (UI.mode == 1) {
+        line.calc();  //ライン戻る方向の処理(ラインのルーチン時のみ)
+      } else if (UI.mode == 2) {
+      }
     } else {
       line.Move_degree = 1000;
     }
+  }
+
+  //camera
+  if(camera.mode==0){
+    camera.o_goal_X[0]=1000;
+  }else if(camera.mode==1){
+    camera.read();
   }
 
   // UI---------------------------------------------
@@ -458,6 +524,12 @@ void loop() {
     UI.Errordisplay(UI.errorCode);  // Error表示用、点滅するンゴ。
   }
 
+  // keeper
+  if (UI.mode == 2) {
+    keeper.analyze();
+    keeper.calc();
+  }
+
   // gyro
 
   //ジャイロの読みこみ等
@@ -477,20 +549,26 @@ void loop() {
   //
   line.reference_degree =
       0;  //これは角度のずれを考慮したいときにコメントアウトにして
-  if (line.flag) {
-    //ラインあり、ライン検知時
-    // _Mdegree = line.Move_degree - line.reference_degree;
-    _Mdegree = line.Move_degree;
-  } else if (line.Rflag) {
-    //ラインあり、ラインオーバー時
-    // _Mdegree = line.leftdegree - line.reference_degree;
-    _Mdegree = line.rdegree;
-  } else if (line.Oflag) {
-    _Mdegree = line.odegree;
+  if (UI.mode == 1) {
+    if (line.flag) {
+      //ラインあり、ライン検知時
+      // _Mdegree = line.Move_degree - line.reference_degree;
+      _Mdegree = line.Move_degree;
+    } else if (line.Rflag) {
+      //ラインあり、ラインオーバー時
+      // _Mdegree = line.leftdegree - line.reference_degree;
+      _Mdegree = line.rdegree;
+    } else if (line.Oflag) {
+      _Mdegree = line.odegree;
+    } else {
+      //ラインあり、ラインから距離をとる
+      // _Mdegree = int(ball.Move_degree);
+      _Mdegree = ball.Move_degree;
+    }
+  } else if (UI.mode == 2) {
+    _Mdegree = keeper.Move_degree;
   } else {
-    //ラインあり、ラインから距離をとる
-    // _Mdegree = int(ball.Move_degree);
-    _Mdegree = ball.Move_degree;
+    _Mdegree = 1000;
   }
   // _Mdegree = ball.Move_degree;
   // _Mdegree = ball.Move_degree;
@@ -542,26 +620,9 @@ void loop() {
     motor.lowBatteryCount = millis();
   }
   if (true) {
-    // Serial.print(_Mdegree);
-    // Serial.print(" ");
-
-    // for (int i = 0; i < LINE_NUM; i++) {
-    //   if (line.value[i] == 0) {
-    //     Serial.print(i);
-    //     Serial.print(" ");
-    //   }
-    // }
-    // Serial.print(line.Oflag);
-    // Serial.print(line.Rflag);
-    // for(int i=0; i<8; i++){
-    //   Serial.print(line.checkBlock[i]);
-    // }
-    Serial.print(ball.distance);
-    Serial.print(" ");
-    Serial.print(line.rdegree);
-    Serial.print(" ");
-    Serial.print(_Mdegree);
+    Serial.print(ball.distanceLevel);
     Serial.println(" ");
+    // 0
   }
 }
 

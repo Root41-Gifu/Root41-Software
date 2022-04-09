@@ -350,6 +350,41 @@ void _Line::arrange(void) {
   }
 }
 
+void _Line::keeper_arrange(void){
+  int touch=false;
+  Block=false;
+  whiting=0;
+  for(int i=0; i<8; i++){
+    detect_num[i]=0;
+    checkBlock[i]=false;
+  }
+  for(int i=0; i<LINE_NUM; i++){
+    if(!value[i]){
+      touch=true;
+      flag=true;
+      detect_num[Line_Where[i]]++;
+      if(!checkBlock[Line_Where[i]]){
+        Block++;
+      }
+      checkBlock[Line_Where[i]]=true;
+      whiting++;
+      Last_Block=Line_Where[i];
+    }
+  }
+  if(!touch){
+    if(flag){
+      awayFlag=true;
+      awayTimer=millis();
+      flag=false;
+    }
+    if(awayFlag){
+      if(millis()-awayTimer>20){
+        awayFlag=false;
+      }
+    }
+  }
+}
+
 int _Line::calcDirection(void) {
   int _degree;  //ベクトルに範囲
   t_vectorX = 0;

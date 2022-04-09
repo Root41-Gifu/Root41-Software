@@ -90,54 +90,104 @@ void _Ball::SPI_read(void) {
 
 void _Ball::calcDistance(void) {
   for (int i = 0; i < BALL_NUM; i++) {
-    dist[i] = LPF_value[i];
+    dist[i] = LPF_dist[i];
   }
   distance = 0;
   distance += dist[max[0]];
-  if (max[0] - 1 < 0) {
-    distance += dist[15];
-  } else {
-    distance += dist[max[0] - 1];
-  }
-  if (max[0] + 1 > 15) {
-    distance += dist[0];
-  } else {
-    distance += dist[max[0] + 1];
-  }
+  // if (max[0] - 1 < 0) {
+  //   distance += dist[15];
+  // } else {
+  //   distance += dist[max[0] - 1];
+  // }
+  // if (max[0] + 1 > 15) {
+  //   distance += dist[0];
+  // } else {
+  //   distance += dist[max[0] + 1];
+  // }
   if (LPF_value[max[0]] > 15) {
     int _Level[3];
-    if (max[0] < 8) {
-      _Level[3] = 140;
-      _Level[2] = 230;
-    } else if (max[0] == 8) {
-      _Level[3] = 140;
-      _Level[2] = 180;
-    } else if (max[0] < 12) {
-      _Level[3] = 160;
-      _Level[2] = 230;
-    } else {
-      _Level[3] = 170;
-      _Level[2] = 230;
+    if(max[0]==0){
+      _Level[1]=120;
+      _Level[0]=105;  
+    }else if(max[0]==1){
+      _Level[1]=110;
+      _Level[0]=100;
+    }else if(max[0]==2){
+      _Level[1]=125;
+      _Level[0]=110;
+    }else if(max[0]==3){
+      _Level[1]=105;
+      _Level[0]=95;
+    }else if(max[0]==4){
+      _Level[1]=130;
+      _Level[0]=115;
+    }else if(max[0]==5){
+      _Level[1]=100;
+      _Level[0]=90;
+    }else if(max[0]==6){
+      _Level[1]=0;
+      _Level[0]=0;
+    }else if(max[0]==7){
+      _Level[1]=0;
+      _Level[0]=0;
+    }else if(max[0]==8){
+      _Level[1]=120;
+      _Level[0]=90;
+    }else if(max[0]==9){
+      _Level[1]=120;
+      _Level[0]=90;
+    }else if(max[0]==10){
+      _Level[1]=110;
+      _Level[0]=100;
+    }else if(max[0]==11){
+      _Level[1]=120;
+      _Level[0]=105;
+    }else if(max[0]==12){
+      _Level[1]=125;
+      _Level[0]=110;
+    }else if(max[0]==13){
+      _Level[1]=130;
+      _Level[0]=110;
+    }else if(max[0]==14){
+      _Level[1]=120;
+      _Level[0]=110;
+    }else if(max[0]==15){
+      _Level[1]=130;
+      _Level[0]=110;
     }
-    // }else if(max[0]>11){
-    //   _Level[3]=250;
-    //   _Level[2]=290;
-    // }else if(max[0]<9){
-    //   _Level[3]=110;
-    //   _Level[2]=170;
-    // }else{
-    //   _Level[3]=180;
-    //   _Level[2]=260;
-    // }
-    if (ball.distance < _Level[3]) {
-      distanceLevel = 3;
-    } else if (ball.distance < _Level[2]) {
-      distanceLevel = 2;
+    _Level[0]-=20;
+    _Level[1]-=10;
+    if (ball.distance < _Level[0]) {
+      LevelCounter[3]++;
+      // distanceLevel = 3;
+    } else if (ball.distance < _Level[1]) {
+      LevelCounter[2]++;
+      // distanceLevel = 2;
     } else {
-      distanceLevel = 1;
+      LevelCounter[1]++;
+      // distanceLevel = 1;
     }
     if (distance < 110 && ball.distance != 0) {
-      distanceLevel = 1;
+      // distanceLevel = 1;
+    }
+    if(millis()-distTimer>50||distanceLevel==0){
+      if(LevelCounter[3]>LevelCounter[2]){
+        if(LevelCounter[3]>LevelCounter[1]){
+          distanceLevel=3;
+        }else{
+          distanceLevel=1;
+        }
+      }else{
+        if(LevelCounter[2]>LevelCounter[1]){
+          distanceLevel=2;
+        }else{
+          distanceLevel=1;
+        }
+      }
+      distTimer=millis();
+      for(int i=0; i<4; i++){
+        LevelCounter[i]=0;
+      }
     }
   } else {
     distanceLevel = 0;
@@ -148,11 +198,11 @@ void _Ball::calcDirection(void) {
   vectortX = vectorX[max[0]];
   vectortY = vectorY[max[0]];
   if (max[1] != 100) {
-    vectortX += vectorX[max[1]] * 0.5;
-    vectortY += vectorY[max[1]] * 0.5;
+    vectortX += vectorX[max[1]] * 0.3;
+    vectortY += vectorY[max[1]] * 0.3;
   } else if (max[2] != 100) {
-    vectortX += vectorX[max[2]] * 0.2;
-    vectortY += vectorY[max[2]] * 0.2;
+    vectortX += vectorX[max[2]] * 0.1;
+    vectortY += vectorY[max[2]] * 0.1;
   }
 
   degree = degrees(atan2(vectortX, vectortY));
@@ -217,78 +267,129 @@ void _Ball::calc(int _distance) {
   if (max[0] == 100) {
     _degree = 1000;
   } else {
-    float _plusvector[2];
-    float gain_constant = 8;      //閾値
-    int max_gain = 130;           //上限
-    int distance_constant = 280;  //距離定数
-    // switch (distanceLevel) {
-    //   case 3:
-    //     distance_constant = 300;
-    //     break;
+    if (UI.mode == 1) {
+      float _plusvector[2];
+      float gain_constant = 8;      //閾値
+      int max_gain = 130;           //上限
+      int distance_constant = 140;  //距離定数
+      // switch (distanceLevel) {
+      //   case 3:
+      //     distance_constant = 300;
+      //     break;
 
-    //   case 2:
-    //     distance_constant = 200;
-    //     break;
+      //   case 2:
+      //     distance_constant = 200;
+      //     break;
 
-    //   case 1:
-    //     distance_constant = 100;
-    //     break;
+      //   case 1:
+      //     distance_constant = 100;
+      //     break;
 
-    //   default:
-    //     distance_constant = 100;
-    //     break;
-    // }
-    int gain_degree;
+      //   default:
+      //     distance_constant = 100;
+      //     break;
+      // }
+      int gain_degree;
 
-    if (degree < 40 || degree > 320) {
-      _degree = degree;
-      // } else if (degree < 90 || degree > 270) {
-      //   if (degree < 90) {
-      //     int gain_degree = map(degree, 0, 90, 0, 90);
-      //   } else {
-      //     int gain_degree = map(degree, 180, 360, -90, 0);
-      //   }
-      //   _degree += gain_degree;
-    } else {
-      if (_distance < 180) {
-        _degree=degree;
+      if (degree < 30 || degree > 330) {
+        _degree = degree;
+        // } else if (degree < 90 || degree > 270) {
+        //   if (degree < 90) {
+        //     int gain_degree = map(degree, 0, 90, 0, 90);
+        //   } else {
+        //     int gain_degree = map(degree, 180, 360, -90, 0);
+        //   }
+        //   _degree += gain_degree;
       } else {
-        if (vectortX > 0) {
-          //右側
-          gain_degree =
-              map(ball.degree, 0, 180, 0, max_gain);  //加える角度を設定
-          _plusvector[0] =
-              vectortX + sin_d[degree + gain_degree] * gain_constant *
-                             (distance_constant /
-                              _distance);  //距離、角度からのベクトルをたす
-          //比率は1:ゲイン*距離定数/距離
-          _plusvector[1] = vectortY + cos_d[degree + gain_degree] *
-                                          gain_constant *
-                                          (distance_constant / _distance);
-          _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
-          if (_degree < 0) {
-            _degree += 360;
-          }
+        if (distanceLevel==3) {
+          _degree = degree;
         } else {
-          //左側
-          gain_degree = map(ball.degree, 180, 360, max_gain, 0);
-          _plusvector[0] = vectortX + sin_d[degree - gain_degree] *
-                                          gain_constant *
-                                          (distance_constant / _distance);
-          _plusvector[1] = vectortY + cos_d[degree - gain_degree] *
-                                          gain_constant *
-                                          (distance_constant / _distance);
-          _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
-          if (_degree < 0) {
-            _degree += 360;
+          if (vectortX > 0) {
+            //右側
+            gain_degree =
+                map(ball.degree, 0, 180, 0, max_gain);  //加える角度を設定
+            _plusvector[0] =
+                vectortX + sin_d[degree + gain_degree] * gain_constant *
+                               (distance_constant /
+                                _distance);  //距離、角度からのベクトルをたす
+            //比率は1:ゲイン*距離定数/距離
+            _plusvector[1] = vectortY + cos_d[degree + gain_degree] *
+                                            gain_constant *
+                                            (distance_constant / _distance);
+            _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+            if (_degree < 0) {
+              _degree += 360;
+            }
+          } else {
+            //左側
+            gain_degree = map(ball.degree, 180, 360, max_gain, 0);
+            _plusvector[0] = vectortX + sin_d[degree - gain_degree] *
+                                            gain_constant *
+                                            (distance_constant / _distance);
+            _plusvector[1] = vectortY + cos_d[degree - gain_degree] *
+                                            gain_constant *
+                                            (distance_constant / _distance);
+            _degree = degrees(atan2(_plusvector[0], _plusvector[1]));
+            if (_degree < 0) {
+              _degree += 360;
+            }
           }
         }
       }
-    }
-    // _degree = degree;
-    if (distanceLevel == 3) {
-    } else if (distanceLevel == 0) {
-      _degree = 1000;
+      // _degree = degree;
+      if (distanceLevel == 3) {
+      } else if (distanceLevel == 0) {
+        _degree = 1000;
+      }
+    } else if (UI.mode == 2) {
+      if (degree != 1000) {
+        // if (degree < 20 || degree > 340) {
+        //   _degree = 1000;
+        // } else {
+        //   if (degree < 180) {
+        //     _degree = 90;
+        //   } else {
+        //     _degree = 270;
+        //   }
+        //   if(line.detect_num[0]+line.detect_num[1]>0&&line.detect_num[2]+line.detect_num[3]==0){
+        //     if(_degree<180){
+        //       _degree-=15;
+        //     }else{
+        //       _degree+=15;
+        //     }
+        //   }else if(line.detect_num[2]+line.detect_num[3]>0&&line.detect_num[0]+line.detect_num[1]==0){
+        //     if(_degree<180){
+        //       _degree+=15;
+        //     }else{
+        //       _degree-=15;
+        //     }
+        //   }
+        // }
+        if (max[0] < 2 || max[0] > 14) {
+          _degree = 1000;
+        }else if(max[0]>5&&max[0]<11){
+          _degree=1000;
+        } else {
+          if (max[0] < 8) {
+            _degree = 90;
+          } else {
+            _degree = 270;
+          }
+          if(line.detect_num[0]+line.detect_num[1]>0&&line.detect_num[2]+line.detect_num[3]==0){
+            if(_degree<180){
+              _degree-=15;
+            }else{
+              _degree+=15;
+            }
+          }else if(line.detect_num[2]+line.detect_num[3]>0&&line.detect_num[0]+line.detect_num[1]==0){
+            if(_degree<180){
+              _degree+=15;
+            }else{
+              _degree-=15;
+            }
+          }
+        }
+      }
     }
     // _degree = move_16[max[0]][distanceLevel];
   }
@@ -302,16 +403,28 @@ void _Ball::LPF(void) {
   float k;
   // LPF調整ファイト
   for (int i = 0; i < 16; i++) {
-    if (abs(value[i] - LPF_value[i]) > 30) {
-      k = 0.3;  // 0.07
-      if (value[i] - LPF_value[i] < -30) {
-        k = 0.15;  // 0.15
-      }
-    } else {
-      k = 0.03;  // 0.07
-    }
+    // if (abs(value[i] - LPF_value[i]) > 30) {
+    //   k = 0.7;  // 0.07
+    //   if (value[i] - LPF_value[i] < -30) {
+    //     k = 0.15;  // 0.15
+    //   }
+    // } else {
+      k = 0.15;  // 0.07
+    // }
     LPF_value[i] += k * (value[i] - LastLPF[i]);
     LastLPF[i] = LPF_value[i];
+  }
+  for (int i = 0; i < 16; i++) {
+    // if (abs(value[i] - LPF_value[i]) > 30) {
+    //   k = 0.7;  // 0.07
+    //   if (value[i] - LPF_value[i] < -30) {
+    //     k = 0.15;  // 0.15
+    //   }
+    // } else {
+      k = 0.7;  // 0.07
+    // }
+    LPF_dist[i] += k * (value[i] - Last_disLPF[i]);
+    Last_disLPF[i] = LPF_dist[i];
   }
 }
 
