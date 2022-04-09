@@ -131,11 +131,11 @@ void _Ball::calcDistance(void) {
       _Level[1]=0;
       _Level[0]=0;
     }else if(max[0]==8){
-      _Level[1]=110;
-      _Level[0]=100;
+      _Level[1]=120;
+      _Level[0]=90;
     }else if(max[0]==9){
       _Level[1]=120;
-      _Level[0]=100;
+      _Level[0]=90;
     }else if(max[0]==10){
       _Level[1]=110;
       _Level[0]=100;
@@ -155,6 +155,8 @@ void _Ball::calcDistance(void) {
       _Level[1]=130;
       _Level[0]=110;
     }
+    _Level[0]-=20;
+    _Level[1]-=10;
     if (ball.distance < _Level[0]) {
       LevelCounter[3]++;
       // distanceLevel = 3;
@@ -269,7 +271,7 @@ void _Ball::calc(int _distance) {
       float _plusvector[2];
       float gain_constant = 8;      //閾値
       int max_gain = 130;           //上限
-      int distance_constant = 280;  //距離定数
+      int distance_constant = 140;  //距離定数
       // switch (distanceLevel) {
       //   case 3:
       //     distance_constant = 300;
@@ -289,7 +291,7 @@ void _Ball::calc(int _distance) {
       // }
       int gain_degree;
 
-      if (degree < 40 || degree > 320) {
+      if (degree < 30 || degree > 330) {
         _degree = degree;
         // } else if (degree < 90 || degree > 270) {
         //   if (degree < 90) {
@@ -299,7 +301,7 @@ void _Ball::calc(int _distance) {
         //   }
         //   _degree += gain_degree;
       } else {
-        if (_distance < 180) {
+        if (distanceLevel==3) {
           _degree = degree;
         } else {
           if (vectortX > 0) {
@@ -419,7 +421,7 @@ void _Ball::LPF(void) {
     //     k = 0.15;  // 0.15
     //   }
     // } else {
-      k = 0.5;  // 0.07
+      k = 0.7;  // 0.07
     // }
     LPF_dist[i] += k * (value[i] - Last_disLPF[i]);
     Last_disLPF[i] = LPF_dist[i];
