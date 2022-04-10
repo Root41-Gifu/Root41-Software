@@ -264,7 +264,9 @@ void _UI::NeoPixeldisplay(int _mode) {
         } else if (ball_separate + 1 > 15) {
           _side[1] = 0;
         }
-
+        if(ball.hold){
+          StripFulldisplay(BallDistance_Color1);
+        }else{
         switch (ball.distanceLevel) {
           case 0:
             StripFulldisplay(BallDistance_Color3);
@@ -291,6 +293,7 @@ void _UI::NeoPixeldisplay(int _mode) {
 
           default:
             break;
+        }
         }
         // strip.setPixelColor(ball_separate, BallDistance_Color1);
         //     strip.setPixelColor(_side[0], BallDistance_Color1);

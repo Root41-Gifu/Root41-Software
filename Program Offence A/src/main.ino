@@ -54,12 +54,12 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 16  // 50
+#define LINE_BRIGHTNESS 20  // 50
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 25
-#define LINEOVERTIME 300
-#define LINERETURNTIME 150
+#define LINEOVERTIME 500
+#define LINERETURNTIME 400
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -152,6 +152,9 @@ class _Ball {
   int degree;       //ボールの角度
   int Move_degree;  //進行角度
 
+  bool hold;
+  int holdcounter;
+
   float vectorX[16];  //ベクトル（ボール位置の定数）
   float vectorY[16];
   float vectortX;  //変数（算出用）
@@ -203,6 +206,7 @@ class _Line {
   int Edge;
   int order[47];      //反応した順番
   int orderBlock[8];  //８分割ブロック
+  int orderBlock4[4];
 
   int MoveLock;
 
@@ -395,7 +399,7 @@ LINESENSOR_INITIALIZE:
 
   for (int i = 0; i < 4; i++) {
     Wire.beginTransmission(lineAddress[i]);
-    Wire.write(10);  // high
+    Wire.write(9);  // high
     Wire.write(5);   // low
 
     int result = Wire.endTransmission();
@@ -499,9 +503,9 @@ void loop() {
     }
     if (line.flag) {
       if (line.Move_degree != 10000 && line.Move_degree != 1000) {
-        if (line.Move_degree > 45 && line.Move_degree < 135) {
+        if (line.Move_degree > 30 && line.Move_degree < 150) {
           line.MoveLock = 4;
-        } else if (line.Move_degree > 225 && line.Move_degree < 315) {
+        } else if (line.Move_degree > 210 && line.Move_degree < 330) {
           line.MoveLock = 2;
         }
       }
@@ -588,8 +592,12 @@ void loop() {
       _Mdegree = line.Move_degree;
     } else if (line.Rflag) {
       //ラインあり、ラインオーバー時
-      // _Mdegree = line.leftdegree - line.reference_degree;
-      _Mdegree = line.rdegree;
+      // _Mdegree = line.leftdegree - line.reference_degree;]
+      if(millis()-line.OutTimer<80){
+        _Mdegree = line.rdegree;
+      }else{
+        _Mdegree=ball.Move_degree;
+      }
     } else if (line.Oflag) {
       _Mdegree = line.odegree;
     } else {
@@ -597,12 +605,22 @@ void loop() {
       // _Mdegree = int(ball.Move_degree);
       _Mdegree = ball.Move_degree;
       if (line.MoveLock == 2) {
-        if (_Mdegree < 180) {
-          _Mdegree = 1000;
+        // if(_Mdegree<45){
+        //   _Mdegree=0;
+        // }else if(_Mdegree<135){
+        //   _Mdegree=1000;
+        // }else 
+        if(_Mdegree<180){
+          _Mdegree=1000;
         }
       } else if (line.MoveLock == 4) {
-        if (_Mdegree > 180) {
-          _Mdegree = 1000;
+        // if(_Mdegree>315){
+        //   _Mdegree=0;
+        // }else if(_Mdegree>225){
+        //   _Mdegree=1000;
+        // }else 
+        if(_Mdegree>180){
+          _Mdegree=1000;
         }
       }
     }
@@ -671,7 +689,7 @@ void loop() {
     Serial.print(" ");
     Serial.print(line.Rflag);
     Serial.print(" ");
-    Serial.print(line.Oflag);
+    Serial.print(ball.hold);
     Serial.println(" ");
     // 0
   }

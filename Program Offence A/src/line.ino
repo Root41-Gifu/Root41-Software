@@ -189,7 +189,16 @@ void _Line::read(void) {
       bitSelect++;
     }
   }
-
+  // if(value[6]){
+  //   ball.holdcounter++;
+  //   if(ball.holdcounter>20){
+  //     ball.hold=true;
+  //   }
+  // }else{
+  //   ball.hold=false;
+  //   ball.holdcounter=0;
+  // }
+  value[6] = true;
   value[10] = true;
   value[19] = true;
   value[20] = true;
@@ -399,13 +408,25 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 10; i++) {
     if (i < whited) {
       t_vectorX += block_vectorX[Line_Where[order[i]]];
       t_vectorY += block_vectorY[Line_Where[order[i]]];
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
+
+  // t_vectorX = 0;
+  // t_vectorY = 0;
+  // int count = 0;
+  // for (int i = 0; i < 6; i++) {
+  //   if (i < Block) {
+  //     t_vectorX += block_vectorX[orderBlock[i]];
+  //     t_vectorY += block_vectorY[orderBlock[i]];
+  //   }
+  // }
+  // _degree = degrees(atan2(t_vectorX, t_vectorY));
+
 
   return _degree;
 }
@@ -445,11 +466,11 @@ void _Line::calc(void) {
       // }
     } else if (mode == 3) {
       //傾き杉
-      _degree = calcDirection() - current_degree;
+      _degree = calcDirection() ;
       // _degree=Block_degree[orderBlock[0]]-current_degree;
     } else if (mode == 4) {
       //オーバー　
-      _degree = calcDirection() - current_degree;
+      _degree = calcDirection();
       // _degree=totaldegree-current_degree;
     }
     // t_vectorX = 0;
@@ -486,7 +507,7 @@ void _Line::calc(void) {
   if (Oflag) {
     _degree = odegree;
   }
-  if (millis() - InTimer <= 100) {
+  if (millis() - InTimer <= 60) {
     _degree = 10000;
   }
   Move_degree = _degree;

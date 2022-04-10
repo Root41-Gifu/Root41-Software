@@ -106,57 +106,57 @@ void _Ball::calcDistance(void) {
   // }
   if (LPF_value[max[0]] > 15) {
     int _Level[3];
-    if(max[0]==0){
-      _Level[1]=120;
-      _Level[0]=105;  
-    }else if(max[0]==1){
-      _Level[1]=110;
-      _Level[0]=100;
-    }else if(max[0]==2){
-      _Level[1]=125;
-      _Level[0]=110;
-    }else if(max[0]==3){
-      _Level[1]=105;
-      _Level[0]=95;
-    }else if(max[0]==4){
-      _Level[1]=130;
-      _Level[0]=115;
-    }else if(max[0]==5){
-      _Level[1]=100;
-      _Level[0]=90;
-    }else if(max[0]==6){
-      _Level[1]=0;
-      _Level[0]=0;
-    }else if(max[0]==7){
-      _Level[1]=0;
-      _Level[0]=0;
-    }else if(max[0]==8){
-      _Level[1]=120;
-      _Level[0]=90;
-    }else if(max[0]==9){
-      _Level[1]=120;
-      _Level[0]=90;
-    }else if(max[0]==10){
-      _Level[1]=110;
-      _Level[0]=100;
-    }else if(max[0]==11){
-      _Level[1]=120;
-      _Level[0]=105;
-    }else if(max[0]==12){
-      _Level[1]=125;
-      _Level[0]=110;
-    }else if(max[0]==13){
-      _Level[1]=130;
-      _Level[0]=110;
-    }else if(max[0]==14){
-      _Level[1]=120;
-      _Level[0]=110;
-    }else if(max[0]==15){
-      _Level[1]=130;
-      _Level[0]=110;
+    if (max[0] == 0) {
+      _Level[1] = 120;
+      _Level[0] = 105;
+    } else if (max[0] == 1) {
+      _Level[1] = 110;
+      _Level[0] = 100;
+    } else if (max[0] == 2) {
+      _Level[1] = 125;
+      _Level[0] = 110;
+    } else if (max[0] == 3) {
+      _Level[1] = 105;
+      _Level[0] = 95;
+    } else if (max[0] == 4) {
+      _Level[1] = 130;
+      _Level[0] = 115;
+    } else if (max[0] == 5) {
+      _Level[1] = 100;
+      _Level[0] = 90;
+    } else if (max[0] == 6) {
+      _Level[1] = 0;
+      _Level[0] = 0;
+    } else if (max[0] == 7) {
+      _Level[1] = 0;
+      _Level[0] = 0;
+    } else if (max[0] == 8) {
+      _Level[1] = 120;
+      _Level[0] = 90;
+    } else if (max[0] == 9) {
+      _Level[1] = 120;
+      _Level[0] = 90;
+    } else if (max[0] == 10) {
+      _Level[1] = 110;
+      _Level[0] = 100;
+    } else if (max[0] == 11) {
+      _Level[1] = 120;
+      _Level[0] = 105;
+    } else if (max[0] == 12) {
+      _Level[1] = 125;
+      _Level[0] = 110;
+    } else if (max[0] == 13) {
+      _Level[1] = 130;
+      _Level[0] = 110;
+    } else if (max[0] == 14) {
+      _Level[1] = 120;
+      _Level[0] = 110;
+    } else if (max[0] == 15) {
+      _Level[1] = 130;
+      _Level[0] = 110;
     }
-    _Level[0]-=20;
-    _Level[1]-=10;
+    _Level[0] -= 12;
+    _Level[1] -= 10;
     if (ball.distance < _Level[0]) {
       LevelCounter[3]++;
       // distanceLevel = 3;
@@ -170,23 +170,23 @@ void _Ball::calcDistance(void) {
     if (distance < 110 && ball.distance != 0) {
       // distanceLevel = 1;
     }
-    if(millis()-distTimer>50||distanceLevel==0){
-      if(LevelCounter[3]>LevelCounter[2]){
-        if(LevelCounter[3]>LevelCounter[1]){
-          distanceLevel=3;
-        }else{
-          distanceLevel=1;
+    if (millis() - distTimer > 50 || distanceLevel == 0) {
+      if (LevelCounter[3] > LevelCounter[2]) {
+        if (LevelCounter[3] > LevelCounter[1]) {
+          distanceLevel = 3;
+        } else {
+          distanceLevel = 1;
         }
-      }else{
-        if(LevelCounter[2]>LevelCounter[1]){
-          distanceLevel=2;
-        }else{
-          distanceLevel=1;
+      } else {
+        if (LevelCounter[2] > LevelCounter[1]) {
+          distanceLevel = 2;
+        } else {
+          distanceLevel = 1;
         }
       }
-      distTimer=millis();
-      for(int i=0; i<4; i++){
-        LevelCounter[i]=0;
+      distTimer = millis();
+      for (int i = 0; i < 4; i++) {
+        LevelCounter[i] = 0;
       }
     }
   } else {
@@ -292,7 +292,11 @@ void _Ball::calc(int _distance) {
       int gain_degree;
 
       if (degree < 30 || degree > 330) {
-        _degree = degree;
+        if (ball.hold) {
+          _degree = 0;
+        } else {
+          _degree = degree;
+        }
         // } else if (degree < 90 || degree > 270) {
         //   if (degree < 90) {
         //     int gain_degree = map(degree, 0, 90, 0, 90);
@@ -301,7 +305,7 @@ void _Ball::calc(int _distance) {
         //   }
         //   _degree += gain_degree;
       } else {
-        if (distanceLevel==3) {
+        if (distanceLevel == 3) {
           _degree = degree;
         } else {
           if (vectortX > 0) {
@@ -357,7 +361,8 @@ void _Ball::calc(int _distance) {
         //     }else{
         //       _degree+=15;
         //     }
-        //   }else if(line.detect_num[2]+line.detect_num[3]>0&&line.detect_num[0]+line.detect_num[1]==0){
+        //   }else
+        //   if(line.detect_num[2]+line.detect_num[3]>0&&line.detect_num[0]+line.detect_num[1]==0){
         //     if(_degree<180){
         //       _degree+=15;
         //     }else{
@@ -367,25 +372,27 @@ void _Ball::calc(int _distance) {
         // }
         if (max[0] < 2 || max[0] > 14) {
           _degree = 1000;
-        }else if(max[0]>5&&max[0]<11){
-          _degree=1000;
+        } else if (max[0] > 5 && max[0] < 11) {
+          _degree = 1000;
         } else {
           if (max[0] < 8) {
             _degree = 90;
           } else {
             _degree = 270;
           }
-          if(line.detect_num[0]+line.detect_num[1]>0&&line.detect_num[2]+line.detect_num[3]==0){
-            if(_degree<180){
-              _degree-=15;
-            }else{
-              _degree+=15;
+          if (line.detect_num[0] + line.detect_num[1] > 0 &&
+              line.detect_num[2] + line.detect_num[3] == 0) {
+            if (_degree < 180) {
+              _degree -= 15;
+            } else {
+              _degree += 15;
             }
-          }else if(line.detect_num[2]+line.detect_num[3]>0&&line.detect_num[0]+line.detect_num[1]==0){
-            if(_degree<180){
-              _degree+=15;
-            }else{
-              _degree-=15;
+          } else if (line.detect_num[2] + line.detect_num[3] > 0 &&
+                     line.detect_num[0] + line.detect_num[1] == 0) {
+            if (_degree < 180) {
+              _degree += 15;
+            } else {
+              _degree -= 15;
             }
           }
         }
@@ -409,7 +416,7 @@ void _Ball::LPF(void) {
     //     k = 0.15;  // 0.15
     //   }
     // } else {
-      k = 0.15;  // 0.07
+    k = 0.15;  // 0.07
     // }
     LPF_value[i] += k * (value[i] - LastLPF[i]);
     LastLPF[i] = LPF_value[i];
@@ -421,7 +428,7 @@ void _Ball::LPF(void) {
     //     k = 0.15;  // 0.15
     //   }
     // } else {
-      k = 0.7;  // 0.07
+    k = 0.7;  // 0.07
     // }
     LPF_dist[i] += k * (value[i] - Last_disLPF[i]);
     Last_disLPF[i] = LPF_dist[i];
