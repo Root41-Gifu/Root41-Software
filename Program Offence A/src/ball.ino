@@ -106,57 +106,110 @@ void _Ball::calcDistance(void) {
   // }
   if (LPF_value[max[0]] > 15) {
     int _Level[3];
-    if (max[0] == 0) {
-      _Level[1] = 120;
-      _Level[0] = 105;
-    } else if (max[0] == 1) {
-      _Level[1] = 110;
-      _Level[0] = 100;
-    } else if (max[0] == 2) {
-      _Level[1] = 125;
-      _Level[0] = 110;
-    } else if (max[0] == 3) {
-      _Level[1] = 105;
-      _Level[0] = 95;
-    } else if (max[0] == 4) {
-      _Level[1] = 130;
-      _Level[0] = 115;
-    } else if (max[0] == 5) {
-      _Level[1] = 100;
-      _Level[0] = 90;
-    } else if (max[0] == 6) {
-      _Level[1] = 0;
-      _Level[0] = 0;
-    } else if (max[0] == 7) {
-      _Level[1] = 0;
-      _Level[0] = 0;
-    } else if (max[0] == 8) {
-      _Level[1] = 120;
-      _Level[0] = 90;
-    } else if (max[0] == 9) {
-      _Level[1] = 120;
-      _Level[0] = 90;
-    } else if (max[0] == 10) {
-      _Level[1] = 110;
-      _Level[0] = 100;
-    } else if (max[0] == 11) {
-      _Level[1] = 120;
-      _Level[0] = 105;
-    } else if (max[0] == 12) {
-      _Level[1] = 125;
-      _Level[0] = 110;
-    } else if (max[0] == 13) {
-      _Level[1] = 130;
-      _Level[0] = 110;
-    } else if (max[0] == 14) {
-      _Level[1] = 120;
-      _Level[0] = 110;
-    } else if (max[0] == 15) {
-      _Level[1] = 130;
-      _Level[0] = 110;
+    if (ROBOT_NUMBER == 0) {
+      if (max[0] == 0) {
+        _Level[1] = 120;
+        _Level[0] = 105;
+      } else if (max[0] == 1) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 2) {
+        _Level[1] = 125;
+        _Level[0] = 110;
+      } else if (max[0] == 3) {
+        _Level[1] = 105;
+        _Level[0] = 95;
+      } else if (max[0] == 4) {
+        _Level[1] = 130;
+        _Level[0] = 115;
+      } else if (max[0] == 5) {
+        _Level[1] = 100;
+        _Level[0] = 90;
+      } else if (max[0] == 6) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 7) {
+        _Level[1] = 0;
+        _Level[0] = 0;
+      } else if (max[0] == 8) {
+        _Level[1] = 120;
+        _Level[0] = 90;
+      } else if (max[0] == 9) {
+        _Level[1] = 120;
+        _Level[0] = 90;
+      } else if (max[0] == 10) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 11) {
+        _Level[1] = 120;
+        _Level[0] = 105;
+      } else if (max[0] == 12) {
+        _Level[1] = 125;
+        _Level[0] = 110;
+      } else if (max[0] == 13) {
+        _Level[1] = 130;
+        _Level[0] = 110;
+      } else if (max[0] == 14) {
+        _Level[1] = 120;
+        _Level[0] = 110;
+      } else if (max[0] == 15) {
+        _Level[1] = 130;
+        _Level[0] = 110;
+      }
+      _Level[0] -= 12;
+      _Level[1] -= 10;
+    } else if (ROBOT_NUMBER == 1) {
+      if (max[0] == 0) {
+        _Level[1] = 100;
+        _Level[0] = 95;
+      } else if (max[0] == 1) {
+        _Level[1] = 105;
+        _Level[0] = 90;
+      } else if (max[0] == 2) {
+        _Level[1] = 125;
+        _Level[0] = 110;
+      } else if (max[0] == 3) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 4) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 5) {
+        _Level[1] = 100;
+        _Level[0] = 90;
+      } else if (max[0] == 6) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 7) {
+        _Level[1] = 0;
+        _Level[0] = 0;
+      } else if (max[0] == 8) {
+        _Level[1] = 120;
+        _Level[0] = 90;
+      } else if (max[0] == 9) {
+        _Level[1] = 120;
+        _Level[0] = 90;
+      } else if (max[0] == 10) {
+        _Level[1] = 110;
+        _Level[0] = 100;
+      } else if (max[0] == 11) {
+        _Level[1] = 120;
+        _Level[0] = 105;
+      } else if (max[0] == 12) {
+        _Level[1] = 125;
+        _Level[0] = 110;
+      } else if (max[0] == 13) {
+        _Level[1] = 90;
+        _Level[0] = 75;
+      } else if (max[0] == 14) {
+        _Level[1] = 90;
+        _Level[0] = 80;
+      } else if (max[0] == 15) {
+        _Level[1] = 105;
+        _Level[0] = 90;
+      }
+      _Level[0]-=10;
     }
-    _Level[0] -= 12;
-    _Level[1] -= 10;
     if (ball.distance < _Level[0]) {
       LevelCounter[3]++;
       // distanceLevel = 3;
@@ -269,9 +322,9 @@ void _Ball::calc(int _distance) {
   } else {
     if (UI.mode == 1) {
       float _plusvector[2];
-      float gain_constant = 9;      //閾値
-      int max_gain = 150;           //上限
-      int distance_constant = 140;  //距離定数
+      float gain_constant = 12;     //閾値
+      int max_gain = 160;           //上限
+      int distance_constant = 130;  //距離定数
       // switch (distanceLevel) {
       //   case 3:
       //     distance_constant = 300;
@@ -291,7 +344,7 @@ void _Ball::calc(int _distance) {
       // }
       int gain_degree;
 
-      if (degree < 30 || degree > 330) {
+      if (degree < 25 || degree > 335) {
         if (ball.hold) {
           _degree = 0;
         } else {
@@ -370,15 +423,31 @@ void _Ball::calc(int _distance) {
         //     }
         //   }
         // }
-        if (max[0] < 2 || max[0] > 14) {
+        if (max[0]==0) {
           _degree = 1000;
         } else if (max[0] > 5 && max[0] < 11) {
           _degree = 1000;
         } else {
           if (max[0] < 8) {
-            _degree = 90;
+            if(line.checkBlock[4]||line.checkBlock[5]){
+              if(line.Block==1){
+                _degree=1000;
+              }else{
+                _degree = 75;
+              }
+            }else{
+              _degree = 75;
+            }
           } else {
-            _degree = 270;
+            if(line.checkBlock[6]||line.checkBlock[7]){
+              if(line.Block==1){
+                _degree=1000;
+              }else{
+                _degree = 285;
+              }
+            }else{
+              _degree = 285;
+            }
           }
           if (line.detect_num[0] + line.detect_num[1] > 0 &&
               line.detect_num[2] + line.detect_num[3] == 0) {
@@ -387,14 +456,15 @@ void _Ball::calc(int _distance) {
             } else {
               _degree += 15;
             }
-          } else if (line.detect_num[2] + line.detect_num[3] > 0 &&
-                     line.detect_num[0] + line.detect_num[1] == 0) {
-            if (_degree < 180) {
-              _degree += 15;
-            } else {
-              _degree -= 15;
-            }
           }
+          //  else if (line.detect_num[2] + line.detect_num[3] > 0 &&
+          //            line.detect_num[0] + line.detect_num[1] == 0) {
+          //   if (_degree < 180) {
+          //     _degree += 15;
+          //   } else {
+          //     _degree -= 15;
+          //   }
+          // }
         }
       }
     }
@@ -416,7 +486,11 @@ void _Ball::LPF(void) {
     //     k = 0.15;  // 0.15
     //   }
     // } else {
-    k = 0.15;  // 0.07
+    if (ROBOT_NUMBER == 0) {
+      k = 0.15;  // 0.07
+    } else if (ROBOT_NUMBER == 1) {
+      k = 0.09;
+    }
     // }
     LPF_value[i] += k * (value[i] - LastLPF[i]);
     LastLPF[i] = LPF_value[i];
@@ -428,7 +502,11 @@ void _Ball::LPF(void) {
     //     k = 0.15;  // 0.15
     //   }
     // } else {
-    k = 0.7;  // 0.07
+    if (ROBOT_NUMBER == 0) {
+      k = 0.7;  // 0.07
+    } else if (ROBOT_NUMBER == 1) {
+      k = 0.3;
+    }
     // }
     LPF_dist[i] += k * (value[i] - Last_disLPF[i]);
     Last_disLPF[i] = LPF_dist[i];

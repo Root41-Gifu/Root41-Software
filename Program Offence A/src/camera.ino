@@ -11,15 +11,19 @@ void _Camera::read() {
   // if (SPI.transfer(1) == 85) {  // saw sync char?
   //   SPI.transfer(&len, 4);      // get length
   //   if (len) {
-  //     SPI.transfer(&buff, min(len, CHAR_BUF));
-  //     len -= min(len, CHAR_BUF);
+  //     SPI.transfer(0);
   //   }
-  //   while (len--)
-  //     SPI.transfer(0);  // eat any remaining bytes
+  //   // while (len--)
+  //   //   SPI.transfer(0);  // eat any remaining bytes
   // }
 
-  // digitalWrite(SS_PIN, HIGH);
+  // digitalWrite(CAMERA_PIN, HIGH);
+  // Serial.print(buff);
   // delay(1);  // Don't loop to quickly.
+
+  // digitalWrite(CAMERA_PIN, HIGH);
+  // delay(1);  // Don't loop to quickly.
+  // Serial.println(buff);
 
   SPI.begin();
   int data;

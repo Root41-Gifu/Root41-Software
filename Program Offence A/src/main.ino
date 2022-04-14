@@ -13,6 +13,8 @@ int i2cReadWithTimeoutFunction(void);
 #include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
+#define ROBOT_NUMBER 1
+
 #define voltage PC0
 
 #define LINE_EFFECT 1
@@ -54,12 +56,12 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x40
 const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
 
-#define LINE_BRIGHTNESS 20  // 50
+#define LINE_BRIGHTNESS 22  // 50
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
-#define LINEOVERNUM 25
-#define LINEOVERTIME 500
-#define LINERETURNTIME 400
+#define LINEOVERNUM 18
+#define LINEOVERTIME 60
+#define LINERETURNTIME 40
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -271,6 +273,9 @@ class _Keeper {
   int y_position;
   int line_position;
   int Move_degree;
+  int line_Lock;
+
+  unsigned long lockTimer;
 
  private:
 } keeper;
@@ -383,6 +388,11 @@ LINESENSOR_INITIALIZE:
   gyro.setting();
   // }
 
+  // UI setting
+  UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  SPI.beginTransaction(MAX6675Setting);
+
   // Camera setting
   Serial.begin(19200);
   SPI.begin();
@@ -390,17 +400,10 @@ LINESENSOR_INITIALIZE:
   SPI.setClockDivider(SPI_CLOCK_DIV16);
   SPI.setDataMode(SPI_MODE0);
 
-  // UI setting
-  UI.NeoPixelReset(NEOPIXEL_BRIGHTNESS, LINE_BRIGHTNESS);
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  SPI.beginTransaction(MAX6675Setting);
-
-  Serial.begin(115200);
-
   for (int i = 0; i < 4; i++) {
     Wire.beginTransmission(lineAddress[i]);
     Wire.write(9);  // high
-    Wire.write(5);   // low
+    Wire.write(5);  // low
 
     int result = Wire.endTransmission();
     Serial.println(result);
@@ -532,7 +535,7 @@ void loop() {
 
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
-  if (line.flag || line.Rflag || line.Oflag) {
+  if (line.flag || line.Rflag || line.Oflag||UI.mode==2) {
     UI.frash_mode = 1;
   } else {
     UI.frash_mode = 0;
@@ -593,10 +596,10 @@ void loop() {
     } else if (line.Rflag) {
       //ラインあり、ラインオーバー時
       // _Mdegree = line.leftdegree - line.reference_degree;]
-      if(millis()-line.OutTimer<80){
+      if (millis() - line.OutTimer < 60) {
         _Mdegree = line.rdegree;
-      }else{
-        _Mdegree=ball.Move_degree;
+      } else {
+        _Mdegree = ball.Move_degree;
       }
     } else if (line.Oflag) {
       _Mdegree = line.odegree;
@@ -609,18 +612,18 @@ void loop() {
         //   _Mdegree=0;
         // }else if(_Mdegree<135){
         //   _Mdegree=1000;
-        // }else 
-        if(_Mdegree<180){
-          _Mdegree=1000;
+        // }else
+        if (_Mdegree < 180) {
+          _Mdegree = 1000;
         }
       } else if (line.MoveLock == 4) {
         // if(_Mdegree>315){
         //   _Mdegree=0;
         // }else if(_Mdegree>225){
         //   _Mdegree=1000;
-        // }else 
-        if(_Mdegree>180){
-          _Mdegree=1000;
+        // }else
+        if (_Mdegree > 180) {
+          _Mdegree = 1000;
         }
       }
     }
@@ -678,20 +681,17 @@ void loop() {
   } else {
     motor.lowBatteryCount = millis();
   }
+
+  // camera.read();
+  int udata;
+
   if (true) {
-    for (int i = 0; i < LINE_NUM; i++) {
-      Serial.print(line.value[i]);
+    // 0
+    for(int i=0;i<16; i++){
+      Serial.print(ball.LPF_dist[i]);
       Serial.print(" ");
     }
-    Serial.print(line.touch);
-    Serial.print(" ");
-    Serial.print(line.flag);
-    Serial.print(" ");
-    Serial.print(line.Rflag);
-    Serial.print(" ");
-    Serial.print(ball.hold);
-    Serial.println(" ");
-    // 0
+    Serial.println("");
   }
 }
 
