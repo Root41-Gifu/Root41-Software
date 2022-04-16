@@ -391,7 +391,7 @@ void setup() {
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
   pinMode(CAMERA_PIN, OUTPUT);
-LINESENSOR_INITIALIZE:
+// LINESENSOR_INITIALIZE:
   Wire.begin();
   // Wire.setClock(400000);
   // for (int i = 0; i < 5; i++) {
@@ -412,7 +412,7 @@ LINESENSOR_INITIALIZE:
     int result = Wire.endTransmission();
     Serial.println(result);
     if (result != 0) {
-      goto LINESENSOR_INITIALIZE;
+      // goto LINESENSOR_INITIALIZE;
     }
     delay(50);
   }
@@ -682,7 +682,7 @@ void loop() {
   // Battery = 10.3;
 
   if (Battery < 10.4 || Battery > 12.7) {
-    emergency = true;
+    // emergency = true;
   } else {
     motor.lowBatteryCount = millis();
   }
@@ -698,16 +698,8 @@ void loop() {
     // }
     Serial.print(ball.hold);
     Serial.print(" ");
-    for(int i=0; i<20; i++){
-      Serial.print(line.angel_value[i]);
-    }
-    Serial.print(" ");
-    for(int i=0; i<4; i++){
-      Serial.print(line.edge_value[i]);
-    }
-    Serial.print(" ");
-    for(int i=0; i<4; i++){
-      Serial.print(line.cross_value[i]);
+    for(int i=0; i<15; i++){
+      Serial.print(ball.LPF_value[i]);
     }
     Serial.println("");
   }
