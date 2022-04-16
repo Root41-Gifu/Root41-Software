@@ -433,23 +433,23 @@ void _Ball::calc(int _distance) {
             if(line.checkBlock[4]||line.checkBlock[5]){
               if(line.Block==1){
                 _degree=1000;
-                gyro.gain_deg=degree;
+                // gyro.gain_deg=degree;
               }else{
-                _degree = 75;
+                _degree = 80;
               }
             }else{
-              _degree = 75;
+              _degree = 80;
             }
           } else {
             if(line.checkBlock[6]||line.checkBlock[7]){
               if(line.Block==1){
                 _degree=1000;
-                gyro.gain_deg=degree;
+                // gyro.gain_deg=degree;
               }else{
-                _degree = 285;
+                _degree = 280;
               }
             }else{
-              _degree = 285;
+              _degree = 280;
             }
           }
           if (line.detect_num[0] + line.detect_num[1] > 0 &&

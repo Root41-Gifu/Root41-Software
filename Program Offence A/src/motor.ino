@@ -307,8 +307,11 @@ void _Motor::motorPID_drive(int motor_speed) {
     motor.val[i] = constrain(motor.val[i], -60, 60);
   }
 
-  for (int i = 0; i < 3; i++) {
-    motor.val[i] *= 0.5;
+  for (int i = 0; i < 4; i++) {
+    motor.val[i] *= 0.65;
+    if(UI.mode==2){
+      motor.val[i]*=keeper.speed;
+    }
   }
 
   motor.directDrive(motor.val);

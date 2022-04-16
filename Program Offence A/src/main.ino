@@ -51,10 +51,10 @@ int i2cReadWithTimeoutFunction(void);
 
 #define UI_ADDRESS 0x04
 #define LINE_FRONTADDRESS 0x08
-#define LINE_REARADDRESS 0x20
+#define LINE_REARADDRESS 0x40
 #define LINE_LEFTADDRESS 0x10
-#define LINE_RIGHTADDRESS 0x40
-const int lineAddress[] = {0x08, 0x40, 0x20, 0x10};
+#define LINE_RIGHTADDRESS 0x20
+const int lineAddress[] = {0x08, 0x20, 0x40, 0x10};
 
 #define LINE_BRIGHTNESS 22  // 50
 #define NEOPIXEL_BRIGHTNESS 30
@@ -201,9 +201,12 @@ class _Line {
   bool touch;            //ラインに触れているか
   bool value[47];        //反応値
   bool value_stock[47];  //反応値
-  bool check[47];        //計測されたか
-  bool checkBlock[8];    //８分割ブロックの計測フラグ
-  int Block;             //８分割ブロック
+  bool edge_value[4];
+  bool cross_value[4];
+  bool angel_value[20];
+  bool check[47];      //計測されたか
+  bool checkBlock[8];  //８分割ブロックの計測フラグ
+  int Block;           //８分割ブロック
   int Block_degree[8] = {180, 180, 0, 0, 90, 90, 270, 270};
   int Edge;
   int order[47];      //反応した順番
@@ -275,7 +278,12 @@ class _Keeper {
   int Move_degree;
   int line_Lock;
 
+  float speed = 1;
+
+  bool frontoverFlag;
+
   unsigned long lockTimer;
+  unsigned long frontoverTimer;
 
  private:
 } keeper;
@@ -334,6 +342,8 @@ class _Camera {
   _Camera(void);
   void read();
   void calc();
+
+  byte goal_x;
 
   int mode;
   int o_goal_X[2];
@@ -678,8 +688,8 @@ void loop() {
 
   // Battery = 10.3;
 
-  if (Battery < 10.5 || Battery > 12.7) {
-    // emergency=true;
+  if (Battery < 10.4 || Battery > 12.7) {
+    emergency = true;
   } else {
     motor.lowBatteryCount = millis();
   }
@@ -689,10 +699,12 @@ void loop() {
 
   if (true) {
     // 0
-    for (int i = 0; i < 16; i++) {
-      Serial.print(ball.LPF_dist[i]);
-      Serial.print(" ");
-    }
+    // for (int i = 0; i < 16; i++) {
+    //   Serial.print(ball.LPF_value[i]);
+    //   Serial.print(" ");
+    // }
+    Serial.print(ball.hold);
+    Serial.print(" ");
     Serial.println("");
   }
 }

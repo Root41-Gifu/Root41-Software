@@ -264,36 +264,36 @@ void _UI::NeoPixeldisplay(int _mode) {
         } else if (ball_separate + 1 > 15) {
           _side[1] = 0;
         }
-        if(ball.hold){
+        if (ball.hold) {
           StripFulldisplay(BallDistance_Color1);
-        }else{
-        switch (ball.distanceLevel) {
-          case 0:
-            StripFulldisplay(BallDistance_Color3);
-            break;
-          case 3:
-            // strip.setPixelColor(ball.max[0], BallDistance_Color3);
-            strip.setPixelColor(ball_separate, BallDistance_Color3);
-            strip.setPixelColor(_side[0], BallDistance_Color3);
-            strip.setPixelColor(_side[1], BallDistance_Color3);
-            break;
-          case 2:
-            // strip.setPixelColor(ball.max[0], BallDistance_Color2);
-            strip.setPixelColor(ball_separate, BallDistance_Color2);
-            strip.setPixelColor(_side[0], BallDistance_Color2);
-            strip.setPixelColor(_side[1], BallDistance_Color2);
-            break;
+        } else {
+          switch (ball.distanceLevel) {
+            case 0:
+              StripFulldisplay(BallDistance_Color3);
+              break;
+            case 3:
+              // strip.setPixelColor(ball.max[0], BallDistance_Color3);
+              strip.setPixelColor(ball_separate, BallDistance_Color3);
+              strip.setPixelColor(_side[0], BallDistance_Color3);
+              strip.setPixelColor(_side[1], BallDistance_Color3);
+              break;
+            case 2:
+              // strip.setPixelColor(ball.max[0], BallDistance_Color2);
+              strip.setPixelColor(ball_separate, BallDistance_Color2);
+              strip.setPixelColor(_side[0], BallDistance_Color2);
+              strip.setPixelColor(_side[1], BallDistance_Color2);
+              break;
 
-          case 1:
-            // strip.setPixelColor(ball.max[0], BallDistance_Color1);
-            strip.setPixelColor(ball_separate, BallDistance_Color1);
-            strip.setPixelColor(_side[0], BallDistance_Color1);
-            strip.setPixelColor(_side[1], BallDistance_Color1);
-            break;
+            case 1:
+              // strip.setPixelColor(ball.max[0], BallDistance_Color1);
+              strip.setPixelColor(ball_separate, BallDistance_Color1);
+              strip.setPixelColor(_side[0], BallDistance_Color1);
+              strip.setPixelColor(_side[1], BallDistance_Color1);
+              break;
 
-          default:
-            break;
-        }
+            default:
+              break;
+          }
         }
         // strip.setPixelColor(ball_separate, BallDistance_Color1);
         //     strip.setPixelColor(_side[0], BallDistance_Color1);
@@ -321,20 +321,22 @@ void _UI::NeoPixeldisplay(int _mode) {
             }
           }
         } else if (UI.mode == 2) {
-          int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
+          if (keeper.mode!=1) {
+            int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
                                         2, 2, 4, 4, 4, 4, 0, 0};
             for (int i = 0; i < 16; i++) {
-              if (pixel_assign_out[i]==line.Last_Block) {
+              if (pixel_assign_out[i] == line.Last_Block) {
                 strip.setPixelColor(i, Line_Color1);
               }
             }
             int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
                                        3, 3, 4, 5, 5, 5, 1, 1};
             for (int i = 0; i < 16; i++) {
-              if (pixel_assign_out[i]==line.Last_Block) {
+              if (pixel_assign_out[i] == line.Last_Block) {
                 strip.setPixelColor(i, Line_Color1);
               }
             }
+          }
         }
       }
     }

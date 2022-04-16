@@ -12,11 +12,6 @@ void setup() {
 
   pinMode(SS_PIN_BALL, OUTPUT);
   digitalWrite(SS_PIN_BALL, HIGH);
-
-  SPI.begin();
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV64);
-  SPI.setDataMode(SPI_MODE0);
   delay(1000);  // Give the OpenMV Cam time to bootup.
   Serial.println("start");
   pinMode(PA8, INPUT);
@@ -54,17 +49,17 @@ void loop() {
   // }
   // int N = int(buff[0]-'0');
   // SPI.beginTransaction(SPISettings(6400, MSBFIRST, SPI_MODE0));
-  digitalWrite(SS_PIN_CAM,LOW);
-  digitalWrite(SS_PIN_BALL,HIGH);
+  // digitalWrite(SS_PIN_CAM,LOW);
+  // digitalWrite(SS_PIN_BALL,HIGH);
   // digitalWrite(BALL_RESET,HIGH);
   // delay(1);
   // byte value = 1;
 
-  int32_t len = 0;
+  // int32_t len = 0;
   // char buff[CHAR_BUF] = {0};
-  byte buff;
-  digitalWrite(SS_PIN_CAM, LOW);
-  delay(1);  // Give the OpenMV Cam some time to setup to send data.
+  // byte buff;
+  // digitalWrite(SS_PIN_CAM, LOW);
+  // delay(1);  // Give the OpenMV Cam some time to setup to send data.
 
   // if (SPI.transfer(1) == 85) {  // saw sync char?
   //   SPI.transfer(&len, 4);      // get length
@@ -73,17 +68,21 @@ void loop() {
   //     // len -= min(len, CHAR_BUF);
   //   }
   //   while (len--)
-  buff=SPI.transfer(0);  // eat any remaining bytes
+  // buff=SPI.transfer(0);  // eat any remaining bytes
 
   // byte buff;
   // buff=SPI.transfer(0);
   // Serial.println(bufff);
-  digitalWrite(SS_PIN_BALL,HIGH);
-  digitalWrite(SS_PIN_CAM,HIGH);
-  Serial.println(buff);
+  // digitalWrite(SS_PIN_BALL,HIGH);
+  // digitalWrite(SS_PIN_CAM,HIGH);
+  // Serial.println(buff);
   // Serial.println(N);
   
   // digitalWrite(SS_PIN_CAM, HIGH);
   // Serial.print(buff);
   // delay(1);  // Don't loop to quickly.
+  if(Serial.available()){
+    byte byteRead=Serial.read();
+    Serial.println(byteRead);
+  }
 }

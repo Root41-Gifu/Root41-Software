@@ -91,6 +91,18 @@ void _Line::read(void) {
     bitSelect = 0;
   }
 
+  Wire.requestFrom(LINE_FRONTADDRESS, 1);
+  while (Wire.available() >= 1) {
+    byte readValue;
+    readValue = i2cReadWithTimeoutFunction();
+    for (int i = 0; i < 5; i++) {
+      angel_value[i] = readValue & (1 << 1+i);
+    }
+    cross_value[0]=readValue&(1<<6);
+    edge_value[0]=readValue&(1<<7);
+    ball.hold = readValue & (1);
+  }
+
   if (readCounter == 0) {
     Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
 
@@ -427,7 +439,6 @@ int _Line::calcDirection(void) {
   // }
   // _degree = degrees(atan2(t_vectorX, t_vectorY));
 
-
   return _degree;
 }
 
@@ -466,7 +477,7 @@ void _Line::calc(void) {
       // }
     } else if (mode == 3) {
       //傾き杉
-      _degree = calcDirection() ;
+      _degree = calcDirection();
       // _degree=Block_degree[orderBlock[0]]-current_degree;
     } else if (mode == 4) {
       //オーバー　
