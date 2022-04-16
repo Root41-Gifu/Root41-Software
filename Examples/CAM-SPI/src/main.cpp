@@ -1,21 +1,19 @@
 #include <Arduino.h>
-#include <SPI.h>
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(38, 37);  // RX, TXs
 #define SS_PIN_CAM PB4
 #define SS_PIN_BALL PB5
 #define BALL_RESET PB10
 #define BAUD_RATE 19200
-#define CHAR_BUF 128
 
 void setup() {
-  pinMode(SS_PIN_CAM, OUTPUT);
-  Serial.begin(BAUD_RATE);
-
-  pinMode(SS_PIN_BALL, OUTPUT);
-  digitalWrite(SS_PIN_BALL, HIGH);
+  mySerial.begin(BAUD_RATE);
+  Serial.begin(9600);
   delay(1000);  // Give the OpenMV Cam time to bootup.
   Serial.println("start");
-  pinMode(PA8, INPUT);
 }
+
+
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -77,12 +75,16 @@ void loop() {
   // digitalWrite(SS_PIN_CAM,HIGH);
   // Serial.println(buff);
   // Serial.println(N);
-  
+
   // digitalWrite(SS_PIN_CAM, HIGH);
   // Serial.print(buff);
   // delay(1);  // Don't loop to quickly.
-  if(Serial.available()){
-    byte byteRead=Serial.read();
-    Serial.println(byteRead);
+  int byteRead = 0;
+
+  if (mySerial.available()) {
+    byteRead = mySerial.read();
   }
+  mySerial.write(1);
+
+  Serial.println(byteRead);
 }

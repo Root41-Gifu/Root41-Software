@@ -20,7 +20,7 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_EFFECT 1
 
 #define BALL_NUM 16
-#define LINE_NUM 41
+#define LINE_NUM 28
 #define LINE_FRONTNUM 10
 #define LINE_REARNUM 9
 #define LINE_LEFTNUM 14
@@ -60,8 +60,8 @@ const int lineAddress[] = {0x08, 0x20, 0x40, 0x10};
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 18
-#define LINEOVERTIME 60
-#define LINERETURNTIME 40
+#define LINEOVERTIME 30
+#define LINERETURNTIME 10
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -85,7 +85,7 @@ bool emergency;  //緊急用のフラグ（やばいとき上げて）
 unsigned long gyroReset_Timer;
 bool reset_flag;
 
-int readCounter = 0;
+bool readCounter = 0;
 
 class _UI {
  public:
@@ -195,23 +195,23 @@ class _Line {
   3:ライン踏んで4以上（ずれあり）
   */
 
-  bool flag;             //ラインセンサーの動きをするか
-  bool Rflag;            //飛び出しリターン時のフラグ
-  bool Oflag;            //オーバーリターンのフラグ
-  bool touch;            //ラインに触れているか
-  bool value[47];        //反応値
-  bool value_stock[47];  //反応値
+  bool flag;       //ラインセンサーの動きをするか
+  bool Rflag;      //飛び出しリターン時のフラグ
+  bool Oflag;      //オーバーリターンのフラグ
+  bool touch;      //ラインに触れているか
+  bool value[28];  //反応値
+  // bool value_stock[47];  //反応値
   bool edge_value[4];
   bool cross_value[4];
   bool angel_value[20];
-  bool check[47];      //計測されたか
-  bool checkBlock[8];  //８分割ブロックの計測フラグ
-  int Block;           //８分割ブロック
-  int Block_degree[8] = {180, 180, 0, 0, 90, 90, 270, 270};
+  bool check[28];      //計測されたか
+  bool checkBlock[4];  // 4分割ブロックの計測フラグ
+  int Block;           // 4分割ブロック
+  int Block_degree[4] = {180, 0, 90, 270};
+  int one_degree[28];
   int Edge;
-  int order[47];      //反応した順番
-  int orderBlock[8];  //８分割ブロック
-  int orderBlock4[4];
+  int order[28];      //反応した順番
+  int orderBlock[4];  // 4分割ブロック
 
   int MoveLock;
 
@@ -229,14 +229,14 @@ class _Line {
   int just;  //今反応してるやつ
 
   //タイマー
-  unsigned long detectTimer[47];  //反応時間計測
+  unsigned long detectTimer[28];  //反応時間計測
   unsigned long OutTimer;         //ラインアウト時間計測
   unsigned long InTimer;
   unsigned long MovelockTimer;
 
   //----十字ラインセンサー
-  int detect_num[8];  //８分割ブロックごとの計測数（リアルタイム）
-  int passed_num[8];  //８分割ブロックごとの計測数（通過後を含む）
+  int detect_num[4];  //８分割ブロックごとの計測数（リアルタイム）
+  int passed_num[4];  //８分割ブロックごとの計測数（通過後を含む）
   //その他
   // int mode;  //モード
 
@@ -391,7 +391,7 @@ void setup() {
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
   pinMode(CAMERA_PIN, OUTPUT);
-// LINESENSOR_INITIALIZE:
+  // LINESENSOR_INITIALIZE:
   Wire.begin();
   // Wire.setClock(400000);
   // for (int i = 0; i < 5; i++) {
@@ -465,7 +465,7 @@ void loop() {
   Battery = analogRead(voltage) * 0.01469231;
 
   // Ball---------------------------------------------
-  // ball.SPI_read();  // SPI読み込み
+  ball.SPI_read();  // SPI読み込み
   // SPI不具合のノイズ除去
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
@@ -696,11 +696,10 @@ void loop() {
     //   Serial.print(ball.LPF_value[i]);
     //   Serial.print(" ");
     // }
-    Serial.print(ball.hold);
+    Serial.print(ball.max[0]);
     Serial.print(" ");
-    for(int i=0; i<15; i++){
-      Serial.print(ball.LPF_value[i]);
-    }
+    Serial.print(" ");
+
     Serial.println("");
   }
 }

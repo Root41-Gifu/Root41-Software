@@ -26,71 +26,49 @@ _Line::_Line() {
   // block_vectorY[6] = cos(radians(90));
   // block_vectorX[7] = sin(radians(90));
   // block_vectorY[7] = cos(radians(90));
-  for (int i = 0; i < LINE_NUM; i++) {
-    if (i < LINE_FRONTNUM) {
-      Line_Where[i] = 0;
-    } else if (i < LINE_FRONTNUM + LINE_REARNUM) {
-      Line_Where[i] = 2;
-    } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM) {
-      Line_Where[i] = 4;
-    } else if (i < LINE_FRONTNUM + LINE_REARNUM + LINE_LEFTNUM + LINE_REARNUM) {
-      Line_Where[i] = 6;
+  for(int i=0; i<4; i++){
+    for(int j=0; j<7; j++){
+      Line_Where[i*7+j]=i;
     }
   }
-  for (int i = 1; i <= 9; i++) {
-    Line_Where[i] = 0;
-  }
-  Line_Where[1] = 1;
-  Line_Where[4] = 1;
-  Line_Where[8] = 1;
-  // for (int i = 10; i <= 15; i++) {
-  //   Line_Where[i] = 2;
-  // }
-  // for (int i = 16; i <= 18; i++) {
-  //   Line_Where[i] = 3;
-  // }
-  Line_Where[10] = 2;
-  Line_Where[12] = 2;
-  Line_Where[13] = 2;
-  Line_Where[15] = 2;
-  Line_Where[16] = 2;
-  Line_Where[18] = 2;
-  Line_Where[11] = 3;
-  Line_Where[14] = 3;
-  Line_Where[17] = 3;
-  for (int i = 19; i <= 21; i++) {
-    Line_Where[i] = 5;
-  }
-  Line_Where[25] = 5;
-  Line_Where[27] = 5;
-  for (int i = 22; i <= 24; i++) {
-    Line_Where[i] = 4;
-  }
-  Line_Where[26] = 4;
-  for (int i = 28; i <= 30; i++) {
-    Line_Where[i] = 4;
-  }
-  Line_Where[31] = 5;
-  Line_Where[32] = 4;
-  for (int i = 33; i <= 34; i++) {
-    Line_Where[i] = 6;
-  }
-  for (int i = 35; i <= 40; i++) {
-    Line_Where[i] = 7;
-  }
+  one_degree[0]=180;
+  one_degree[1]=180;
+  one_degree[2]=180;
+  one_degree[3]=180;
+  one_degree[4]=180;
+  one_degree[5]=180;
+  one_degree[6]=180;
+  one_degree[7]=0;
+  one_degree[8]=0;
+  one_degree[9]=0;
+  one_degree[10]=0;
+  one_degree[11]=0;
+  one_degree[12]=0;
+  one_degree[13]=0;
+  one_degree[14]=90;
+  one_degree[15]=90;
+  one_degree[16]=90;
+  one_degree[17]=90;
+  one_degree[18]=90;
+  one_degree[19]=90;
+  one_degree[20]=90;
+  one_degree[21]=270;
+  one_degree[22]=270;
+  one_degree[23]=270;
+  one_degree[24]=270;
+  one_degree[25]=270;
+  one_degree[26]=270;
+  one_degree[27]=270;
+  
 }
 
 void _Line::read(void) {
   Wire.end();
   Wire.begin();
   Wire.setClock(400000);
-  readCounter++;
-  readCounter = readCounter % 4;
+  readCounter = !readCounter;
 
-  if (readCounter == 0) {
-    bitSelect = 0;
-  }
-  if (readCounter == 0) {
+  if (readCounter) {
     Wire.requestFrom(LINE_FRONTADDRESS, 1);
     while (Wire.available() >= 1) {
       byte readValue;
@@ -102,7 +80,6 @@ void _Line::read(void) {
       edge_value[0] = readValue & (1 << 7);
       ball.hold = !(readValue & (1));
     }
-  } else if (readCounter == 1) {
     Wire.requestFrom(LINE_REARADDRESS, 1);
     while (Wire.available() >= 1) {
       byte readValue;
@@ -113,7 +90,7 @@ void _Line::read(void) {
       cross_value[1] = readValue & (1 << 6);
       edge_value[1] = readValue & (1 << 7);
     }
-  } else if (readCounter == 2) {
+  } else {
     Wire.requestFrom(LINE_LEFTADDRESS, 1);
     while (Wire.available() >= 1) {
       byte readValue;
@@ -124,7 +101,6 @@ void _Line::read(void) {
       cross_value[2] = readValue & (1 << 6);
       edge_value[2] = readValue & (1 << 7);
     }
-  } else if (readCounter == 3) {
     Wire.requestFrom(LINE_RIGHTADDRESS, 1);
     while (Wire.available() >= 1) {
       byte readValue;
@@ -136,124 +112,13 @@ void _Line::read(void) {
       edge_value[3] = readValue & (1 << 7);
     }
   }
-
-  // if (readCounter == 0) {
-  //   Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
-
-  //   while (Wire.available() >= 2) {
-  //     byte readValue[2];
-  //     readValue[0] = i2cReadWithTimeoutFunction();
-  //     readValue[1] = i2cReadWithTimeoutFunction();
-  //     for (int i = 0; i < 3; i++) {
-  //       value[bitSelect] = readValue[0] & (1 << i + 1);
-
-  //       bitSelect++;
-  //     }
-  //     for (int i = 0; i < 3; i++) {
-  //       value[bitSelect] = readValue[0] & (1 << i + 5);
-
-  //       bitSelect++;
-  //     }
-  //     value[bitSelect] = readValue[1] & (1 << 3);
-
-  //     bitSelect++;
-  //     for (int i = 0; i < 3; i++) {
-  //       value[bitSelect] = readValue[1] & (1 << i + 5);
-
-  //       bitSelect++;
-  //     }
-  //   }
-  // } else if (readCounter == 1) {
-  //   Wire.requestFrom(LINE_REARADDRESS, 2);  //アドレスは変えてね
-
-  //   while (Wire.available() >= 2) {
-  //     byte readValue[2];
-  //     readValue[0] = i2cReadWithTimeoutFunction();
-  //     readValue[1] = i2cReadWithTimeoutFunction();
-  //     for (int i = 0; i < 3; i++) {
-  //       value[bitSelect] = readValue[0] & (1 << i + 1);
-
-  //       bitSelect++;
-  //     }
-  //     value[bitSelect] = readValue[0] & (1 << 5);
-
-  //     bitSelect++;
-  //     for (int i = 0; i < 2; i++) {
-  //       value[bitSelect] = readValue[1] & (1 << i + 2);
-
-  //       bitSelect++;
-  //     }
-  //     for (int i = 0; i < 3; i++) {
-  //       value[bitSelect] = readValue[1] & (1 << i + 5);
-
-  //       bitSelect++;
-  //     }
-  //   }
-  // } else if (readCounter == 2) {
-  //   Wire.requestFrom(LINE_LEFTADDRESS, 2);  //アドレスは変えてね
-  //   while (Wire.available() >= 2) {
-  //     byte readValue[2];
-  //     readValue[0] = i2cReadWithTimeoutFunction();
-  //     readValue[1] = i2cReadWithTimeoutFunction();
-  //     for (int i = 0; i < 8; i++) {
-  //       value[bitSelect] = readValue[0] & (1 << i);
-
-  //       bitSelect++;
-  //     }
-  //     for (int i = 0; i < 6; i++) {
-  //       value[bitSelect] = readValue[1] & (1 << i + 2);
-
-  //       bitSelect++;
-  //     }
-  //   }
-  // } else {
-  //   Wire.requestFrom(LINE_RIGHTADDRESS, 2);  //アドレスは変えてね
-
-  //   if (Wire.available() >= 2) {
-  //     byte readValue[2];
-  //     readValue[0] = i2cReadWithTimeoutFunction();
-  //     readValue[1] = i2cReadWithTimeoutFunction();
-  //     for (int i = 0; i < 3; i++) {
-  //       value[bitSelect] = readValue[0] & (1 << i + 1);
-
-  //       bitSelect++;
-  //     }
-  //     value[bitSelect] = readValue[0] & (1 << 5);
-
-  //     bitSelect++;
-  //     value[bitSelect] = readValue[0] & (1 << 7);
-
-  //     bitSelect++;
-  //     value[bitSelect] = readValue[1] & (1 << 3);
-
-  //     bitSelect++;
-  //     value[bitSelect] = readValue[1] & (1 << 5);
-
-  //     bitSelect++;
-  //     value[bitSelect] = readValue[1] & (1 << 7);
-
-  //     bitSelect++;
-  //   }
-  // }
-  // if(value[6]){
-  //   ball.holdcounter++;
-  //   if(ball.holdcounter>20){
-  //     ball.hold=true;
-  //   }
-  // }else{
-  //   ball.hold=false;
-  //   ball.holdcounter=0;
-  // }
-  value[6] = true;
-  value[10] = true;
-  value[19] = true;
-  value[20] = true;
-  value[23] = true;
-  value[27] = true;
-  value[29] = true;
-  value[33] = true;
-  value[41] = true;
-  value[42] = true;
+  for(int i=0; i<4; i++){
+    value[i*7]=edge_value[i];
+    value[i*7+1]=cross_value[i];
+    for(int j=0; j<5; j++){
+      value[i*7+j+2]=angel_value[i*5+j];
+    }
+  }
   Wire.end();
   Wire.begin();
 }
@@ -264,7 +129,7 @@ void _Line::arrange(void) {
   //リセット等
   touch = false;
   whiting = 0;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 4; i++) {
     detect_num[i] = 0;
   }
 
@@ -277,7 +142,7 @@ void _Line::arrange(void) {
 
   //センサーごとの整理
   for (int i = 0; i < LINE_NUM; i++) {
-    if (!value[i]) {
+    if (value[i]) {
       //反応してたら
       if (!check[i]) {
         //過去に反応なし
@@ -287,7 +152,7 @@ void _Line::arrange(void) {
         passed_num[Line_Where[i]]++;
       }
 
-      if (!checkBlock[Line_Where[i]] && passed_num[Line_Where[i]] > 0) {
+      if (!checkBlock[Line_Where[i]]) {
         //そのブロックが過去に反応なし
         // 0だと誤反応の可能性あり、増やしてもいいかも
         checkBlock[Line_Where[i]] = true;
@@ -389,7 +254,7 @@ void _Line::arrange(void) {
     //   Oflag = true;
     // }
     if (!Rflag && !Oflag) {
-      for (int i = 0; i < 8; i++) {
+      for (int i = 0; i < 4; i++) {
         orderBlock[i] = 100;
         checkBlock[i] = 0;
         detect_num[i] = 0;
@@ -456,8 +321,8 @@ int _Line::calcDirection(void) {
   int count = 0;
   for (int i = 0; i < 6; i++) {
     if (i < whited) {
-      t_vectorX += block_vectorX[Line_Where[order[i]]];
-      t_vectorY += block_vectorY[Line_Where[order[i]]];
+      t_vectorX += sin_d[one_degree[order[i]]];
+      t_vectorY += cos_d[one_degree[order[i]]];
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
