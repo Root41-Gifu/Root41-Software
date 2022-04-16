@@ -90,117 +90,151 @@ void _Line::read(void) {
   if (readCounter == 0) {
     bitSelect = 0;
   }
-
-  Wire.requestFrom(LINE_FRONTADDRESS, 1);
-  while (Wire.available() >= 1) {
-    byte readValue;
-    readValue = i2cReadWithTimeoutFunction();
-    for (int i = 0; i < 5; i++) {
-      angel_value[i] = readValue & (1 << 1+i);
-    }
-    cross_value[0]=readValue&(1<<6);
-    edge_value[0]=readValue&(1<<7);
-    ball.hold = readValue & (1);
-  }
-
   if (readCounter == 0) {
-    Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
-
-    while (Wire.available() >= 2) {
-      byte readValue[2];
-      readValue[0] = i2cReadWithTimeoutFunction();
-      readValue[1] = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 3; i++) {
-        value[bitSelect] = readValue[0] & (1 << i + 1);
-
-        bitSelect++;
+    Wire.requestFrom(LINE_FRONTADDRESS, 1);
+    while (Wire.available() >= 1) {
+      byte readValue;
+      readValue = i2cReadWithTimeoutFunction();
+      for (int i = 0; i < 5; i++) {
+        angel_value[i] = readValue & (1 << 1 + i);
       }
-      for (int i = 0; i < 3; i++) {
-        value[bitSelect] = readValue[0] & (1 << i + 5);
-
-        bitSelect++;
-      }
-      value[bitSelect] = readValue[1] & (1 << 3);
-
-      bitSelect++;
-      for (int i = 0; i < 3; i++) {
-        value[bitSelect] = readValue[1] & (1 << i + 5);
-
-        bitSelect++;
-      }
+      cross_value[0] = readValue & (1 << 6);
+      edge_value[0] = readValue & (1 << 7);
+      ball.hold = !(readValue & (1));
     }
   } else if (readCounter == 1) {
-    Wire.requestFrom(LINE_REARADDRESS, 2);  //アドレスは変えてね
-
-    while (Wire.available() >= 2) {
-      byte readValue[2];
-      readValue[0] = i2cReadWithTimeoutFunction();
-      readValue[1] = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 3; i++) {
-        value[bitSelect] = readValue[0] & (1 << i + 1);
-
-        bitSelect++;
+    Wire.requestFrom(LINE_REARADDRESS, 1);
+    while (Wire.available() >= 1) {
+      byte readValue;
+      readValue = i2cReadWithTimeoutFunction();
+      for (int i = 0; i < 5; i++) {
+        angel_value[i + 5] = readValue & (1 << 1 + i);
       }
-      value[bitSelect] = readValue[0] & (1 << 5);
-
-      bitSelect++;
-      for (int i = 0; i < 2; i++) {
-        value[bitSelect] = readValue[1] & (1 << i + 2);
-
-        bitSelect++;
-      }
-      for (int i = 0; i < 3; i++) {
-        value[bitSelect] = readValue[1] & (1 << i + 5);
-
-        bitSelect++;
-      }
+      cross_value[1] = readValue & (1 << 6);
+      edge_value[1] = readValue & (1 << 7);
     }
   } else if (readCounter == 2) {
-    Wire.requestFrom(LINE_LEFTADDRESS, 2);  //アドレスは変えてね
-    while (Wire.available() >= 2) {
-      byte readValue[2];
-      readValue[0] = i2cReadWithTimeoutFunction();
-      readValue[1] = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 8; i++) {
-        value[bitSelect] = readValue[0] & (1 << i);
-
-        bitSelect++;
+    Wire.requestFrom(LINE_LEFTADDRESS, 1);
+    while (Wire.available() >= 1) {
+      byte readValue;
+      readValue = i2cReadWithTimeoutFunction();
+      for (int i = 0; i < 5; i++) {
+        angel_value[i + 10] = readValue & (1 << 1 + i);
       }
-      for (int i = 0; i < 6; i++) {
-        value[bitSelect] = readValue[1] & (1 << i + 2);
-
-        bitSelect++;
-      }
+      cross_value[2] = readValue & (1 << 6);
+      edge_value[2] = readValue & (1 << 7);
     }
-  } else {
-    Wire.requestFrom(LINE_RIGHTADDRESS, 2);  //アドレスは変えてね
-
-    if (Wire.available() >= 2) {
-      byte readValue[2];
-      readValue[0] = i2cReadWithTimeoutFunction();
-      readValue[1] = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 3; i++) {
-        value[bitSelect] = readValue[0] & (1 << i + 1);
-
-        bitSelect++;
+  } else if (readCounter == 3) {
+    Wire.requestFrom(LINE_RIGHTADDRESS, 1);
+    while (Wire.available() >= 1) {
+      byte readValue;
+      readValue = i2cReadWithTimeoutFunction();
+      for (int i = 0; i < 5; i++) {
+        angel_value[i + 15] = readValue & (1 << 1 + i);
       }
-      value[bitSelect] = readValue[0] & (1 << 5);
-
-      bitSelect++;
-      value[bitSelect] = readValue[0] & (1 << 7);
-
-      bitSelect++;
-      value[bitSelect] = readValue[1] & (1 << 3);
-
-      bitSelect++;
-      value[bitSelect] = readValue[1] & (1 << 5);
-
-      bitSelect++;
-      value[bitSelect] = readValue[1] & (1 << 7);
-
-      bitSelect++;
+      cross_value[3] = readValue & (1 << 6);
+      edge_value[3] = readValue & (1 << 7);
     }
   }
+
+  // if (readCounter == 0) {
+  //   Wire.requestFrom(LINE_FRONTADDRESS, 2);  //アドレスは変えてね
+
+  //   while (Wire.available() >= 2) {
+  //     byte readValue[2];
+  //     readValue[0] = i2cReadWithTimeoutFunction();
+  //     readValue[1] = i2cReadWithTimeoutFunction();
+  //     for (int i = 0; i < 3; i++) {
+  //       value[bitSelect] = readValue[0] & (1 << i + 1);
+
+  //       bitSelect++;
+  //     }
+  //     for (int i = 0; i < 3; i++) {
+  //       value[bitSelect] = readValue[0] & (1 << i + 5);
+
+  //       bitSelect++;
+  //     }
+  //     value[bitSelect] = readValue[1] & (1 << 3);
+
+  //     bitSelect++;
+  //     for (int i = 0; i < 3; i++) {
+  //       value[bitSelect] = readValue[1] & (1 << i + 5);
+
+  //       bitSelect++;
+  //     }
+  //   }
+  // } else if (readCounter == 1) {
+  //   Wire.requestFrom(LINE_REARADDRESS, 2);  //アドレスは変えてね
+
+  //   while (Wire.available() >= 2) {
+  //     byte readValue[2];
+  //     readValue[0] = i2cReadWithTimeoutFunction();
+  //     readValue[1] = i2cReadWithTimeoutFunction();
+  //     for (int i = 0; i < 3; i++) {
+  //       value[bitSelect] = readValue[0] & (1 << i + 1);
+
+  //       bitSelect++;
+  //     }
+  //     value[bitSelect] = readValue[0] & (1 << 5);
+
+  //     bitSelect++;
+  //     for (int i = 0; i < 2; i++) {
+  //       value[bitSelect] = readValue[1] & (1 << i + 2);
+
+  //       bitSelect++;
+  //     }
+  //     for (int i = 0; i < 3; i++) {
+  //       value[bitSelect] = readValue[1] & (1 << i + 5);
+
+  //       bitSelect++;
+  //     }
+  //   }
+  // } else if (readCounter == 2) {
+  //   Wire.requestFrom(LINE_LEFTADDRESS, 2);  //アドレスは変えてね
+  //   while (Wire.available() >= 2) {
+  //     byte readValue[2];
+  //     readValue[0] = i2cReadWithTimeoutFunction();
+  //     readValue[1] = i2cReadWithTimeoutFunction();
+  //     for (int i = 0; i < 8; i++) {
+  //       value[bitSelect] = readValue[0] & (1 << i);
+
+  //       bitSelect++;
+  //     }
+  //     for (int i = 0; i < 6; i++) {
+  //       value[bitSelect] = readValue[1] & (1 << i + 2);
+
+  //       bitSelect++;
+  //     }
+  //   }
+  // } else {
+  //   Wire.requestFrom(LINE_RIGHTADDRESS, 2);  //アドレスは変えてね
+
+  //   if (Wire.available() >= 2) {
+  //     byte readValue[2];
+  //     readValue[0] = i2cReadWithTimeoutFunction();
+  //     readValue[1] = i2cReadWithTimeoutFunction();
+  //     for (int i = 0; i < 3; i++) {
+  //       value[bitSelect] = readValue[0] & (1 << i + 1);
+
+  //       bitSelect++;
+  //     }
+  //     value[bitSelect] = readValue[0] & (1 << 5);
+
+  //     bitSelect++;
+  //     value[bitSelect] = readValue[0] & (1 << 7);
+
+  //     bitSelect++;
+  //     value[bitSelect] = readValue[1] & (1 << 3);
+
+  //     bitSelect++;
+  //     value[bitSelect] = readValue[1] & (1 << 5);
+
+  //     bitSelect++;
+  //     value[bitSelect] = readValue[1] & (1 << 7);
+
+  //     bitSelect++;
+  //   }
+  // }
   // if(value[6]){
   //   ball.holdcounter++;
   //   if(ball.holdcounter>20){

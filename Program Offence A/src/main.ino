@@ -404,13 +404,6 @@ LINESENSOR_INITIALIZE:
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
 
-  // Camera setting
-  Serial.begin(19200);
-  SPI.begin();
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setClockDivider(SPI_CLOCK_DIV16);
-  SPI.setDataMode(SPI_MODE0);
-
   for (int i = 0; i < 4; i++) {
     Wire.beginTransmission(lineAddress[i]);
     Wire.write(9);  // high
@@ -472,7 +465,7 @@ void loop() {
   Battery = analogRead(voltage) * 0.01469231;
 
   // Ball---------------------------------------------
-  ball.SPI_read();  // SPI読み込み
+  // ball.SPI_read();  // SPI読み込み
   // SPI不具合のノイズ除去
   for (int i = 0; i < 16; i++) {
     if (ball.value[i] == 16) {
@@ -705,6 +698,17 @@ void loop() {
     // }
     Serial.print(ball.hold);
     Serial.print(" ");
+    for(int i=0; i<20; i++){
+      Serial.print(line.angel_value[i]);
+    }
+    Serial.print(" ");
+    for(int i=0; i<4; i++){
+      Serial.print(line.edge_value[i]);
+    }
+    Serial.print(" ");
+    for(int i=0; i<4; i++){
+      Serial.print(line.cross_value[i]);
+    }
     Serial.println("");
   }
 }
