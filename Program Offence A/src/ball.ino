@@ -423,6 +423,7 @@ void _Ball::calc(int _distance) {
         //     }
         //   }
         // }
+        gyro.gain_deg=0;
         if (max[0]==0) {
           _degree = 1000;
         } else if (max[0] > 5 && max[0] < 11) {
@@ -432,6 +433,7 @@ void _Ball::calc(int _distance) {
             if(line.checkBlock[4]||line.checkBlock[5]){
               if(line.Block==1){
                 _degree=1000;
+                gyro.gain_deg=degree;
               }else{
                 _degree = 75;
               }
@@ -442,6 +444,7 @@ void _Ball::calc(int _distance) {
             if(line.checkBlock[6]||line.checkBlock[7]){
               if(line.Block==1){
                 _degree=1000;
+                gyro.gain_deg=degree;
               }else{
                 _degree = 285;
               }

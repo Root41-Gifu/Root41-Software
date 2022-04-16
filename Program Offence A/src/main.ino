@@ -353,6 +353,7 @@ class _gyro {
 
   int deg;
   int reference_deg;
+  int gain_deg;
   int eeprom[6];
 
   bool isLift = false;
@@ -535,7 +536,7 @@ void loop() {
 
   UI.refrection();  //スイッチのアルゴリズムへの反映
 
-  if (line.flag || line.Rflag || line.Oflag||UI.mode==2) {
+  if (line.flag || line.Rflag || line.Oflag || UI.mode == 2) {
     UI.frash_mode = 1;
   } else {
     UI.frash_mode = 0;
@@ -578,6 +579,7 @@ void loop() {
   gyro.deg = 360;           // 360
   gyro.deg += gyro.read();  //
   gyro.deg -= gyro.reference_deg;
+  gyro.deg -= gyro.gain_deg;
   gyro.deg %= 360;
 
   // Motor-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -s
@@ -687,7 +689,7 @@ void loop() {
 
   if (true) {
     // 0
-    for(int i=0;i<16; i++){
+    for (int i = 0; i < 16; i++) {
       Serial.print(ball.LPF_dist[i]);
       Serial.print(" ");
     }

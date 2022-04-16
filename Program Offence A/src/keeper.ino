@@ -47,14 +47,20 @@ void _Keeper::calc(void) {
   } else if (mode == 6) {
     _degree = -0;
   } else {
-    _degree = line.Block_degree[line.Last_Block];
-    if(_degree==90){
-      _degree-=30;
-    }else if(_degree==270){
-      _degree+=30;
+    if (x_position == 3) {
+      _degree = 180;
+    } else if (x_position == 1) {
+    } else if (x_position == 2) {
+    } else {
+      _degree = line.Block_degree[line.Last_Block];
+      if (_degree == 90) {
+        _degree -= 30;
+      } else if (_degree == 270) {
+        _degree += 30;
+      }
+      _degree += 540;
+      _degree %= 360;
     }
-    _degree += 540;
-    _degree %= 360;
   }
   Move_degree = _degree;
 }
