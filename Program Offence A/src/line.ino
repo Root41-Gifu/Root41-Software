@@ -26,40 +26,39 @@ _Line::_Line() {
   // block_vectorY[6] = cos(radians(90));
   // block_vectorX[7] = sin(radians(90));
   // block_vectorY[7] = cos(radians(90));
-  for(int i=0; i<4; i++){
-    for(int j=0; j<7; j++){
-      Line_Where[i*7+j]=i;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 7; j++) {
+      Line_Where[i * 7 + j] = i;
     }
   }
-  one_degree[0]=180;
-  one_degree[1]=180;
-  one_degree[2]=180;
-  one_degree[3]=180;
-  one_degree[4]=180;
-  one_degree[5]=180;
-  one_degree[6]=180;
-  one_degree[7]=0;
-  one_degree[8]=0;
-  one_degree[9]=0;
-  one_degree[10]=0;
-  one_degree[11]=0;
-  one_degree[12]=0;
-  one_degree[13]=0;
-  one_degree[14]=90;
-  one_degree[15]=90;
-  one_degree[16]=90;
-  one_degree[17]=90;
-  one_degree[18]=90;
-  one_degree[19]=90;
-  one_degree[20]=90;
-  one_degree[21]=270;
-  one_degree[22]=270;
-  one_degree[23]=270;
-  one_degree[24]=270;
-  one_degree[25]=270;
-  one_degree[26]=270;
-  one_degree[27]=270;
-  
+  one_degree[0] = 180;
+  one_degree[1] = 180;
+  one_degree[2] = 180;
+  one_degree[3] = 180;
+  one_degree[4] = 180;
+  one_degree[5] = 180;
+  one_degree[6] = 180;
+  one_degree[7] = 0;
+  one_degree[8] = 0;
+  one_degree[9] = 0;
+  one_degree[10] = 0;
+  one_degree[11] = 0;
+  one_degree[12] = 0;
+  one_degree[13] = 0;
+  one_degree[14] = 90;
+  one_degree[15] = 90;
+  one_degree[16] = 90;
+  one_degree[17] = 90;
+  one_degree[18] = 90;
+  one_degree[19] = 90;
+  one_degree[20] = 90;
+  one_degree[21] = 270;
+  one_degree[22] = 270;
+  one_degree[23] = 270;
+  one_degree[24] = 270;
+  one_degree[25] = 270;
+  one_degree[26] = 270;
+  one_degree[27] = 270;
 }
 
 void _Line::read(void) {
@@ -112,11 +111,11 @@ void _Line::read(void) {
       edge_value[3] = readValue & (1 << 7);
     }
   }
-  for(int i=0; i<4; i++){
-    value[i*7]=edge_value[i];
-    value[i*7+1]=cross_value[i];
-    for(int j=0; j<5; j++){
-      value[i*7+j+2]=angel_value[i*5+j];
+  for (int i = 0; i < 4; i++) {
+    value[i * 7] = edge_value[i];
+    value[i * 7 + 1] = cross_value[i];
+    for (int j = 0; j < 5; j++) {
+      value[i * 7 + j + 2] = angel_value[i * 5 + j];
     }
   }
   Wire.end();
@@ -161,6 +160,7 @@ void _Line::arrange(void) {
       }
 
       if (!flag) {
+        in_degree=ball.LPF_degree;
         InTimer = millis();
         //ラインフラグなし
         //   stopTimer = device.getTime();
@@ -272,6 +272,7 @@ void _Line::arrange(void) {
       odegree = 0;
       reference_degree = 0;
       current_degree = 0;
+      in_degree=1000;
     }
   } else {
     Rflag = false;
@@ -326,6 +327,26 @@ int _Line::calcDirection(void) {
     }
   }
   _degree = degrees(atan2(t_vectorX, t_vectorY));
+
+  if (!ball.stop) {
+    if (_degree > 150 && _degree < 210) {
+      if (ball.LPF_degree > 15 && ball.LPF_degree < 90) {
+        _degree = 225;
+      } else if (ball.LPF_degree > 270 && ball.LPF_degree < 345) {
+        _degree = 135;
+      }
+    }
+  }
+
+  if(millis()-InTimer>=400){
+    if (_degree > 150 && _degree < 210) {
+      if (ball.LPF_degree < 90) {
+        _degree = 225;
+      } else if (ball.LPF_degree > 270) {
+        _degree = 135;
+      }
+    }
+  }
 
   // t_vectorX = 0;
   // t_vectorY = 0;
@@ -417,9 +438,9 @@ void _Line::calc(void) {
   if (Oflag) {
     _degree = odegree;
   }
-  if (millis() - InTimer <= 20) {
-    _degree = 10000;
-  }
+  // if (millis() - InTimer <= 0) {
+  //   _degree = 10000;
+  // }
   Move_degree = _degree;
   leftdegree = _degree;
 }

@@ -278,7 +278,7 @@ void _Motor::motorPID_drive(int motor_speed) {
   }
 
   // P制御（比例）
-  Collection *= -0.62;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+  Collection *= -0.5;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
   // 0.53
 
   // D制御（微分）
@@ -303,7 +303,7 @@ void _Motor::motorPID_drive(int motor_speed) {
   }
   for (int i = 0; i < 4; i++) {
     //大きすぎるのを防止
-    motor.val[i] += Collection * 0.7;
+    motor.val[i] += Collection ;
     motor.val[i] = constrain(motor.val[i], -60, 60);
   }
 

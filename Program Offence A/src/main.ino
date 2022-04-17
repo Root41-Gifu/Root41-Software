@@ -60,8 +60,8 @@ const int lineAddress[] = {0x08, 0x20, 0x40, 0x10};
 #define NEOPIXEL_BRIGHTNESS 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 18
-#define LINEOVERTIME 30
-#define LINERETURNTIME 10
+#define LINEOVERTIME 70
+#define LINERETURNTIME 40
 
 Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel strip(LED_STRIP, LED_PIN_T, NEO_GRB + NEO_KHZ800);
@@ -74,6 +74,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55);
 //モーターのやつ
 HardwareSerial Serial4(A1, A0);
 HardwareSerial Serial1(PA10, PA9);
+HardwareSerial Serial6(PC7, PC6);
 
 float sin_d[360];
 float cos_d[360];
@@ -151,10 +152,13 @@ class _Ball {
   int max[3];          //最大値（のポート番号）
   int max_average[3];  //最大値の平均
   int averageCounter[17];
-  int degree;       //ボールの角度
+  int degree;  //ボールの角度
+  float LPF_degree;
+  float Last_degLPF;
   int Move_degree;  //進行角度
 
   bool hold;
+  bool stop;
   int holdcounter;
 
   float vectorX[16];  //ベクトル（ボール位置の定数）
@@ -216,6 +220,8 @@ class _Line {
   int MoveLock;
 
   int bitSelect;
+
+  int in_degree;
 
   //カウンター
   int whited;   //反応した数
@@ -428,6 +434,12 @@ void setup() {
 
   Serial.begin(115200);
 
+  // camera
+  Serial6.begin(19200);
+  Serial6.setRx(PC7);
+  Serial6.setTx(PC6);
+  Serial6.begin(19200);
+
   line.vectorCalc();
   //クラスごとのセットアップ
   line.vectorCalc();  //ラインごとのベクトル計算
@@ -527,7 +539,7 @@ void loop() {
   //  if(camera.mode==0){
   //    camera.o_goal_X[0]=1000;
   //  }else if(camera.mode==1){
-  //    camera.read();
+  camera.read();
   //  }
 
   // UI---------------------------------------------
@@ -690,7 +702,7 @@ void loop() {
   // camera.read();
   int udata;
 
-  if (true) {
+  if (false) {
     // 0
     // for (int i = 0; i < 16; i++) {
     //   Serial.print(ball.LPF_value[i]);

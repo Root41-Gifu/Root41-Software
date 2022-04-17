@@ -53,6 +53,7 @@ void _Ball::SPI_read(void) {
   int data;
   unsigned long starTime = micros();
   digitalWrite(PB5, LOW);
+  digitalWrite(PB4, HIGH);
   // SPI.transfer(-);
   for (int i = 0; i < 33; i++) {
     data = SPI.transfer(0);
@@ -208,7 +209,7 @@ void _Ball::calcDistance(void) {
         _Level[1] = 105;
         _Level[0] = 90;
       }
-      _Level[0]-=10;
+      _Level[0] -= 10;
     }
     if (ball.distance < _Level[0]) {
       LevelCounter[3]++;
@@ -423,32 +424,32 @@ void _Ball::calc(int _distance) {
         //     }
         //   }
         // }
-        gyro.gain_deg=0;
-        if (max[0]==0) {
+        gyro.gain_deg = 0;
+        if (max[0] == 0) {
           _degree = 1000;
         } else if (max[0] > 5 && max[0] < 11) {
           _degree = 1000;
         } else {
           if (max[0] < 8) {
-            if(line.checkBlock[4]||line.checkBlock[5]){
-              if(line.Block==1){
-                _degree=1000;
+            if (line.checkBlock[4] || line.checkBlock[5]) {
+              if (line.Block == 1) {
+                _degree = 1000;
                 // gyro.gain_deg=degree;
-              }else{
+              } else {
                 _degree = 80;
               }
-            }else{
+            } else {
               _degree = 80;
             }
           } else {
-            if(line.checkBlock[6]||line.checkBlock[7]){
-              if(line.Block==1){
-                _degree=1000;
+            if (line.checkBlock[6] || line.checkBlock[7]) {
+              if (line.Block == 1) {
+                _degree = 1000;
                 // gyro.gain_deg=degree;
-              }else{
+              } else {
                 _degree = 280;
               }
-            }else{
+            } else {
               _degree = 280;
             }
           }
@@ -513,6 +514,15 @@ void _Ball::LPF(void) {
     // }
     LPF_dist[i] += k * (value[i] - Last_disLPF[i]);
     Last_disLPF[i] = LPF_dist[i];
+  }
+
+  k = 0.6;
+  if (Move_degree != 1000) {
+    LPF_degree += k * (Move_degree - Last_degLPF);
+    Last_degLPF = LPF_degree;
+    stop = false;
+  } else {
+    stop = true;
   }
 }
 

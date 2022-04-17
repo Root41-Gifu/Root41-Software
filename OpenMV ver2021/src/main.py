@@ -1,22 +1,24 @@
 import pyb, ustruct, sensor, image, time, math
+from pyb import UART
 
 #SPIもろもろ
 
+uart = UART(3, 19200)
+
 threshold_index = 0
 
-colorcode1 = [(21, 35, -24, -6, 19, 40)]
+colorcode1 = [(8, 29, -35, -10, 23, 48)]
 colorcode2 = [(0,0,0,0,0,0)]
+
+middle=[143,120]
 
 defo_roi=[0,0,320,240]
 
 class CameraSet:
-    radius=113
-    middle=[140,120]
+    radius=116
 
 
 class GoalDetection:
-
-    mode=0
     #ゴールの検知、角度、面積の算出をするクラス
     exist=0 #存在
     amount=0 #オブジェクトの数
@@ -33,6 +35,8 @@ class GoalDetection:
     object_degree=0 #対象の角度（広さ的な意味の）
     object_degree_total=0 #角度の合計
 
+    mode=0
+
     #座標
     xc=0 ##対象の中心
     yc=0
@@ -46,8 +50,8 @@ class GoalDetection:
     yr=0
     xrc=0 ##xrからの交点
     yrc=0
-    xl_max=0
     xr_max=0
+    xl_max=0
     def __init__(self):
         exist=0
         area=0
@@ -72,8 +76,6 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time = 2000)
 sensor.set_brightness(2)
-#sensor.set_contrast(3)
-sensor.set_auto_whitebal(False)
 sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
 clock = time.clock()
@@ -129,32 +131,36 @@ while(True):
     opponentsGoal.degree=0
     opponentsGoal.area_total=0
     opponentsGoal.object_degree_total=0
-    opponentsGoal.xl_max=1000
-    opponentsGoal.xr_max=1000
+    opponentsGoal.mode=0
+    opponentsGoal.xl_max=0
+    opponentsGoal.xr_max=0
 
-    img.draw_circle(camera.middle[0],camera.middle[1],camera.radius,color=(255,255,255),thickness=1,fill=False)
-    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=300, area_threshold=20, merge=True):
+    img.draw_circle(middle[0],middle[1],camera.radius,color=(255,255,255),thickness=1,fill=False)
+    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=10, area_threshold=20, merge=True):
+        opponentsGoal.amount+=1
         opponentsGoal.distance=0
+        opponentsGoal.exist=1
 
-        opponentsGoal.xc=blob.cx()-camera.middle[0]
-        opponentsGoal.yc=camera.middle[1]-blob.cy()
-        opponentsGoal.xl=blob.x()-camera.middle[0]
-        opponentsGoal.yl=camera.middle[1]-blob.y()
-        opponentsGoal.xr=(blob.x()+blob.w())-camera.middle[0]
-        opponentsGoal.yr=camera.middle[1]-(blob.y()+blob.h())
+        opponentsGoal.xc=blob.cx()-middle[0]
+        opponentsGoal.yc=middle[1]-blob.cy()
+        opponentsGoal.xl=blob.x()-middle[0]
+        opponentsGoal.yl=middle[1]-blob.y()
+        opponentsGoal.xr=(blob.x()+blob.w())-middle[0]
+        opponentsGoal.yr=middle[1]-(blob.y()+blob.h())
 
         opponentsGoal.area=blob.w()*blob.h()
         opponentsGoal.area_total+=opponentsGoal.area
 
-        #範囲外排除
         opponentsGoal.exist=0
+
+        #範囲外排除
         if  opponentsGoal.xc<=camera.radius:
             if opponentsGoal.yc<=camera.radius:
                 opponentsGoal.exist=1
 
         if opponentsGoal.exist:
-            opponentsGoal.amount+=1
-        #角度（横軸は-160~160、縦軸は-120~120）
+
+            #角度（横軸は-160~160、縦軸は-120~120）
             opponentsGoal.degree=math.degrees(math.atan2(opponentsGoal.xc,opponentsGoal.yc))
 
             #物体の距離計算
@@ -183,6 +189,13 @@ while(True):
             opponentsGoal.xrc=crossCheckX(camera.radius,opponentsGoal.xr,opponentsGoal.yr)
             opponentsGoal.yrc=crossCheckY(camera.radius,opponentsGoal.xr,opponentsGoal.yr)
 
+            if opponentsGoal.xlc<opponentsGoal.xl_max:
+                opponentsGoal.xl_max=opponentsGoal.xlc
+
+            if opponentsGoal.xrc>opponentsGoal.xr_max:
+                opponentsGoal.xr_max=opponentsGoal.xrc
+
+
             #角度算出
             opponentsGoal.l_distance=math.sqrt(math.pow(opponentsGoal.xlc,2)+math.pow(opponentsGoal.ylc,2))
             opponentsGoal.r_distance=math.sqrt(math.pow(opponentsGoal.xrc,2)+math.pow(opponentsGoal.yrc,2))
@@ -194,54 +207,38 @@ while(True):
                 opponentsGoal.object_degree=0
             opponentsGoal.object_degree_total+=opponentsGoal.object_degree
 
-            if opponentsGoal.xl_max==1000:
-                opponentsGoal.xl_max=opponentsGoal.xl
-            elif opponentsGoal.xl_max>opponentsGoal.xl:
-                opponentsGoal.xl_max=opponentsGoal.xl
-            if opponentsGoal.xr_max==1000:
-                opponentsGoal.xr_max=opponentsGoal.xr
-            elif opponentsGoal.xr_max<opponentsGoal.xr:
-                opponentsGoal.xr_max=opponentsGoal.xr
-
             #まとめるンゴ
             #if opponentsGoal.amount==1:
                 #if opponentsGoal.obejct_degree_total>30:
 
             #映像系
-            img.draw_circle(opponentsGoal.xcc+160,120-opponentsGoal.ycc,5,color=(255,255,255),thickness=1,fill=False)
-            img.draw_circle(opponentsGoal.xlc+160,120-opponentsGoal.ylc,5,color=(255,255,255),thickness=1,fill=False)
-            img.draw_circle(opponentsGoal.xrc+160,120-opponentsGoal.yrc,5,color=(255,255,255),thickness=1,fill=False)
+            #img.draw_circle(opponentsGoal.xcc+160,120-opponentsGoal.ycc,5,color=(255,255,255),thickness=1,fill=False)
+            #img.draw_circle(opponentsGoal.xlc+160,120-opponentsGoal.ylc,5,color=(255,255,255),thickness=1,fill=False)
+            #img.draw_circle(opponentsGoal.xrc+160,120-opponentsGoal.yrc,5,color=(255,255,255),thickness=1,fill=False)
 
             #範囲規制（ゆるくしたいなら200でOk）
-            if opponentsGoal.distance<=camera.radius:
-                img.draw_line ((160,120,blob.cx(),blob.cy()),  color=(255,0,0))
-                img.draw_line ((160,120,opponentsGoal.xlc+160,120-opponentsGoal.ylc), color=(255,255,0))
-                img.draw_line ((160,120,opponentsGoal.xrc+160,120-opponentsGoal.yrc),  color=(255,255,0))
-                img.draw_edges(blob.min_corners(), color=(255,0,0))
+            #if opponentsGoal.distance<=200:
+            img.draw_line ((middle[0],middle[1],blob.cx(),blob.cy()),  color=(255,0,0))
+                #img.draw_line ((160,120,opponentsGoal.xlc+160,120-opponentsGoal.ylc), color=(255,255,0))
+                #img.draw_line ((160,120,opponentsGoal.xrc+160,120-opponentsGoal.yrc),  color=(255,255,0))
+            img.draw_edges(blob.min_corners(), color=(255,0,0))
 
-            img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
+    if opponentsGoal.xr_max>20:
+        if opponentsGoal.xl_max<-20:
+            opponentsGoal.mode=3
+        else :
+            opponentsGoal.mode=2
+    elif opponentsGoal.xl_max<-20:
+        opponentsGoal.mode=1
 
-    #数値表示
-    #line_tuple=[160,120,opponentsGoal.xc,opponentsGoal.yc]
-    if opponentsGoal.amount!=0:
-        opponentsGoal.object_degree_total/=opponentsGoal.amount
-        if opponentsGoal.object_degree_total<0:
-            opponentsGoal.object_degree_total=-180-opponentsGoal.object_degree_total
-        else :
-            opponentsGoal.object_degree_total==180-opponentsGoal.object_degree_total
-    else :
-        opponentsGoal.object_degree_total=1000
-    if opponentsGoal.object_degree_total==1000:
-        mode=0
-    else :
-        if opponentsGoal.xl_max<0:
-            if opponentsGoal.xr_max>0:
-                mode=3
-            else :
-                mode=1
-        else :
-            mode=2
+
+        #img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
     print(opponentsGoal.xl_max)
     print(opponentsGoal.xr_max)
-    print(mode)
+    print(opponentsGoal.mode)
 
+    data=opponentsGoal.mode
+    try:
+        uart.write(ustruct.pack('B',data))
+    except (OSError, RuntimeError) as err:
+        pass
