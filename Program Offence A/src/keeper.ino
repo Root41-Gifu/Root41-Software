@@ -4,28 +4,30 @@ _Keeper::_Keeper(void) {
 
 void _Keeper::analyze(void) {
   if (line.flag || line.awayFlag) {
-    if (line.checkBlock[0] + line.checkBlock[1] > 0 &&
-        line.checkBlock[2] + line.checkBlock[3] > 0) {
+    if (line.checkBlock[0] &&
+        line.checkBlock[1]) {
       mode = 6;
     } else {
       mode = 1;
     }
   } else {
-    if (line.Last_Block == 2 || line.Last_Block == 3) {
+    if (line.Last_Block == 1) {
       mode = 3;
-    } else if (line.Last_Block == 0 || line.Last_Block == 1) {
+    } else if (line.Last_Block == 0) {
       mode = 4;
     } else {
       mode = 5;
     }
   }
   float ball_x = sin(radians(ball.degree));
-  speed = abs(ball_x);
+  // speed = abs(ball_x);
+  speed=1;
   // speed=map(abs(ball_x),0,1,0.3,1))
 }
 
 void _Keeper::calc(void) {
   int _degree = 1000;
+  // x_position=camera.readData;
   if (x_position == 0) {
     if (mode == 1) {
       // if (line.whiting > 0) {
@@ -59,7 +61,7 @@ void _Keeper::calc(void) {
           frontoverFlag = true;
         }
         if (frontoverFlag) {
-          if (millis() - frontoverTimer < 500) {
+          if (millis() - frontoverTimer < 0) {
             _degree = ball.Move_degree;
           } else {
             _degree = 0;
@@ -80,13 +82,15 @@ void _Keeper::calc(void) {
     } else if (mode == 6) {
       _degree = 0;
     } else {
-      _degree = 180;
+      _degree = line.Block_degree[line.Last_Block];
     }
   } else if (x_position == 1) {
     if (mode == 1) {
       _degree = ball.Move_degree;
-      if (_degree > 45 && _degree < 135) {
+      if (line.checkBlock[2]&&line.Block==1&&_degree<180) {
         _degree = 1000;
+      }else if(_degree>180&&_degree!=1000){
+        _degree+=30;
       }
     } else if (mode == 2) {
       _degree = 330;
@@ -94,12 +98,16 @@ void _Keeper::calc(void) {
       _degree = 200;
     } else if (mode == 4) {
       _degree = 330;
+    }else{
+      _degree = line.Block_degree[line.Last_Block];
     }
   } else if (x_position == 2) {
     if (mode == 1) {
       _degree = ball.Move_degree;
-      if (_degree < 315 && _degree > 225) {
+      if (line.checkBlock[3]&&line.Block==1&&_degree>180) {
         _degree = 1000;
+      }else if(_degree<180){
+        _degree -=30;
       }
     } else if (mode == 2) {
       _degree = 30;
@@ -107,6 +115,8 @@ void _Keeper::calc(void) {
       _degree = 160;
     } else if (mode == 4) {
       _degree = 30;
+    }else{
+      _degree = line.Block_degree[line.Last_Block];
     }
   }
   Move_degree = _degree;

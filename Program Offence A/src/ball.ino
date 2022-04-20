@@ -64,14 +64,45 @@ void _Ball::SPI_read(void) {
       value[readp] = data;
     }
   }
-  value[6] = (value[5] + value[8]) / 2;
-  value[7] = (value[5] + value[8]) / 2;
-  if (value[8] > 100) {
-    value[8] * 1.7;
+  value[6] = value[5];
+  value[7] = value[8];
+  if (ROBOT_NUMBER == 0) {
+  } else if (ROBOT_NUMBER == 1) {
+    if (value[2] > 20) {
+      value[2] *= 3;
+    } else {
+      value[2] = 0;
+    }
+    // if (value[8] > 20) {
+    // value[8] *= 3;
+    if (value[8] > 18) {
+      if (value[8] > 30) {
+        value[8] = 500;
+      } else {
+        value[8] = 400;
+      }
+    }
+
+    if (value[10] > 20) {
+      value[10] *= 3;
+    } else {
+      value[10] = 0;
+    }
+    if (value[11] > 20) {
+      value[11] *= 3;
+    } else {
+      value[11] = 0;
+    }
+    // } else {
+    //   value[8] = 0;
+    // }
   }
-  if (value[9] > 100) {
-    value[9] * 1.4;
-  }
+  // if (value[8] > 100) {
+  //   value[8] * 1.7;
+  // }
+  // if (value[9] > 100) {
+  //   value[9] * 1.4;
+  // }
   digitalWrite(PB5, HIGH);
   unsigned long endTime = micros();
   SPI.end();
@@ -425,40 +456,42 @@ void _Ball::calc(int _distance) {
         //   }
         // }
         gyro.gain_deg = 0;
-        if (max[0] == 0) {
+        if (max[0]==0) {
           _degree = 1000;
         } else if (max[0] > 5 && max[0] < 11) {
           _degree = 1000;
         } else {
           if (max[0] < 8) {
-            if (line.checkBlock[4] || line.checkBlock[5]) {
+            if (line.checkBlock[2]){
               if (line.Block == 1) {
                 _degree = 1000;
                 // gyro.gain_deg=degree;
               } else {
-                _degree = 80;
+                _degree = 90;
               }
             } else {
-              _degree = 80;
+              _degree = 90;
             }
           } else {
-            if (line.checkBlock[6] || line.checkBlock[7]) {
+            if (line.checkBlock[3]) {
               if (line.Block == 1) {
                 _degree = 1000;
                 // gyro.gain_deg=degree;
               } else {
-                _degree = 280;
+                _degree = 270;
               }
             } else {
-              _degree = 280;
+              _degree = 270;
             }
           }
-          if (line.detect_num[0] + line.detect_num[1] > 0 &&
-              line.detect_num[2] + line.detect_num[3] == 0) {
-            if (_degree < 180) {
-              _degree -= 15;
-            } else {
-              _degree += 15;
+          if (_degree != 1000) {
+            if (line.detect_num[0] > 0 &&
+                line.detect_num[1] == 0) {
+              // if (_degree < 180) {
+              //   _degree -= 15;
+              // } else {
+              //   _degree += 15;
+              // }
             }
           }
           //  else if (line.detect_num[2] + line.detect_num[3] > 0 &&

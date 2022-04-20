@@ -7,15 +7,22 @@ uart = UART(3, 19200)
 
 threshold_index = 0
 
-colorcode1 = [(8, 29, -35, -10, 23, 48)]
-colorcode2 = [(0,0,0,0,0,0)]
+#colorcode1 = [(27, 34, -47, -10, 18, 60)]
+#colorcode1 = [(27, 32, -48, -9, 17, 44)]
+colorcode1 = [(27, 32, -25, -10, 18, 33)]
 
 middle=[143,120]
 
 defo_roi=[0,0,320,240]
 
+data=0
+data_timer=time.time()
+data_which=[0,0,0,0]
+counter=0
+
 class CameraSet:
-    radius=116
+    radius=112
+    in_radius=75
 
 
 class GoalDetection:
@@ -75,7 +82,7 @@ sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time = 2000)
-sensor.set_brightness(2)
+sensor.set_brightness(3)
 sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
 clock = time.clock()
@@ -136,7 +143,8 @@ while(True):
     opponentsGoal.xr_max=0
 
     img.draw_circle(middle[0],middle[1],camera.radius,color=(255,255,255),thickness=1,fill=False)
-    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=10, y_stride=10,pixels_threshold=10, area_threshold=20, merge=True):
+    img.draw_circle(middle[0],middle[1],camera.in_radius,color=(255,255,255),thickness=1,fill=False)
+    for blob in img.find_blobs([colorcode1[threshold_index]], roi= defo_roi,x_stride=5, y_stride=5,pixels_threshold=5, area_threshold=5, merge=True):
         opponentsGoal.amount+=1
         opponentsGoal.distance=0
         opponentsGoal.exist=1
@@ -154,32 +162,40 @@ while(True):
         opponentsGoal.exist=0
 
         #範囲外排除
-        if  opponentsGoal.xc<=camera.radius:
-            if opponentsGoal.yc<=camera.radius:
+        #if  opponentsGoal.xc<=camera.radius:
+            #if opponentsGoal.yc<=camera.radius:
+                #if  opponentsGoal.xc>=camera.in_radius:
+                    #if opponentsGoal.yc>=camera.in_radius:
+                        #opponentsGoal.exist=1
+
+        opponentsGoal.degree=math.degrees(math.atan2(opponentsGoal.xc,opponentsGoal.yc))
+
+            #物体の距離計算
+        if opponentsGoal.degree<=90:
+            if opponentsGoal.degree>=-90:
+                if opponentsGoal.degree>0:
+                    opponentsGoal.x_distance=opponentsGoal.xc
+                    opponentsGoal.y_distance=opponentsGoal.yc
+                else:
+                    opponentsGoal.x_distance=abs(opponentsGoal.xc)
+                    opponentsGoal.y_distance=opponentsGoal.yc
+            else:
+                opponentsGoal.x_distance=abs(opponentsGoal.xc)
+                opponentsGoal.y_distance=abs(opponentsGoal.yc)
+        else:
+            opponentsGoal.x_distance=opponentsGoal.xc
+            opponentsGoal.y_distance=abs(opponentsGoal.yc)
+
+        opponentsGoal.distance=int(math.sqrt(opponentsGoal.x_distance**2+opponentsGoal.y_distance**2))
+
+        if opponentsGoal.distance<=camera.radius:
+            if opponentsGoal.distance>=camera.in_radius:
                 opponentsGoal.exist=1
 
         if opponentsGoal.exist:
 
             #角度（横軸は-160~160、縦軸は-120~120）
-            opponentsGoal.degree=math.degrees(math.atan2(opponentsGoal.xc,opponentsGoal.yc))
 
-            #物体の距離計算
-            if opponentsGoal.degree<=90:
-                if opponentsGoal.degree>=-90:
-                    if opponentsGoal.degree>0:
-                        opponentsGoal.x_distance=opponentsGoal.xc
-                        opponentsGoal.y_distance=opponentsGoal.yc
-                    else:
-                        opponentsGoal.x_distance=abs(opponentsGoal.xc)
-                        opponentsGoal.y_distance=opponentsGoal.yc
-                else:
-                    opponentsGoal.x_distance=abs(opponentsGoal.xc)
-                    opponentsGoal.y_distance=abs(opponentsGoal.yc)
-            else:
-                opponentsGoal.x_distance=opponentsGoal.xc
-                opponentsGoal.y_distance=abs(opponentsGoal.yc)
-
-            opponentsGoal.distance=int(math.sqrt(opponentsGoal.x_distance**2+opponentsGoal.y_distance**2))
 
             ##交点計算
             opponentsGoal.xcc=crossCheckX(camera.radius,opponentsGoal.xc,opponentsGoal.yc)
@@ -233,11 +249,39 @@ while(True):
 
 
         #img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
-    print(opponentsGoal.xl_max)
-    print(opponentsGoal.xr_max)
-    print(opponentsGoal.mode)
+    #print(opponentsGoal.xl_max)
+    #print(opponentsGoal.xr_max)
+    #print(opponentsGoal.mode)
 
-    data=opponentsGoal.mode
+    if counter>=6:
+        if data_which[0]>data_which[1]:
+            if data_which[0]>data_which[2]:
+                if data_which[0]>data_which[3]:
+                    data=0
+        elif data_which[1]>data_which[0]:
+            if data_which[1]>data_which[2]:
+                if data_which[1]>data_which[3]:
+                    data=1
+        elif data_which[2]>data_which[0]:
+            if data_which[2]>data_which[1]:
+                if data_which[2]>data_which[3]:
+                    data=2
+        else:
+            data=3
+        data_timer=time.time()
+        data_which[0]=0
+        data_which[1]=0
+        data_which[2]=0
+        data_which[3]=0
+        counter=0
+    else:
+        data_which[opponentsGoal.mode]=data_which[opponentsGoal.mode]+1
+        counter=counter+1
+
+    print(data)
+    #print(float(time.time()-data_timer))
+
+    #data=opponentsGoal.mode
     try:
         uart.write(ustruct.pack('B',data))
     except (OSError, RuntimeError) as err:

@@ -353,6 +353,7 @@ class _Camera {
 
   int mode;
   int o_goal_X[2];
+  byte readData;
   bool right_found;
   bool left_found;
 
@@ -708,8 +709,19 @@ void loop() {
     //   Serial.print(ball.LPF_value[i]);
     //   Serial.print(" ");
     // }
-    Serial.print(ball.max[0]);
+    // for (int i = 0; i < LINE_NUM; i++) {
+    //   Serial.print(line.value[i]);
+    //   Serial.print(" ");
+    // }
+    // Serial.print(ball.max[0]);
+    // Serial.print(" ");
+    Serial.print(keeper.Move_degree);
     Serial.print(" ");
+    Serial.print(ball.degree);
+    Serial.print(" ");
+    Serial.print(line.Last_Block);
+    Serial.print(" ");
+    Serial.print(keeper.mode);
     Serial.print(" ");
 
     Serial.println("");

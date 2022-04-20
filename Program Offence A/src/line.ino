@@ -118,6 +118,23 @@ void _Line::read(void) {
       value[i * 7 + j + 2] = angel_value[i * 5 + j];
     }
   }
+  if (value[0]) {
+    value[1] = true;
+  } else {
+    value[1] = false;
+  }
+  if (ROBOT_NUMBER == 1) {
+    if (value[26]) {
+      value[24] = true;
+    } else {
+      value[24] = false;
+    }
+    if (value[27]) {
+      value[25] = true;
+    } else {
+      value[25] = false;
+    }
+  }
   Wire.end();
   Wire.begin();
 }
@@ -160,7 +177,7 @@ void _Line::arrange(void) {
       }
 
       if (!flag) {
-        in_degree=ball.LPF_degree;
+        in_degree = ball.LPF_degree;
         InTimer = millis();
         //ラインフラグなし
         //   stopTimer = device.getTime();
@@ -272,7 +289,7 @@ void _Line::arrange(void) {
       odegree = 0;
       reference_degree = 0;
       current_degree = 0;
-      in_degree=1000;
+      in_degree = 1000;
     }
   } else {
     Rflag = false;
@@ -284,12 +301,12 @@ void _Line::keeper_arrange(void) {
   int touch = false;
   Block = false;
   whiting = 0;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 4; i++) {
     detect_num[i] = 0;
     checkBlock[i] = false;
   }
   for (int i = 0; i < LINE_NUM; i++) {
-    if (!value[i]) {
+    if (value[i]) {
       touch = true;
       flag = true;
       detect_num[Line_Where[i]]++;
@@ -303,12 +320,16 @@ void _Line::keeper_arrange(void) {
   }
   if (!touch) {
     if (flag) {
-      awayFlag = true;
-      awayTimer = millis();
+      if(Last_Block!=0&&Last_Block!=1){
+        awayFlag = true;
+        awayTimer = millis();
+      }else{
+        awayFlag=false;
+      }
       flag = false;
     }
     if (awayFlag) {
-      if (millis() - awayTimer > 20) {
+      if (millis() - awayTimer >20) {
         awayFlag = false;
       }
     }
@@ -338,7 +359,7 @@ int _Line::calcDirection(void) {
     }
   }
 
-  if(millis()-InTimer>=400){
+  if (millis() - InTimer >= 400) {
     if (_degree > 150 && _degree < 210) {
       if (ball.LPF_degree < 90) {
         _degree = 225;
