@@ -354,9 +354,9 @@ void _Ball::calc(int _distance) {
   } else {
     if (UI.mode == 1) {
       float _plusvector[2];
-      float gain_constant = 12;     //閾値
-      int max_gain = 160;           //上限
-      int distance_constant = 130;  //距離定数
+      float gain_constant = 12;     //何倍のベクトルを加えるか
+      int max_gain = 160;           //加えるベクトルの角度の上限
+      int distance_constant = 130;  //距離定数/距離＝
       // switch (distanceLevel) {
       //   case 3:
       //     distance_constant = 300;
@@ -377,10 +377,22 @@ void _Ball::calc(int _distance) {
       int gain_degree;
 
       if (degree < 25 || degree > 335) {
-        if (ball.hold) {
+        if (hold) {
           _degree = 0;
+          if (!tap) {
+            holdTimer = millis();
+            tap = true;
+          }
+          if (millis() - holdTimer >= 80) {
+            if (!kick) {
+              kickTimer = millis();
+              kick = true;
+            }
+            tap = false;
+          }
         } else {
           _degree = degree;
+          tap = false;
         }
         // } else if (degree < 90 || degree > 270) {
         //   if (degree < 90) {
@@ -456,15 +468,19 @@ void _Ball::calc(int _distance) {
         //   }
         // }
         gyro.gain_deg = 0;
-        if (max[0]==0) {
+        if (max[0] == 0) {
           _degree = 1000;
         } else if (max[0] > 5 && max[0] < 11) {
           _degree = 1000;
         } else {
           if (max[0] < 8) {
-            if (line.checkBlock[2]){
+            if (line.checkBlock[2]) {
               if (line.Block == 1) {
-                _degree = 1000;
+                // if (keeper.x_position == 1) {
+                  _degree = 10000;
+                // } else {
+                //   _degree = 90;
+                // }
                 // gyro.gain_deg=degree;
               } else {
                 _degree = 90;
@@ -475,23 +491,17 @@ void _Ball::calc(int _distance) {
           } else {
             if (line.checkBlock[3]) {
               if (line.Block == 1) {
-                _degree = 1000;
+                // if (keeper.x_position == 2) {
+                  _degree = 10000;
+                // } else {
+                //   _degree = 270;
+                // }
                 // gyro.gain_deg=degree;
               } else {
                 _degree = 270;
               }
             } else {
               _degree = 270;
-            }
-          }
-          if (_degree != 1000) {
-            if (line.detect_num[0] > 0 &&
-                line.detect_num[1] == 0) {
-              // if (_degree < 180) {
-              //   _degree -= 15;
-              // } else {
-              //   _degree += 15;
-              // }
             }
           }
           //  else if (line.detect_num[2] + line.detect_num[3] > 0 &&

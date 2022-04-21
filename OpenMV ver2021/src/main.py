@@ -9,7 +9,8 @@ threshold_index = 0
 
 #colorcode1 = [(27, 34, -47, -10, 18, 60)]
 #colorcode1 = [(27, 32, -48, -9, 17, 44)]
-colorcode1 = [(27, 32, -25, -10, 18, 33)]
+#colorcode1 = [(27, 32, -25, -10, 18, 33)]
+colorcode1 = [(29, 32, -30, -10, 22, 44)]
 
 middle=[143,120]
 
@@ -17,7 +18,7 @@ defo_roi=[0,0,320,240]
 
 data=0
 data_timer=time.time()
-data_which=[0,0,0,0]
+data_which=[0,0,0,0,0,0]
 counter=0
 
 class CameraSet:
@@ -59,6 +60,8 @@ class GoalDetection:
     yrc=0
     xr_max=0
     xl_max=0
+    yt_max=0
+    yb_max=0
     def __init__(self):
         exist=0
         area=0
@@ -141,6 +144,8 @@ while(True):
     opponentsGoal.mode=0
     opponentsGoal.xl_max=0
     opponentsGoal.xr_max=0
+    opponentsGoal.yt_max=0
+    opponentsGoal.yb_max=30
 
     img.draw_circle(middle[0],middle[1],camera.radius,color=(255,255,255),thickness=1,fill=False)
     img.draw_circle(middle[0],middle[1],camera.in_radius,color=(255,255,255),thickness=1,fill=False)
@@ -211,6 +216,18 @@ while(True):
             if opponentsGoal.xrc>opponentsGoal.xr_max:
                 opponentsGoal.xr_max=opponentsGoal.xrc
 
+            if opponentsGoal.ylc<opponentsGoal.yb_max:
+                opponentsGoal.yb_max=opponentsGoal.ylc
+
+            if opponentsGoal.yrc<opponentsGoal.yb_max:
+                opponentsGoal.yb_max=opponentsGoal.yrc
+
+            if opponentsGoal.ylc>opponentsGoal.yt_max:
+                opponentsGoal.yt_max=opponentsGoal.ylc
+
+            if opponentsGoal.yrc>opponentsGoal.yt_max:
+                opponentsGoal.yt_max=opponentsGoal.yrc
+
 
             #角度算出
             opponentsGoal.l_distance=math.sqrt(math.pow(opponentsGoal.xlc,2)+math.pow(opponentsGoal.ylc,2))
@@ -243,9 +260,15 @@ while(True):
         if opponentsGoal.xl_max<-20:
             opponentsGoal.mode=3
         else :
-            opponentsGoal.mode=2
+            if opponentsGoal.yb_max<10:
+                opponentsGoal.mode=5;
+            else:
+                opponentsGoal.mode=2
     elif opponentsGoal.xl_max<-20:
-        opponentsGoal.mode=1
+        if opponentsGoal.yb_max<10:
+            opponentsGoal.mode=4;
+        else:
+            opponentsGoal.mode=1
 
 
         #img.draw_keypoints([(blob.cx(), blob.cy(),          int(math.degrees(blob.rotation())))], size=20)
@@ -254,31 +277,25 @@ while(True):
     #print(opponentsGoal.mode)
 
     if counter>=6:
-        if data_which[0]>data_which[1]:
-            if data_which[0]>data_which[2]:
-                if data_which[0]>data_which[3]:
-                    data=0
-        elif data_which[1]>data_which[0]:
-            if data_which[1]>data_which[2]:
-                if data_which[1]>data_which[3]:
-                    data=1
-        elif data_which[2]>data_which[0]:
-            if data_which[2]>data_which[1]:
-                if data_which[2]>data_which[3]:
-                    data=2
-        else:
-            data=3
+        poi=0
+        for num in range(6):
+            if data_which[num]>data_which[poi]:
+                poi=num
+        data=poi
         data_timer=time.time()
         data_which[0]=0
         data_which[1]=0
         data_which[2]=0
         data_which[3]=0
+        data_which[4]=0
+        data_which[5]=0
         counter=0
     else:
         data_which[opponentsGoal.mode]=data_which[opponentsGoal.mode]+1
         counter=counter+1
 
     print(data)
+    print(opponentsGoal.yb_max)
     #print(float(time.time()-data_timer))
 
     #data=opponentsGoal.mode

@@ -315,22 +315,18 @@ void _UI::NeoPixeldisplay(int _mode) {
             }
           }
         } else if (UI.mode == 2) {
-          if (keeper.mode != 1) {
-            int pixel_assign_out[16] = {0, 0, 7, 7, 7, 7, 2, 2,
-                                        2, 2, 4, 4, 4, 4, 0, 0};
-            for (int i = 0; i < 16; i++) {
-              if (pixel_assign_out[i] == line.Last_Block) {
-                strip.setPixelColor(i, Line_Color1);
-              }
-            }
-            int pixel_assign_in[16] = {1, 1, 6, 6, 6, 6, 3, 3,
-                                       3, 3, 4, 5, 5, 5, 1, 1};
-            for (int i = 0; i < 16; i++) {
-              if (pixel_assign_out[i] == line.Last_Block) {
-                strip.setPixelColor(i, Line_Color1);
-              }
-            }
-          }
+          // if (keeper.x_position == 3) {
+          //   strip.setPixelColor(0, Line_Color1);
+          //   strip.setPixelColor(15, Line_Color1);
+          // }
+          // if (keeper.x_position == 2) {
+          //   strip.setPixelColor(3, Line_Color1);
+          //   strip.setPixelColor(4, Line_Color1);
+          // }
+          // if (keeper.x_position == 1) {
+          //   strip.setPixelColor(11, Line_Color1);
+          //   strip.setPixelColor(12, Line_Color1);
+          // }
         }
       }
     }

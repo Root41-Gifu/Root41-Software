@@ -17,6 +17,8 @@ int i2cReadWithTimeoutFunction(void);
 
 #define voltage PC0
 
+#define KICKER_PIN PA4
+
 #define LINE_EFFECT 1
 
 #define BALL_NUM 16
@@ -159,6 +161,8 @@ class _Ball {
 
   bool hold;
   bool stop;
+  bool kick;
+  bool tap;
   int holdcounter;
 
   float vectorX[16];  //ベクトル（ボール位置の定数）
@@ -169,6 +173,8 @@ class _Ball {
   float vectorMove[2];
 
   unsigned long distTimer;
+  unsigned long holdTimer;
+  unsigned long kickTimer;
 
  private:
   int move[3][16];
@@ -398,6 +404,7 @@ void setup() {
   digitalWrite(PB10, HIGH);
   pinMode(PA8, INPUT);
   pinMode(CAMERA_PIN, OUTPUT);
+  pinMode(KICKER_PIN, OUTPUT);
   // LINESENSOR_INITIALIZE:
   Wire.begin();
   // Wire.setClock(400000);
@@ -584,6 +591,15 @@ void loop() {
   if (UI.mode == 2) {
     keeper.analyze();
     keeper.calc();
+  }
+
+  if (ROBOT_NUMBER == 0) {
+    if (ball.kick) {
+      digitalWrite(KICKER_PIN, HIGH);
+      if (millis() - ball.kickTimer >= 200) {
+        ball.kick = false;
+      }
+    }
   }
 
   // gyro
