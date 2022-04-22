@@ -59,7 +59,7 @@ int i2cReadWithTimeoutFunction(void);
 const int lineAddress[] = {0x08, 0x20, 0x40, 0x10};
 
 #define LINE_BRIGHTNESS 22  // 50
-#define NEOPIXEL_BRIGHTNESS 30
+#define NEOPIXEL_BRIGHTNESS 0//30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 18
 #define LINEOVERTIME 70
