@@ -6,18 +6,20 @@ _UI::_UI() {
 
 void _UI::read() {
   UI.touch[0] = !digitalRead(PA8);  //センサー検知
-  Wire.requestFrom(UI_ADDRESS, 1);
-  while (Wire.available()) {
-    byte readValue = Wire.read();
-    touch[2] = !(readValue & (1 << 2));
-    touch[1] = !(readValue & (1 << 3));
-    touch[3] = !(readValue & (1 << 4));
-    int touchedNum = touch[1] + touch[2] + touch[3];
-    int _touchedNum = readValue & 3;
-    if (touchedNum == _touchedNum) {
-      Consistency = true;
-    } else {
-      Consistency = false;
+  if (ROBOT_NUMBER == 1) {
+    Wire.requestFrom(UI_ADDRESS, 1);
+    while (Wire.available()) {
+      byte readValue = Wire.read();
+      touch[2] = !(readValue & (1 << 2));
+      touch[1] = !(readValue & (1 << 3));
+      touch[3] = !(readValue & (1 << 4));
+      int touchedNum = touch[1] + touch[2] + touch[3];
+      int _touchedNum = readValue & 3;
+      if (touchedNum == _touchedNum) {
+        Consistency = true;
+      } else {
+        Consistency = false;
+      }
     }
   }
 }
@@ -41,178 +43,198 @@ void _UI::check(int num) {
 }
 
 void _UI::refrection(void) {
-  if (mode == 6) {
+  if (ROBOT_NUMBER == 0) {
     if (switchingFlag[0]) {
-      select = false;
-      active = false;
-      submode = 0;
-    }
-    if (!active) {
-      if (switchingFlag[1]) {
-        if (select) {
-          submode--;
-        } else {
-          mode++;
-        }
-      }
-      // if (switchingFlag[2]) {
-      //   if (select) {
-      //     submode++;
-      //   } else {
-      //     mode++;
-      //   }
-      // }
-    }
-    if (switchingFlag[3]) {
-      if (!select) {
-        select = true;
-      } else {
-        standby = true;
-        standbyTimer = millis();
-      }
-    } else {
-      if (standby && !touch[3]) {
-        active = true;
-        gyro.reference_deg = gyro.read();  // 350
-        standby = false;
-      }
-    }
-    if (submode < 0) {
-      submode = 1;
-    } else if (submode > 1) {
-      submode = 0;
-    }
-  } else if (mode == 3) {
-    if (switchingFlag[0]) {
-      select = false;
-      active = false;
-      submode = 0;
-    }
-    if (!active) {
-      if (switchingFlag[1]) {
-        if (select) {
-          submode--;
-        } else {
-          mode++;
-        }
-      }
-      // if (switchingFlag[2]) {
-      //   if (select) {
-      //     submode++;
-      //   } else {
-      //     mode++;
-      //   }
-      // }
-    }
-    if (switchingFlag[3]) {
-      if (!select) {
-        select = true;
-      } else {
-        standby = true;
-        standbyTimer = millis();
-      }
-    } else {
-      if (standby && !touch[3]) {
-        active = true;
-        gyro.reference_deg = gyro.read();  // 350
-        standby = false;
-      }
-    }
-    if (submode < 0) {
-      submode = 1;
-    } else if (submode > 1) {
-      submode = 0;
-    }
-  } else if (mode == 6) {
-    if (switchingFlag[0]) {
-      select = false;
-      active = false;
-      submode = 0;
-    }
-    if (!active) {
-      if (switchingFlag[1]) {
-        if (select) {
-          submode--;
-        } else {
-          mode;
-        }
-      }
-      // if (switchingFlag[2]) {
-      //   if(select){
-      //       submode++;
-      //   }else{
-      //       mode++;
-      //   }
-      // }
-    } else {
-      if (switchingFlag[1]) {
-        MotorPower += 5;
-        if (MotorPower > 100) {
-          MotorPower = 0;
-        }
-      }
-    }
-    if (switchingFlag[3]) {
-      if (!select) {
-        select = true;
-      } else {
-        standby = true;
-        standbyTimer = millis();
-      }
-    } else {
-      if (standby && !touch[3]) {
-        active = true;
-        gyro.reference_deg = gyro.read();  // 350
-        standby = false;
-      }
-    }
-    if (submode < 0) {
-      submode = 1;
-    } else if (submode > 1) {
-      submode = 0;
-    }
-  } else {
-    if (switchingFlag[0]) {
-      select = false;
-      active = false;
-    }
-    if (!active) {
-      if (switchingFlag[1]) {
-        mode++;
-        switchScope--;
-      }
-      if (switchingFlag[2]) {
-        // mode++;
-        // switchScope++;
-        //エラー対策
-      }
-    }
-    if (switchingFlag[3]) {
       standby = true;
       standbyTimer = millis();
     } else {
-      if (standby && !touch[3]) {
-        active = true;
+      if (standby && !touch[0]) {
+        mode=1;
+        active = !active;
         gyro.reference_deg = gyro.read();  // 350
         standby = false;
       }
     }
-  }
-  if (switchingFlag[1]) {
-    switchScope++;
-  }
-  for (int i = 0; i <= 3; i++) {
-    switchingFlag[i] = false;
-  }
-  if (mode < 1) {
-    mode = 7;
-  } else if (mode > 7) {
-    mode = 1;
-  }
-  if (switchScope > LINE_NUM) {
-    switchScope = 0;
-  } else if (switchScope < 0) {
-    switchScope = LINE_NUM - 1;
+    for (int i = 0; i <= 3; i++) {
+      switchingFlag[i] = false;
+    }
+  } else if (ROBOT_NUMBER == 1) {
+    if (mode == 6) {
+      if (switchingFlag[0]) {
+        select = false;
+        active = false;
+        submode = 0;
+      }
+      if (!active) {
+        if (switchingFlag[1]) {
+          if (select) {
+            submode--;
+          } else {
+            mode++;
+          }
+        }
+        // if (switchingFlag[2]) {
+        //   if (select) {
+        //     submode++;
+        //   } else {
+        //     mode++;
+        //   }
+        // }
+      }
+      if (switchingFlag[3]) {
+        if (!select) {
+          select = true;
+        } else {
+          standby = true;
+          standbyTimer = millis();
+        }
+      } else {
+        if (standby && !touch[3]) {
+          active = true;
+          gyro.reference_deg = gyro.read();  // 350
+          standby = false;
+          if (mode == 2) {
+            line.Last_Block = 1;
+          }
+        }
+      }
+      if (submode < 0) {
+        submode = 1;
+      } else if (submode > 1) {
+        submode = 0;
+      }
+    } else if (mode == 3) {
+      if (switchingFlag[0]) {
+        select = false;
+        active = false;
+        submode = 0;
+      }
+      if (!active) {
+        if (switchingFlag[1]) {
+          if (select) {
+            submode--;
+          } else {
+            mode++;
+          }
+        }
+        // if (switchingFlag[2]) {
+        //   if (select) {
+        //     submode++;
+        //   } else {
+        //     mode++;
+        //   }
+        // }
+      }
+      if (switchingFlag[3]) {
+        if (!select) {
+          select = true;
+        } else {
+          standby = true;
+          standbyTimer = millis();
+        }
+      } else {
+        if (standby && !touch[3]) {
+          active = true;
+          gyro.reference_deg = gyro.read();  // 350
+          standby = false;
+        }
+      }
+      if (submode < 0) {
+        submode = 1;
+      } else if (submode > 1) {
+        submode = 0;
+      }
+    } else if (mode == 6) {
+      if (switchingFlag[0]) {
+        select = false;
+        active = false;
+        submode = 0;
+      }
+      if (!active) {
+        if (switchingFlag[1]) {
+          if (select) {
+            submode--;
+          } else {
+            mode;
+          }
+        }
+        // if (switchingFlag[2]) {
+        //   if(select){
+        //       submode++;
+        //   }else{
+        //       mode++;
+        //   }
+        // }
+      } else {
+        if (switchingFlag[1]) {
+          MotorPower += 5;
+          if (MotorPower > 100) {
+            MotorPower = 0;
+          }
+        }
+      }
+      if (switchingFlag[3]) {
+        if (!select) {
+          select = true;
+        } else {
+          standby = true;
+          standbyTimer = millis();
+        }
+      } else {
+        if (standby && !touch[3]) {
+          active = true;
+          gyro.reference_deg = gyro.read();  // 350
+          standby = false;
+        }
+      }
+      if (submode < 0) {
+        submode = 1;
+      } else if (submode > 1) {
+        submode = 0;
+      }
+    } else {
+      if (switchingFlag[0]) {
+        select = false;
+        active = false;
+      }
+      if (!active) {
+        if (switchingFlag[1]) {
+          mode++;
+          switchScope--;
+        }
+        if (switchingFlag[2]) {
+          // mode++;
+          // switchScope++;
+          //エラー対策
+        }
+      }
+      if (switchingFlag[3]) {
+        standby = true;
+        standbyTimer = millis();
+      } else {
+        if (standby && !touch[3]) {
+          active = true;
+          gyro.reference_deg = gyro.read();  // 350
+          standby = false;
+        }
+      }
+    }
+    if (switchingFlag[1]) {
+      switchScope++;
+    }
+    for (int i = 0; i <= 3; i++) {
+      switchingFlag[i] = false;
+    }
+    if (mode < 1) {
+      mode = 7;
+    } else if (mode > 7) {
+      mode = 1;
+    }
+    if (switchScope > LINE_NUM) {
+      switchScope = 0;
+    } else if (switchScope < 0) {
+      switchScope = LINE_NUM - 1;
+    }
   }
 }
 
@@ -264,7 +286,7 @@ void _UI::NeoPixeldisplay(int _mode) {
         } else if (ball_separate + 1 > 15) {
           _side[1] = 0;
         }
-        if (ball.hold) {
+        if (!ball.hold) {
           StripFulldisplay(BallDistance_Color1);
         } else {
           switch (ball.distanceLevel) {
@@ -314,7 +336,31 @@ void _UI::NeoPixeldisplay(int _mode) {
               }
             }
           }
-        } else if (UI.mode == 2) {
+        } else if (UI.mode == 2 || UI.mode == 4) {
+          int _side[2];
+          int ball_separate;
+          ball_separate = int(ball.degree / 22.5);
+          // _side[0] = ball.max[0] - 1;
+          // _side[1] = ball.max[0] + 1;
+          // if (ball.max[0] - 1 < 0) {
+          //   _side[0] = 15;
+          // } else if (ball.max[0] + 1 > 15) {
+          //   _side[1] = 0;
+          // }
+          _side[0] = ball_separate - 1;
+          _side[1] = ball_separate + 1;
+          if (ball_separate - 1 < 0) {
+            _side[0] = 15;
+          } else if (ball_separate + 1 > 15) {
+            _side[1] = 0;
+          }
+          if (!ball.hold) {
+            StripFulldisplay(BallDistance_Color1);
+          } else {
+            strip.setPixelColor(ball_separate, BallDistance_Color1);
+            strip.setPixelColor(_side[0], BallDistance_Color1);
+            strip.setPixelColor(_side[1], BallDistance_Color1);
+          }
           // if (keeper.x_position == 3) {
           //   strip.setPixelColor(0, Line_Color1);
           //   strip.setPixelColor(15, Line_Color1);
@@ -366,7 +412,12 @@ void _UI::NeoPixeldisplay(int _mode) {
   // line
   if (mode == 1 || mode == 2 || mode == 5) {
     if (active) {
-      unsigned long lineNeoPixelColor = front.Color(255, 255, 255);
+      unsigned long lineNeoPixelColor;
+      if (ROBOT_NUMBER == 0) {
+        lineNeoPixelColor = front.Color(255, 0, 0);
+      } else if (ROBOT_NUMBER == 1) {
+        lineNeoPixelColor = front.Color(255, 255, 255);
+      }
       unsigned long lineNeoPixelDicline = front.Color(0, 0, 0);
       if (LIGHTLIMIT == 1) {
         for (int i = 0; i < LED_FRONT; i++) {

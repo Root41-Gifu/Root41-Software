@@ -27,7 +27,35 @@ void _Keeper::analyze(void) {
 void _Keeper::calc(void) {
   int _degree = 1000;
   x_position = camera.readData;
-  if (mode == 1) {
+  if (millis() - straightTimer <= 700) {
+    counter++;
+    if (ball.max[0] == 0 || ball.max[0] == 1 || ball.max[0] == 15) {
+      if (ball.distanceLevel != 3 && ball.distanceLevel != 0) {
+        straight_counter++;
+      }
+    }
+  } else if (millis() - straightTimer <= 900) {
+    if (straight_counter / counter >= 0.7 && line.touch) {
+      straight = true;
+    } else {
+      straightTimer = millis();
+      counter = 0;
+      straight_counter = 0;
+      straight = false;
+    }
+  } else if (millis() - straightTimer <= 5000) {
+    counter = 0;
+    straight_counter = 0;
+    straight = false;
+  } else {
+    straightTimer = millis();
+    counter = 0;
+    straight_counter = 0;
+    straight = false;
+  }
+  if (straight) {
+    _degree = ball.degree;
+  } else if (mode == 1) {
     // if (line.whiting > 0) {
     //   if (line.detect_num[4] + line.detect_num[5] ==
     //   line.whiting&&ball.Move_degree==90) {
@@ -38,24 +66,23 @@ void _Keeper::calc(void) {
     //   } else {
     _degree = ball.Move_degree;
     frontoverFlag = false;
-    if(x_position==3){
-      
-    }else if(x_position==2){
-      if(_degree==270){
-        _degree=280;
-      }else if(_degree==90){
-        _degree=80;
+    if (x_position == 3) {
+    } else if (x_position == 2) {
+      if (_degree == 270) {
+        _degree = 280;
+      } else if (_degree == 90) {
+        _degree = 80;
       }
-    }else if(x_position==1){
-      if(_degree==270){
-        _degree=280;
-      }else if(_degree==90){
-        _degree=80;
+    } else if (x_position == 1) {
+      if (_degree == 270) {
+        _degree = 280;
+      } else if (_degree == 90) {
+        _degree = 80;
       }
-    }else if(x_position==5){
-      _degree=60;
-    }else if(x_position==4){
-      _degree=300;
+    } else if (x_position == 5) {
+      _degree = 60;
+    } else if (x_position == 4) {
+      _degree = 300;
     }
     //   }
     // } else {
@@ -87,26 +114,34 @@ void _Keeper::calc(void) {
     }
     _degree += 540;
     _degree %= 360;
-    if(x_position==3&&line.Last_Block!=0){
-      _degree=180;
-    }else if(x_position==1){
-      if(_degree==180){
-        _degree=225;
+    if (x_position == 3 && line.Last_Block != 0) {
+      _degree = 180;
+    } else if (x_position == 1) {
+      if (_degree == 180) {
+        _degree = 225;
       }
-    }else if(x_position==2){
-      if(_degree==180){
-        _degree=135;
+    } else if (x_position == 2) {
+      if (_degree == 180) {
+        _degree = 135;
       }
-    }else if(x_position==5){
-      _degree=60;
-    }else if(x_position==4){
-      _degree=300;
+    } else if (x_position == 5) {
+      _degree = 60;
+    } else if (x_position == 4) {
+      _degree = 300;
+    }
+    if (ball.distanceLevel == 0) {
+      _degree = 1000;
     }
   }
-  if(x_position==1||x_position==2){
-    speed=0.7;
-  }else if(x_position==4||x_position==5){
-    speed=0.5;
+  if (x_position == 1 || x_position == 2) {
+    speed = 0.7;
+  } else if (x_position == 4 || x_position == 5) {
+    speed = 0.5;
+  }
+  if (ball.max[0] == 0 || ball.max[0] == 1 || ball.max[0] == 15) {
+    if (!straight) {
+      speed = 0.45;
+    }
   }
   Move_degree = _degree;
 }

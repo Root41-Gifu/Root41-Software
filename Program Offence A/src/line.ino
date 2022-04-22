@@ -61,82 +61,101 @@ _Line::_Line() {
   one_degree[27] = 270;
 }
 
-void _Line::read(void) {
-  Wire.end();
-  Wire.begin();
-  Wire.setClock(400000);
-  readCounter = !readCounter;
+// 4 3 13 9
 
-  if (readCounter) {
-    Wire.requestFrom(LINE_FRONTADDRESS, 1);
-    while (Wire.available() >= 1) {
-      byte readValue;
-      readValue = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 5; i++) {
-        angel_value[i] = readValue & (1 << 1 + i);
+void _Line::read(void) {
+  if (ROBOT_NUMBER == 0) {
+    all_value[0] = !digitalRead(LINE_FRONTPIN);
+    all_value[3] = !digitalRead(LINE_RIGHTPIN);
+    all_value[1] = !digitalRead(LINE_REARPIN);
+    all_value[2] = !digitalRead(LINE_LEFTPIN);
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 7; j++) {
+        if (all_value[i]) {
+          value[i * 7 + j] = true;
+        } else {
+          value[i * 7 + j] = false;
+        }
       }
-      cross_value[0] = readValue & (1 << 6);
-      edge_value[0] = readValue & (1 << 7);
-      ball.hold = !(readValue & (1));
     }
-    Wire.requestFrom(LINE_REARADDRESS, 1);
-    while (Wire.available() >= 1) {
-      byte readValue;
-      readValue = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 5; i++) {
-        angel_value[i + 5] = readValue & (1 << 1 + i);
+  } else if (ROBOT_NUMBER == 1) {
+    Wire.end();
+    Wire.begin();
+    Wire.setClock(400000);
+    readCounter = !readCounter;
+
+    if (readCounter) {
+      Wire.requestFrom(LINE_FRONTADDRESS, 1);
+      while (Wire.available() >= 1) {
+        byte readValue;
+        readValue = i2cReadWithTimeoutFunction();
+        for (int i = 0; i < 5; i++) {
+          angel_value[i] = readValue & (1 << 1 + i);
+        }
+        cross_value[0] = readValue & (1 << 6);
+        edge_value[0] = readValue & (1 << 7);
+        ball.hold = !(readValue & (1));
       }
-      cross_value[1] = readValue & (1 << 6);
-      edge_value[1] = readValue & (1 << 7);
-    }
-  } else {
-    Wire.requestFrom(LINE_LEFTADDRESS, 1);
-    while (Wire.available() >= 1) {
-      byte readValue;
-      readValue = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 5; i++) {
-        angel_value[i + 10] = readValue & (1 << 1 + i);
+      Wire.requestFrom(LINE_REARADDRESS, 1);
+      while (Wire.available() >= 1) {
+        byte readValue;
+        readValue = i2cReadWithTimeoutFunction();
+        for (int i = 0; i < 5; i++) {
+          angel_value[i + 5] = readValue & (1 << 1 + i);
+        }
+        cross_value[1] = readValue & (1 << 6);
+        edge_value[1] = readValue & (1 << 7);
       }
-      cross_value[2] = readValue & (1 << 6);
-      edge_value[2] = readValue & (1 << 7);
-    }
-    Wire.requestFrom(LINE_RIGHTADDRESS, 1);
-    while (Wire.available() >= 1) {
-      byte readValue;
-      readValue = i2cReadWithTimeoutFunction();
-      for (int i = 0; i < 5; i++) {
-        angel_value[i + 15] = readValue & (1 << 1 + i);
-      }
-      cross_value[3] = readValue & (1 << 6);
-      edge_value[3] = readValue & (1 << 7);
-    }
-  }
-  for (int i = 0; i < 4; i++) {
-    value[i * 7] = edge_value[i];
-    value[i * 7 + 1] = cross_value[i];
-    for (int j = 0; j < 5; j++) {
-      value[i * 7 + j + 2] = angel_value[i * 5 + j];
-    }
-  }
-  if (value[0]) {
-    value[1] = true;
-  } else {
-    value[1] = false;
-  }
-  if (ROBOT_NUMBER == 1) {
-    if (value[26]) {
-      value[24] = true;
     } else {
-      value[24] = false;
+      Wire.requestFrom(LINE_LEFTADDRESS, 1);
+      while (Wire.available() >= 1) {
+        byte readValue;
+        readValue = i2cReadWithTimeoutFunction();
+        for (int i = 0; i < 5; i++) {
+          angel_value[i + 10] = readValue & (1 << 1 + i);
+        }
+        cross_value[2] = readValue & (1 << 6);
+        edge_value[2] = readValue & (1 << 7);
+      }
+      Wire.requestFrom(LINE_RIGHTADDRESS, 1);
+      while (Wire.available() >= 1) {
+        byte readValue;
+        readValue = i2cReadWithTimeoutFunction();
+        for (int i = 0; i < 5; i++) {
+          angel_value[i + 15] = readValue & (1 << 1 + i);
+        }
+        cross_value[3] = readValue & (1 << 6);
+        edge_value[3] = readValue & (1 << 7);
+      }
     }
-    if (value[27]) {
-      value[25] = true;
+    for (int i = 0; i < 4; i++) {
+      value[i * 7] = edge_value[i];
+      value[i * 7 + 1] = cross_value[i];
+      for (int j = 0; j < 5; j++) {
+        value[i * 7 + j + 2] = angel_value[i * 5 + j];
+      }
+    }
+    if (value[0]) {
+      value[1] = true;
     } else {
-      value[25] = false;
+      value[1] = false;
     }
+    if (ROBOT_NUMBER == 0) {
+    } else if (ROBOT_NUMBER == 1) {
+      if (value[26]) {
+        value[24] = true;
+      } else {
+        value[24] = false;
+      }
+      if (value[27]) {
+        value[25] = true;
+      } else {
+        value[25] = false;
+      }
+    }
+    Wire.end();
+    Wire.begin();
   }
-  Wire.end();
-  Wire.begin();
 }
 
 void _Line::arrange(void) {
@@ -320,16 +339,16 @@ void _Line::keeper_arrange(void) {
   }
   if (!touch) {
     if (flag) {
-      if(Last_Block!=0&&Last_Block!=1){
+      if (Last_Block != 0 && Last_Block != 1) {
         awayFlag = true;
         awayTimer = millis();
-      }else{
-        awayFlag=false;
+      } else {
+        awayFlag = false;
       }
       flag = false;
     }
     if (awayFlag) {
-      if (millis() - awayTimer >20) {
+      if (millis() - awayTimer > 20) {
         awayFlag = false;
       }
     }
@@ -353,8 +372,23 @@ int _Line::calcDirection(void) {
     if (_degree > 150 && _degree < 210) {
       if (ball.LPF_degree > 15 && ball.LPF_degree < 90) {
         _degree = 225;
+        ball.tiltTimer = millis();
+        ball.tilt = true;
+        ball.tilt_degree = -25;
       } else if (ball.LPF_degree > 270 && ball.LPF_degree < 345) {
         _degree = 135;
+        ball.tiltTimer = millis();
+        ball.tilt = true;
+        ball.tilt_degree = 25;
+      }
+      if (_degree < 180) {
+        ball.tiltTimer = millis();
+        ball.tilt = true;
+        ball.tilt_degree = -25;
+      } else {
+        ball.tiltTimer = millis();
+        ball.tilt = true;
+        ball.tilt_degree = 25;
       }
     }
   }

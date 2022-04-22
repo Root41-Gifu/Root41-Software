@@ -69,7 +69,7 @@ void _Ball::SPI_read(void) {
   if (ROBOT_NUMBER == 0) {
   } else if (ROBOT_NUMBER == 1) {
     if (value[2] > 20) {
-      value[2] *= 3;
+      value[2] *= 2.5;
     } else {
       value[2] = 0;
     }
@@ -84,12 +84,12 @@ void _Ball::SPI_read(void) {
     }
 
     if (value[10] > 20) {
-      value[10] *= 3;
+      value[10] *= 8;
     } else {
       value[10] = 0;
     }
     if (value[11] > 20) {
-      value[11] *= 3;
+      value[11] *= 6;
     } else {
       value[11] = 0;
     }
@@ -228,11 +228,11 @@ void _Ball::calcDistance(void) {
         _Level[1] = 120;
         _Level[0] = 105;
       } else if (max[0] == 12) {
-        _Level[1] = 125;
-        _Level[0] = 110;
+        _Level[1] = 85;
+        _Level[0] = 70;
       } else if (max[0] == 13) {
-        _Level[1] = 90;
-        _Level[0] = 75;
+        _Level[1] = 75;
+        _Level[0] = 65;
       } else if (max[0] == 14) {
         _Level[1] = 90;
         _Level[0] = 80;
@@ -469,7 +469,11 @@ void _Ball::calc(int _distance) {
         // }
         gyro.gain_deg = 0;
         if (max[0] == 0) {
-          _degree = 1000;
+          if (gyro.deg < 20 || gyro.deg > 340) {
+            _degree = 10000;
+          } else {
+            _degree = 1000;
+          }
         } else if (max[0] > 5 && max[0] < 11) {
           _degree = 1000;
         } else {
@@ -477,7 +481,11 @@ void _Ball::calc(int _distance) {
             if (line.checkBlock[2]) {
               if (line.Block == 1) {
                 // if (keeper.x_position == 1) {
+                if (gyro.deg < 20 || gyro.deg > 340) {
                   _degree = 10000;
+                } else {
+                  _degree = 1000;
+                }
                 // } else {
                 //   _degree = 90;
                 // }
@@ -492,7 +500,11 @@ void _Ball::calc(int _distance) {
             if (line.checkBlock[3]) {
               if (line.Block == 1) {
                 // if (keeper.x_position == 2) {
+                if (gyro.deg < 20 || gyro.deg > 340) {
                   _degree = 10000;
+                } else {
+                  _degree = 1000;
+                }
                 // } else {
                 //   _degree = 270;
                 // }
@@ -566,6 +578,8 @@ void _Ball::LPF(void) {
     stop = false;
   } else {
     stop = true;
+  }
+  if (ROBOT_NUMBER == 0) {
   }
 }
 

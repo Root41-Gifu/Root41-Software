@@ -6,7 +6,7 @@ void _Camera::read() {
   if (Serial6.available()) {
     readData = Serial6.read();
   }
-  Serial.println(readData);
+  // Serial.println(readData);
   // keeper.x_position=readData;
   mode = readData >> 6;
   goal_x = readData &= B00111111;

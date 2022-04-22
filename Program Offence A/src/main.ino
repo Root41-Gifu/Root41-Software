@@ -13,7 +13,7 @@ int i2cReadWithTimeoutFunction(void);
 #include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
-#define ROBOT_NUMBER 1
+#define ROBOT_NUMBER 0
 
 #define voltage PC0
 
@@ -51,6 +51,11 @@ int i2cReadWithTimeoutFunction(void);
 
 #define CAMERA_PIN 0x0A
 
+#define LINE_FRONTPIN PC2
+#define LINE_REARPIN PC13
+#define LINE_LEFTPIN PC9
+#define LINE_RIGHTPIN PC4
+
 #define UI_ADDRESS 0x04
 #define LINE_FRONTADDRESS 0x08
 #define LINE_REARADDRESS 0x40
@@ -58,8 +63,7 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x20
 const int lineAddress[] = {0x08, 0x20, 0x40, 0x10};
 
-#define LINE_BRIGHTNESS 22  // 50
-#define NEOPIXEL_BRIGHTNESS 0//30
+#define NEOPIXEL_BRIGHTNESS 30  // 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 18
 #define LINEOVERTIME 70
@@ -89,6 +93,7 @@ unsigned long gyroReset_Timer;
 bool reset_flag;
 
 bool readCounter = 0;
+int LINE_BRIGHTNESS;  
 
 class _UI {
  public:
@@ -141,7 +146,8 @@ class _Ball {
   void calc(int);            //進行方向算出
   int adjustValue(int, int);
   void Max_calc(float*);
-  void LPF(void);           //ローパスフィルタ
+  void LPF(void);  //ローパスフィルタ
+  unsigned long kari_value[16];
   unsigned long value[16];  //読み込み値
   float LPF_value[16];      // LPF補正値
   float LastLPF[16];        //前回のLPF補正値
@@ -158,11 +164,13 @@ class _Ball {
   float LPF_degree;
   float Last_degLPF;
   int Move_degree;  //進行角度
+  int tilt_degree;
 
   bool hold;
   bool stop;
   bool kick;
   bool tap;
+  bool tilt;
   int holdcounter;
 
   float vectorX[16];  //ベクトル（ボール位置の定数）
@@ -175,6 +183,9 @@ class _Ball {
   unsigned long distTimer;
   unsigned long holdTimer;
   unsigned long kickTimer;
+  unsigned long tiltTimer;
+
+  unsigned long sensorTimer;
 
  private:
   int move[3][16];
@@ -214,6 +225,7 @@ class _Line {
   bool edge_value[4];
   bool cross_value[4];
   bool angel_value[20];
+  bool all_value[4];
   bool check[28];      //計測されたか
   bool checkBlock[4];  // 4分割ブロックの計測フラグ
   int Block;           // 4分割ブロック
@@ -260,7 +272,7 @@ class _Line {
   float t_vectorY;  //ベクトル換算時のベクトルＹ
 
   //キーパー関係
-  int Last_Block;
+  int Last_Block = 1;
   int Last_second_Block;
   bool awayFlag;
   unsigned long awayTimer;
@@ -289,6 +301,9 @@ class _Keeper {
   int line_position;
   int Move_degree;
   int line_Lock;
+  int straight_counter;
+  int counter;
+  bool straight;
 
   float speed = 1;
 
@@ -296,6 +311,7 @@ class _Keeper {
 
   unsigned long lockTimer;
   unsigned long frontoverTimer;
+  unsigned long straightTimer;
 
  private:
 } keeper;
@@ -395,6 +411,12 @@ float block_vectorX[8];
 float block_vectorY[8];
 
 void setup() {
+  if (ROBOT_NUMBER == 0) {
+    LINE_BRIGHTNESS= 30;
+  } else if (ROBOT_NUMBER == 1) {
+    LINE_BRIGHTNESS =22;  // 50
+  }
+
   // delay(1000);
 
   Serial.begin(115200);
@@ -405,6 +427,10 @@ void setup() {
   pinMode(PA8, INPUT);
   pinMode(CAMERA_PIN, OUTPUT);
   pinMode(KICKER_PIN, OUTPUT);
+  pinMode(LINE_FRONTPIN, INPUT);
+  pinMode(LINE_REARPIN, INPUT);
+  pinMode(LINE_LEFTPIN, INPUT);
+  pinMode(LINE_RIGHTPIN, INPUT);
   // LINESENSOR_INITIALIZE:
   Wire.begin();
   // Wire.setClock(400000);
@@ -418,17 +444,19 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   SPI.beginTransaction(MAX6675Setting);
 
-  for (int i = 0; i < 4; i++) {
-    Wire.beginTransmission(lineAddress[i]);
-    Wire.write(9);  // high
-    Wire.write(5);  // low
+  if (ROBOT_NUMBER == 1) {
+    for (int i = 0; i < 4; i++) {
+      Wire.beginTransmission(lineAddress[i]);
+      Wire.write(9);  // high
+      Wire.write(5);  // low
 
-    int result = Wire.endTransmission();
-    Serial.println(result);
-    if (result != 0) {
-      // goto LINESENSOR_INITIALIZE;
+      int result = Wire.endTransmission();
+      Serial.println(result);
+      if (result != 0) {
+        // goto LINESENSOR_INITIALIZE;
+      }
+      delay(50);
     }
-    delay(50);
   }
   // Wire.setClock(400000);
   // for (int i = 0; i < 5; i++) {
@@ -593,19 +621,36 @@ void loop() {
     keeper.calc();
   }
 
-  if (ROBOT_NUMBER == 0) {
-    if (ball.kick) {
-      digitalWrite(KICKER_PIN, HIGH);
-      if (millis() - ball.kickTimer >= 200) {
-        ball.kick = false;
-      }
-    }
-  }
+  // if (ROBOT_NUMBER == 0) {
+  //   if (ball.kick) {
+  //     digitalWrite(KICKER_PIN, HIGH);
+  //     if (millis() - ball.kickTimer >= 200) {
+  //       ball.kick = false;
+  //     }
+  //   }
+  // }
 
   // gyro
 
   //ジャイロの読みこみ等
   // if(!UI.active&&!reset_flag){
+  //ライン反応後、傾き
+  if (ROBOT_NUMBER == 0) {
+    if (!line.flag && !line.Rflag && !line.Oflag) {
+      if (ball.tilt) {
+        if (millis() - ball.tiltTimer <= 2000) {
+          gyro.gain_deg = ball.tilt_degree;
+        } else {
+          ball.tilt = false;
+          gyro.gain_deg = 0;
+        }
+      } else {
+        gyro.gain_deg = 0;
+      }
+    } else {
+      gyro.gain_deg = 0;
+    }
+  }
 
   // }
   gyro.deg = 360;           // 360
@@ -719,11 +764,11 @@ void loop() {
   // camera.read();
   int udata;
 
-  if (false) {
+  if (true) {
     // 0
     // for (int i = 0; i < 16; i++) {
-    //   Serial.print(ball.LPF_value[i]);
-    //   Serial.print(" ");
+    Serial.print(ball.value[10]);
+    Serial.print(" ");
     // }
     // for (int i = 0; i < LINE_NUM; i++) {
     //   Serial.print(line.value[i]);
@@ -731,14 +776,14 @@ void loop() {
     // }
     // Serial.print(ball.max[0]);
     // Serial.print(" ");
-    Serial.print(keeper.Move_degree);
-    Serial.print(" ");
+    // Serial.print(keeper.Move_degree);
+    // Serial.print(" ");
     Serial.print(ball.degree);
     Serial.print(" ");
-    Serial.print(line.Last_Block);
-    Serial.print(" ");
-    Serial.print(keeper.mode);
-    Serial.print(" ");
+    // Serial.print(line.Last_Block);
+    // Serial.print(" ");
+    // Serial.print(keeper.mode);
+    // Serial.print(" ");
 
     Serial.println("");
   }
