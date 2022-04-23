@@ -13,7 +13,7 @@ int i2cReadWithTimeoutFunction(void);
 #include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
-#define ROBOT_NUMBER 0
+#define ROBOT_NUMBER 1
 
 #define voltage PC0
 
@@ -63,7 +63,7 @@ int i2cReadWithTimeoutFunction(void);
 #define LINE_RIGHTADDRESS 0x20
 const int lineAddress[] = {0x08, 0x20, 0x40, 0x10};
 
-#define NEOPIXEL_BRIGHTNESS 30  // 30
+#define NEOPIXEL_BRIGHTNESS 1  // 30
 #define LIGHTLIMIT 0
 #define LINEOVERNUM 18
 #define LINEOVERTIME 70
@@ -510,7 +510,13 @@ void loop() {
   // }
 
   // Battery-check---------------------------------------------
-  Battery = analogRead(voltage) * 0.01469231;
+  float battery_num;
+  if(ROBOT_NUMBER==0){
+    battery_num=0.01648056;
+  }else if(ROBOT_NUMBER==1){
+    battery_num=0.01469231;
+  }
+  Battery = analogRead(voltage) * battery_num;
 
   // Ball---------------------------------------------
   ball.SPI_read();  // SPI読み込み
@@ -575,7 +581,9 @@ void loop() {
   //  if(camera.mode==0){
   //    camera.o_goal_X[0]=1000;
   //  }else if(camera.mode==1){
+    if(ROBOT_NUMBER == 1){
   camera.read();
+    }
   //  }
 
   // UI---------------------------------------------

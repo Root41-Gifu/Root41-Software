@@ -155,7 +155,7 @@ int _gyro::read(void) {
 
 //角速度取得
 int _gyro::differentialRead(void) {
-  return dmpgyro.z;
+  return 0;
   // if (!dmpReady) {
   //   return 0;
   // }
