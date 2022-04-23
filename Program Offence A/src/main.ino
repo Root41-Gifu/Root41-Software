@@ -13,7 +13,7 @@ int i2cReadWithTimeoutFunction(void);
 #include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
-#define ROBOT_NUMBER 1
+#define ROBOT_NUMBER 0
 
 #define voltage PC0
 
@@ -647,7 +647,7 @@ void loop() {
     if (!line.flag && !line.Rflag && !line.Oflag) {
       if (ball.tilt) {
         if (millis() - ball.tiltTimer <= 2000) {
-          gyro.gain_deg = ball.tilt_degree;
+          // gyro.gain_deg = ball.tilt_degree;
         } else {
           ball.tilt = false;
           gyro.gain_deg = 0;

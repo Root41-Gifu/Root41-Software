@@ -360,7 +360,7 @@ int _Line::calcDirection(void) {
   t_vectorX = 0;
   t_vectorY = 0;
   int count = 0;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 14; i++) {
     if (i < whited) {
       t_vectorX += sin_d[one_degree[order[i]]];
       t_vectorY += cos_d[one_degree[order[i]]];

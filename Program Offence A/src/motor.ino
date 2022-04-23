@@ -278,11 +278,13 @@ void _Motor::motorPID_drive(int motor_speed) {
   }
 
   // P制御（比例）
-  Collection *= -0.6;  // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
+  Collection *= -0.6;
+  
+    // P制御 0.078 Mizunami 0.072(0.9) or 81(09) 67 0.043
   // 0.53
 
   // D制御（微分）
-  Collection -= gyro.differentialRead() * 0.015;  // D制御 64 0.012
+  // Collection -= gyro.differentialRead() * 0.015;  // D制御 64 0.012
   // Collection = constrain(Collection, -30, 30);
 
   int max = 60 - abs(Collection);
@@ -308,10 +310,10 @@ void _Motor::motorPID_drive(int motor_speed) {
   }
 
   for (int i = 0; i < 4; i++) {
-    motor.val[i] *= 0.6;
+    motor.val[i] *= 0.7;
     if(UI.mode==1){
       if(line.flag||line.Rflag||line.Oflag){
-        motor.val[i]*=0.6;
+        motor.val[i]*=0.4;
       }
     }else if(UI.mode==2){
       motor.val[i]*=keeper.speed;

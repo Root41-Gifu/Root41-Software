@@ -354,8 +354,8 @@ void _Ball::calc(int _distance) {
   } else {
     if (UI.mode == 1) {
       float _plusvector[2];
-      float gain_constant = 12;     //何倍のベクトルを加えるか
-      int max_gain = 160;           //加えるベクトルの角度の上限
+      float gain_constant = 3;     //何倍のベクトルを加えるか
+      int max_gain = 190;           //加えるベクトルの角度の上限
       int distance_constant = 130;  //距離定数/距離＝
       // switch (distanceLevel) {
       //   case 3:
@@ -376,7 +376,7 @@ void _Ball::calc(int _distance) {
       // }
       int gain_degree;
 
-      if (degree < 25 || degree > 335) {
+      if (degree < 15 || degree > 345) {
         if (hold) {
           _degree = 0;
           if (!tap) {
@@ -469,7 +469,7 @@ void _Ball::calc(int _distance) {
         // }
         gyro.gain_deg = 0;
         if (max[0] == 0) {
-          if (gyro.deg < 20 || gyro.deg > 340) {
+          if (gyro.deg < 50 || gyro.deg > 310) {
             _degree = 10000;
           } else {
             _degree = 1000;
